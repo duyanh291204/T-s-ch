@@ -2902,11 +2902,11 @@
     }
 
     /* ============================
-       6. MÈO BÉO XANH CAPOO NGỒI & CHẠY NGAY TRÊN VIỀN Ô TẤT CẢ / TRUYỆN / SÁCH
+       6. MÈO BÉO CAPOO NGỒI & CHẠY NGAY TRÊN VIỀN Ô TẤT CẢ / TRUYỆN / SÁCH
        ============================ */
     .group-switch-stage {
       position: relative;
-      padding-top: 44px;
+      padding-top: 46px;
       margin-bottom: 8px;
     }
 
@@ -2923,7 +2923,7 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 50px;
+      height: 54px;
       display: block;
       z-index: 6;
       pointer-events: none;
@@ -2937,8 +2937,8 @@
       position: absolute;
       top: 4px;
       left: 0;
-      width: 50px;
-      height: 40px;
+      width: 56px;
+      height: 44px;
       z-index: 7;
       cursor: pointer;
       touch-action: manipulation;
@@ -2947,6 +2947,43 @@
 
     .group-switch-stage.no-cat .capoo-hit {
       display: none;
+    }
+
+    .cat-color-row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 7px;
+    }
+
+    .cat-color-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 7px 4px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .cat-color-btn.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      font-weight: 700;
+    }
+
+    .cat-swatch-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #383840;
+      display: inline-block;
+      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.14);
     }
   </style>
 </head>
@@ -3252,7 +3289,7 @@
         theme: "light",
         fxLevel: "rich", // "rich" | "minimal"
         catEnabled: true,
-        catCoat: "ginger", // "ginger" | "tabby" | "cream"
+        catCoat: "blue", // "blue" | "yellow" | "gray" | "white" | "black"
         soundEnabled: true,
         soundPack: "marble", // "marble" | "tactile" | "console" | "watch"
         soundMap: {
@@ -10188,10 +10225,20 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
             </div>
 
             <div class="field">
-              <label>Mèo béo xanh trên thanh Tất cả / Truyện / Sách</label>
+              <label>Mèo béo Capoo (trên thanh Tất cả / Truyện / Sách)</label>
               <div class="scope-switch" id="catEnableSwitch" style="margin-bottom:0;">
                 <button type="button" class="${state.catEnabled !== false ? "active" : ""}" data-caten="on">Hiện mèo béo</button>
                 <button type="button" class="${state.catEnabled === false ? "active" : ""}" data-caten="off">Ẩn tạm</button>
+              </div>
+              <div class="cat-color-row" id="catColorRow">
+                ${CAT_COLOR_LIST.map((c) => {
+                  const cur = getCapooColorKey();
+                  return `
+                    <button type="button" class="cat-color-btn ${cur === c.id ? "active" : ""}" data-catcolor="${c.id}">
+                      <span class="cat-swatch-dot" style="background:${c.body}; border-color:${c.ink};"></span>
+                      <span>${c.label}</span>
+                    </button>`;
+                }).join("")}
               </div>
             </div>
 
@@ -10280,6 +10327,26 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
               catEnSw.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
               if (state.catEnabled) SFX.catWake();
               showToast(state.catEnabled ? "Boss mèo đã lên sân!" : "Đã tạm ẩn mèo béo.");
+            });
+          }
+          const catColorRow = body.querySelector("#catColorRow");
+          if (catColorRow) {
+            catColorRow.addEventListener("click", (e) => {
+              const btn = e.target.closest("button[data-catcolor]");
+              if (!btn) return;
+              const colId = btn.dataset.catcolor;
+              state.catCoat = colId;
+              state.catEnabled = true;
+              saveState();
+              applyCatVisibility();
+              catColorRow.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+              if (catEnSw) {
+                catEnSw.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.caten === "on"));
+              }
+              triggerCapooExpression("love", 1.5);
+              SFX.catWake();
+              const info = CAT_COLORS[colId];
+              showToast(`Đã đổi màu mèo: ${info ? info.label : colId}!`);
             });
           }
 
@@ -10735,65 +10802,161 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
 
 
       // ============================
-      // MÈO BÉO XANH CAPOO (60FPS RETINA · CHẠY NGAY TRÊN VIỀN Ô TẤT CẢ / TRUYỆN / SÁCH)
-      // - Chuyển 3 tab: chạy/đi sang và dừng ngay chính giữa ô đang xem
-      // - Chuyển nhanh -> chạy nhanh + vệt bụi + biểu cảm > ω <
-      // - Đổi nhanh liên tục quá -> cạn sức nằm bẹp thở hổn hển + mồ hôi bay
-      // - Dừng không ấn 5s -> tự cuộn/dẹt người ngủ ngon lành (z Z z)
-      // - Chạm trực tiếp vào mèo -> nhảy lên tung tim hồng siêu cute!
+      // MÈO BÉO CAPOO SIÊU CUTE (60FPS RETINA · CHÂN DÍNH LIỀN THÂN · 5 MÀU · BIỂU CẢM NGẪU NHIÊN)
+      // - 5 màu: Xanh biển, Vàng, Xám, Trắng, Đen (đổi trong Cài đặt)
+      // - Chân + tai + tay vẽ gộp 2-pass silhouette union -> 100% dính liền thân, không 1 vết cắt
+      // - Chuyển động lò xo giảm chấn siêu mượt, mặt & sọc lưng xoay mượt theo hướng chạy
+      // - Thỉnh thoảng tự làm biểu cảm sticker Capoo (?, lấp lánh, thè lưỡi, phồng má cáu, hóng hớt, tung tim, vui vẻ, nhai phồng má)
+      // - Đổi tab nhanh -> chạy nước rút; đổi nhanh quá -> mệt thở hổn hển; đứng yên 5s -> ngủ thổi bong bóng z Z z
       // ============================
       const catStage = document.getElementById("bookGroupStage");
       const catCanvas = document.getElementById("catCanvas");
       const catHitBox = document.getElementById("catHitBox");
       const bookGroupSwitchEl = document.getElementById("bookGroupSwitch");
 
-      const CAPOO_PAL = {
-        blue: "#57C7EE",
-        blueDeep: "#43B2DA",
-        white: "#FFFFFF",
-        ink: "#38383E",
-        pink: "#FF7D88",
-        cheek: "#FF9AA4",
-        sweat: "#9BE5FF",
+      const CAT_COLORS = {
+        blue: {
+          id: "blue",
+          label: "Xanh biển",
+          body: "#59CBF0",
+          stripe: "#32A0C9",
+          belly: "#FFFFFF",
+          ink: "#363740",
+          inkDark: "#24252C",
+          eye: "#2C2D35",
+          eyeShine: "#FFFFFF",
+          mouthLine: "#2C2D35",
+          pink: "#FF7B89",
+          cheek: "#FF9AA6",
+          isBlack: false,
+        },
+        yellow: {
+          id: "yellow",
+          label: "Vàng",
+          body: "#FFD15C",
+          stripe: "#E39B27",
+          belly: "#FFF9E8",
+          ink: "#3D3226",
+          inkDark: "#2C231A",
+          eye: "#2F251B",
+          eyeShine: "#FFFFFF",
+          mouthLine: "#2F251B",
+          pink: "#FF7E82",
+          cheek: "#FF9B8C",
+          isBlack: false,
+        },
+        gray: {
+          id: "gray",
+          label: "Xám",
+          body: "#A6B0BC",
+          stripe: "#768291",
+          belly: "#F4F6F9",
+          ink: "#343842",
+          inkDark: "#242730",
+          eye: "#282B33",
+          eyeShine: "#FFFFFF",
+          mouthLine: "#282B33",
+          pink: "#FF8292",
+          cheek: "#FFA1AD",
+          isBlack: false,
+        },
+        white: {
+          id: "white",
+          label: "Trắng",
+          body: "#FAF8F3",
+          stripe: "#DDD8CE",
+          belly: "#FFFFFF",
+          ink: "#3E3C44",
+          inkDark: "#2D2B33",
+          eye: "#2E2C34",
+          eyeShine: "#FFFFFF",
+          mouthLine: "#2E2C34",
+          pink: "#FF7F8E",
+          cheek: "#FFA3B0",
+          isBlack: false,
+        },
+        black: {
+          id: "black",
+          label: "Đen",
+          body: "#323540",
+          stripe: "#1F2129",
+          belly: "#535869",
+          ink: "#17181E",
+          inkDark: "#6A7082", // viền sáng nhẹ ở Dark Mode để mèo đen luôn nổi bần bật!
+          eye: "#FFFDF7",
+          eyePupil: "#1E2028",
+          eyeShine: "#FFFFFF",
+          mouthLine: "#F5F0E6",
+          pink: "#FF7E8E",
+          cheek: "#FF8B9B",
+          isBlack: true,
+        },
       };
+
+      const CAT_COLOR_LIST = [
+        CAT_COLORS.blue,
+        CAT_COLORS.yellow,
+        CAT_COLORS.gray,
+        CAT_COLORS.white,
+        CAT_COLORS.black,
+      ];
+
+      function getCapooColorKey() {
+        const raw = state.catCoat || "blue";
+        if (CAT_COLORS[raw]) return raw;
+        if (raw === "ginger") return "yellow";
+        if (raw === "tabby") return "gray";
+        if (raw === "cream") return "white";
+        return "blue";
+      }
+
+      const CAPOO_IDLE_EXPRS = ["sparkle", "question", "blep", "pout", "gasp", "love", "happy", "chew"];
 
       const capoo = {
         w: 340,
-        h: 50,
+        h: 54,
         dpr: 1,
         x: 60,
         targetX: 60,
         activeGroup: "all",
-        dir: 1,              // 1 = right, -1 = left
-        vx: 0,               // smooth velocity px/s
-        gait: 0,             // step cycle tied strictly to distance moved
+        dir: 1,              // target facing direction: 1 right, -1 left
+        faceDir: 0,          // smooth continuous facing (-1..1) so head/face turns silky smooth!
+        vx: 0,
+        gait: 0,             // integrated distance phase for seamless undulating nub-legs
         state: "idle",       // "idle" | "walk" | "run" | "tired" | "sleep"
-        stamina: 100,        // hidden internal stamina (drains on rapid switches)
+        stamina: 100,
         tiredTimer: 0,
         idleTimer: 0,
-        cheerTimer: 0,       // happy heart-waving celebration on tap / arrival
-        switchTimes: [],     // recent switch timestamps (ms)
+        switchTimes: [],
         lastSwitchAt: 0,
 
-        // Smooth blend weights (0..1)
+        // Random sticker expression system
+        expr: "none",        // "none" | "sparkle" | "question" | "blep" | "pout" | "gasp" | "love" | "happy" | "chew"
+        exprTimer: 0,
+        exprCooldown: 1.55,  // triggers a cute expression naturally before sleeping
+        lastExpr: "",
+
+        // Smooth blend weights (framerate-independent exponential damping)
         runMix: 0,
         sleepMix: 0,
         tiredMix: 0,
-        moveMix: 0,          // 0 = front-facing cute Capoo, 1 = side-running Capoo
-        squash: 0,           // springy squash-and-stretch
+        moveMix: 0,
+        squash: 0,
         squashV: 0,
         hopY: 0,
         hopV: 0,
+        tilt: 0,
         wobble: 0,
 
         // Micro-animation timers
         clock: 0,
-        blinkTimer: 2.3,
+        blinkTimer: 2.1,
         blinkDur: 0,
         dustCD: 0,
         sweatCD: 0,
         zzzCD: 0,
-        particles: [],       // hearts, dust, sweat, zzz
+        fxCD: 0,
+        particles: [],
       };
 
       function getGroupCenterX(groupName) {
@@ -10822,20 +10985,20 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
         if (rect.width < 40) return;
         const prevW = capoo.w || rect.width;
         capoo.w = Math.round(rect.width);
-        capoo.h = 50;
+        capoo.h = 54;
         capoo.dpr = Math.min(window.devicePixelRatio || 1, 3);
         catCanvas.width = Math.round(capoo.w * capoo.dpr);
         catCanvas.height = Math.round(capoo.h * capoo.dpr);
         capoo.targetX = getGroupCenterX(capoo.activeGroup);
         if (prevW > 40) {
-          capoo.x = Math.max(20, Math.min(capoo.w - 20, (capoo.x / prevW) * capoo.w));
+          capoo.x = Math.max(22, Math.min(capoo.w - 22, (capoo.x / prevW) * capoo.w));
         } else {
           capoo.x = capoo.targetX;
         }
       }
 
       function spawnCapooParticle(kind, x, y, extra = {}) {
-        if (capoo.particles.length > 22) capoo.particles.shift();
+        if (capoo.particles.length > 26) capoo.particles.shift();
         capoo.particles.push({
           kind,
           x,
@@ -10843,10 +11006,41 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
           vx: extra.vx || 0,
           vy: extra.vy || 0,
           age: 0,
-          life: extra.life || 0.75,
-          size: extra.size || 4,
+          life: extra.life || 0.85,
+          size: extra.size || 4.5,
           text: extra.text || "",
+          color: extra.color || "",
         });
+      }
+
+      function pickRandomCapooExpr() {
+        const pool = CAPOO_IDLE_EXPRS.filter((e) => e !== capoo.lastExpr);
+        return pool[Math.floor(Math.random() * pool.length)] || "love";
+      }
+
+      function triggerCapooExpression(kind = "", duration = 1.9, withHop = false) {
+        const chosen = kind || pickRandomCapooExpr();
+        capoo.expr = chosen;
+        capoo.lastExpr = chosen;
+        capoo.exprTimer = duration;
+        capoo.fxCD = 0.05;
+        if (withHop) {
+          capoo.hopV = -126;
+          capoo.squashV = 5.6;
+        } else {
+          capoo.squashV = chosen === "pout" || chosen === "gasp" ? -3.4 : 2.8;
+        }
+
+        if (chosen === "love") {
+          spawnCapooParticle("heart", capoo.x, 12, { vx: 0, vy: -18, life: 0.95, size: 5.8 });
+        } else if (chosen === "sparkle") {
+          spawnCapooParticle("star", capoo.x - 16, 15, { vx: -6, vy: -14, life: 0.9, size: 4.5 });
+          spawnCapooParticle("star", capoo.x + 16, 13, { vx: 6, vy: -16, life: 0.95, size: 5.0 });
+        } else if (chosen === "happy") {
+          spawnCapooParticle("note", capoo.x + 15, 16, { vx: 7, vy: -16, life: 1.0, text: "♪", color: "#FF7B89" });
+        } else if (chosen === "gasp") {
+          spawnCapooParticle("exclaim", capoo.x, 11, { vx: 0, vy: -10, life: 0.85, text: "?!", color: "#FF6874" });
+        }
       }
 
       function onCapooTabSwitch(groupName) {
@@ -10858,20 +11052,19 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
         capoo.targetX = getGroupCenterX(groupName);
         capoo.idleTimer = 0;
 
-        // Cửa sổ 2.6 giây gần nhất để bắt nhịp đổi nhanh
         capoo.switchTimes.push(now);
         while (capoo.switchTimes.length && now - capoo.switchTimes[0] > 2600) {
           capoo.switchTimes.shift();
         }
         capoo.lastSwitchAt = now;
 
-        // Nếu đang mệt bẹp dí -> giật mình đổ thêm giọt mồ hôi, chờ hồi sức xong mới chạy sang ô đang xem
+        // Đang mệt bẹp dí -> giật mình đổ thêm giọt mồ hôi, chờ hồi sức xong tự bò về đúng ô
         if (capoo.state === "tired") {
           capoo.wobble = 1.0;
           capoo.squashV = -4.2;
-          spawnCapooParticle("sweat", capoo.x + capoo.dir * 10, 18, {
+          spawnCapooParticle("sweat", capoo.x + capoo.dir * 12, 22, {
             vx: capoo.dir * 26,
-            vy: -36,
+            vy: -38,
             life: 0.65,
             size: 3.1,
           });
@@ -10879,20 +11072,18 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
           return;
         }
 
-        // Đang ngủ -> bật dậy siêu cute
+        // Đang ngủ -> bật dậy đáng yêu
         if (capoo.state === "sleep") {
-          capoo.hopV = -115;
-          capoo.squashV = 5.0;
-          spawnCapooParticle("heart", capoo.x, 12, { vx: 0, vy: -20, life: 0.85, size: 5.5 });
+          capoo.hopV = -120;
+          capoo.squashV = 5.2;
+          capoo.expr = "gasp";
+          capoo.exprTimer = 0.55;
         }
 
-        // Bấm lại đúng ô đang đứng -> nhảy tung tim cute!
+        // Bấm lại đúng ô đang đứng -> nhảy lên làm biểu cảm bất ngờ!
         if (prevGroup === groupName && Math.abs(capoo.x - capoo.targetX) < 6) {
           capoo.state = "idle";
-          capoo.cheerTimer = 1.1;
-          capoo.hopV = -110;
-          capoo.squashV = 5.4;
-          spawnCapooParticle("heart", capoo.x, 8, { vx: 0, vy: -18, life: 0.9, size: 6.2 });
+          triggerCapooExpression("", 1.85, true);
           return;
         }
 
@@ -10904,28 +11095,31 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
           capoo.dir = capoo.targetX > capoo.x ? 1 : -1;
         }
 
+        capoo.expr = "none";
+        capoo.exprTimer = 0;
+        capoo.exprCooldown = 1.3 + Math.random() * 1.0;
+
         if (isFast) {
           capoo.state = "run";
           capoo.squashV = 3.8;
-          // Đổi nhanh liên tục ~6-7 lần sẽ cạn sức -> mệt!
           capoo.stamina = Math.max(0, capoo.stamina - 15.5);
-          spawnCapooParticle("dust", capoo.x - capoo.dir * 12, 43, {
-            vx: -capoo.dir * 28,
+          spawnCapooParticle("dust", capoo.x - capoo.dir * 15, 47, {
+            vx: -capoo.dir * 26,
             vy: -10,
             life: 0.42,
-            size: 3.8,
+            size: 3.6,
           });
           if (capoo.stamina <= 0) {
             capoo.state = "tired";
-            capoo.tiredTimer = 3.8;
+            capoo.tiredTimer = 3.6;
             capoo.wobble = 1.0;
             capoo.squashV = -6.0;
             SFX.catTired();
-            spawnCapooParticle("sweat", capoo.x + capoo.dir * 11, 18, {
+            spawnCapooParticle("sweat", capoo.x + capoo.dir * 13, 22, {
               vx: capoo.dir * 24,
               vy: -38,
               life: 0.7,
-              size: 3.3,
+              size: 3.2,
             });
           }
         } else {
@@ -10934,7 +11128,7 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
         }
       }
 
-      // Chạm trực tiếp vào con mèo Capoo -> nhảy lên tung tim hồng y như ảnh mẫu!
+      // Chạm trực tiếp vào bé Capoo -> nhảy lên làm biểu cảm sticker ngẫu nhiên!
       if (catHitBox) {
         catHitBox.addEventListener("pointerdown", (e) => {
           e.preventDefault();
@@ -10943,59 +11137,51 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
           ensureAudioCtx();
           if (capoo.state === "tired") {
             capoo.wobble = 1.0;
-            spawnCapooParticle("sweat", capoo.x + 10, 18, { vx: 22, vy: -34, life: 0.6, size: 3.0 });
+            spawnCapooParticle("sweat", capoo.x + 12, 22, { vx: 22, vy: -34, life: 0.6, size: 3.0 });
             SFX.catTired();
             return;
           }
           capoo.idleTimer = 0;
           if (capoo.state === "sleep") capoo.state = "idle";
-          capoo.cheerTimer = 1.35;
-          capoo.hopV = -125;
-          capoo.squashV = 6.2;
           SFX.catWake();
-          spawnCapooParticle("heart", capoo.x, 7, { vx: 0, vy: -20, life: 0.95, size: 6.4 });
-          spawnCapooParticle("heart", capoo.x - 12, 16, { vx: -14, vy: -18, life: 0.85, size: 4.8 });
-          spawnCapooParticle("heart", capoo.x + 12, 16, { vx: 14, vy: -18, life: 0.85, size: 4.8 });
+          triggerCapooExpression("", 2.0, true);
         });
       }
 
       function updateCapooPhysics(dt) {
         capoo.clock += dt;
+        const smooth = (cur, target, speed) => cur + (target - cur) * (1 - Math.exp(-speed * dt));
 
-        // Blink
+        // Nháy mắt tự nhiên
         if (capoo.blinkDur > 0) {
           capoo.blinkDur = Math.max(0, capoo.blinkDur - dt);
         } else {
           capoo.blinkTimer -= dt;
           if (capoo.blinkTimer <= 0) {
-            capoo.blinkDur = 0.13;
-            capoo.blinkTimer = 2.2 + Math.random() * 2.6;
+            capoo.blinkDur = 0.125;
+            capoo.blinkTimer = 2.0 + Math.random() * 2.5;
           }
         }
 
-        if (capoo.cheerTimer > 0) capoo.cheerTimer = Math.max(0, capoo.cheerTimer - dt);
         capoo.wobble = Math.max(0, capoo.wobble - dt * 3.8);
 
-        // Spring squash-and-stretch (mochi physics!)
-        const kSpring = 180;
-        const cDamp = 14;
-        const aSq = -kSpring * capoo.squash - cDamp * capoo.squashV;
+        // Lò xo mochi siêu mượt (spring-damper squash & stretch)
+        const aSq = -175 * capoo.squash - 13.5 * capoo.squashV;
         capoo.squashV += aSq * dt;
         capoo.squash += capoo.squashV * dt;
-        capoo.squash = Math.max(-0.35, Math.min(0.35, capoo.squash));
+        capoo.squash = Math.max(-0.34, Math.min(0.34, capoo.squash));
 
-        // Hop gravity
+        // Nhảy & tiếp đất nảy mềm
         if (capoo.hopY < 0 || capoo.hopV !== 0) {
           capoo.hopY += capoo.hopV * dt;
-          capoo.hopV += 620 * dt;
+          capoo.hopV += 640 * dt;
           if (capoo.hopY >= 0) {
             capoo.hopY = 0;
-            if (Math.abs(capoo.hopV) > 45) capoo.squashV = -5.2; // squishy landing!
+            if (Math.abs(capoo.hopV) > 40) capoo.squashV = -5.2;
             capoo.hopV = 0;
           }
         }
 
-        // Dọn lịch sử bấm quá 2.6s
         const now = performance.now();
         while (capoo.switchTimes.length && now - capoo.switchTimes[0] > 2600) {
           capoo.switchTimes.shift();
@@ -11005,14 +11191,14 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
         const dist = Math.abs(dx);
 
         if (capoo.state === "tired") {
-          capoo.vx *= Math.max(0, 1 - dt * 10);
+          capoo.vx = smooth(capoo.vx, 0, 10);
           capoo.x += capoo.vx * dt;
           capoo.tiredTimer -= dt;
-          capoo.stamina = Math.min(100, capoo.stamina + dt * 24);
+          capoo.stamina = Math.min(100, capoo.stamina + dt * 25);
           capoo.sweatCD -= dt;
           if (capoo.sweatCD <= 0) {
-            capoo.sweatCD = 0.62;
-            spawnCapooParticle("sweat", capoo.x + capoo.dir * 11, 20, {
+            capoo.sweatCD = 0.58;
+            spawnCapooParticle("sweat", capoo.x + capoo.dir * 12, 23, {
               vx: capoo.dir * 18,
               vy: -30,
               life: 0.65,
@@ -11020,14 +11206,12 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
             });
           }
           if (capoo.tiredTimer <= 0 && capoo.stamina >= 60) {
-            // Hồi sức xong -> nhẹ nhàng đi bộ về đúng ô đang xem!
             capoo.state = dist > 2 ? "walk" : "idle";
             capoo.idleTimer = 0;
             capoo.squashV = 3.2;
           }
         } else if (capoo.state === "walk" || capoo.state === "run") {
-          if (dist <= 2.2) {
-            // Đã tới đúng ô đang xem -> dừng gọn, nảy nhẹ mochi!
+          if (dist <= 1.8 && Math.abs(capoo.vx) < 95) {
             const wasRunning = capoo.state === "run";
             capoo.x = capoo.targetX;
             capoo.vx = 0;
@@ -11035,68 +11219,99 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
             capoo.idleTimer = 0;
             capoo.squashV = wasRunning ? -5.0 : -2.6;
             if (wasRunning) {
-              capoo.cheerTimer = 0.65;
-              spawnCapooParticle("heart", capoo.x, 10, { vx: 0, vy: -18, life: 0.75, size: 5.2 });
+              triggerCapooExpression("love", 1.15, false);
+            } else if (Math.random() < 0.35) {
+              // Thỉnh thoảng dừng lại là tung 1 biểu cảm cute ngay!
+              triggerCapooExpression("", 1.5, false);
             }
           } else {
-            capoo.dir = dx > 0 ? 1 : -1;
+            capoo.dir = dx >= 0 ? 1 : -1;
             const boost = Math.min(1, Math.max(0, (capoo.switchTimes.length - 2) / 4));
-            const maxSpd = capoo.state === "run" ? 280 + boost * 150 : 148;
-            // Ease-out nhẹ khi sắp tới đích để dừng siêu mượt, không giật cục
-            const arriveFactor = Math.min(1, Math.max(0.28, dist / 46));
+            const maxSpd = capoo.state === "run" ? 310 + boost * 150 : 165;
+            // Đường cong tăng tốc / hãm tốc mượt như lụa (không khựng gắt)
+            const arriveFactor = Math.min(1, Math.max(0.18, Math.pow(dist / 58, 0.78)));
             const desiredVx = capoo.dir * maxSpd * arriveFactor;
-            capoo.vx += (desiredVx - capoo.vx) * Math.min(1, dt * 14);
+            capoo.vx = smooth(capoo.vx, desiredVx, 13);
             const stepX = capoo.vx * dt;
             if (Math.abs(stepX) >= dist) {
               capoo.x = capoo.targetX;
-              capoo.vx = 0;
+              capoo.vx *= 0.25;
             } else {
               capoo.x += stepX;
             }
-            capoo.gait += Math.abs(stepX) * 0.28;
+            // Nhịp chân dính liền cuốn sóng mượt theo đúng quãng đường di chuyển
+            capoo.gait += Math.abs(stepX) * 0.33;
 
             if (capoo.state === "run") {
               capoo.stamina = Math.max(0, capoo.stamina - dt * 12);
               capoo.dustCD -= dt;
-              if (capoo.dustCD <= 0 && Math.abs(capoo.vx) > 160) {
-                capoo.dustCD = 0.12;
-                spawnCapooParticle("dust", capoo.x - capoo.dir * 13, 43, {
+              if (capoo.dustCD <= 0 && Math.abs(capoo.vx) > 155) {
+                capoo.dustCD = 0.11;
+                spawnCapooParticle("dust", capoo.x - capoo.dir * 16, 47, {
                   vx: -capoo.dir * (24 + Math.random() * 14),
-                  vy: -7 - Math.random() * 8,
+                  vy: -8 - Math.random() * 7,
                   life: 0.36,
-                  size: 3.0 + Math.random() * 1.6,
+                  size: 2.8 + Math.random() * 1.5,
                 });
               }
               if (capoo.stamina <= 0) {
                 capoo.state = "tired";
-                capoo.tiredTimer = 3.8;
+                capoo.tiredTimer = 3.6;
                 capoo.wobble = 1.0;
                 capoo.squashV = -6.0;
                 SFX.catTired();
               }
             } else {
-              capoo.stamina = Math.min(100, capoo.stamina + dt * 12);
+              capoo.stamina = Math.min(100, capoo.stamina + dt * 14);
             }
           }
         } else if (capoo.state === "idle") {
-          capoo.vx = 0;
-          capoo.x += (capoo.targetX - capoo.x) * Math.min(1, dt * 12);
+          capoo.vx = smooth(capoo.vx, 0, 14);
+          capoo.x = smooth(capoo.x, capoo.targetX, 12);
           capoo.stamina = Math.min(100, capoo.stamina + dt * 22);
           capoo.idleTimer += dt;
-          // Dừng không ấn 5 giây -> tự ngủ!
+
+          // Thỉnh thoảng tự làm biểu cảm cute trong lúc đứng nghỉ!
+          if (capoo.exprTimer > 0) {
+            capoo.exprTimer = Math.max(0, capoo.exprTimer - dt);
+            capoo.fxCD -= dt;
+            if (capoo.fxCD <= 0) {
+              capoo.fxCD = 0.55;
+              if (capoo.expr === "love") {
+                spawnCapooParticle("heart", capoo.x + (Math.random() - 0.5) * 20, 14, { vx: (Math.random() - 0.5) * 10, vy: -18, life: 0.85, size: 4.8 });
+              } else if (capoo.expr === "sparkle") {
+                spawnCapooParticle("star", capoo.x + (Math.random() - 0.5) * 28, 16, { vx: (Math.random() - 0.5) * 8, vy: -14, life: 0.8, size: 4.2 });
+              } else if (capoo.expr === "happy") {
+                spawnCapooParticle("note", capoo.x + (Math.random() > 0.5 ? 16 : -16), 17, { vx: (Math.random() - 0.5) * 10, vy: -16, life: 0.9, text: "♪", color: "#FF7B89" });
+              }
+            }
+            if (capoo.exprTimer <= 0) {
+              capoo.expr = "none";
+              capoo.exprCooldown = 2.0 + Math.random() * 1.4;
+            }
+          } else if (capoo.idleTimer < 3.6) {
+            capoo.exprCooldown -= dt;
+            if (capoo.exprCooldown <= 0) {
+              triggerCapooExpression("", 1.75, false);
+            }
+          }
+
+          // Dừng không ấn đúng 5 giây -> tự cuộn ngủ!
           if (capoo.idleTimer >= 5.0) {
             capoo.state = "sleep";
+            capoo.expr = "none";
+            capoo.exprTimer = 0;
             capoo.zzzCD = 0.45;
           }
         } else if (capoo.state === "sleep") {
           capoo.vx = 0;
-          capoo.x += (capoo.targetX - capoo.x) * Math.min(1, dt * 10);
+          capoo.x = smooth(capoo.x, capoo.targetX, 10);
           capoo.stamina = Math.min(100, capoo.stamina + dt * 28);
           capoo.zzzCD -= dt;
           if (capoo.zzzCD <= 0) {
             capoo.zzzCD = 1.25;
             const ch = Math.floor(capoo.clock) % 2 === 0 ? "z" : "Z";
-            spawnCapooParticle("zzz", capoo.x + 12, 16, {
+            spawnCapooParticle("zzz", capoo.x + 14, 19, {
               vx: 5,
               vy: -13,
               life: 1.5,
@@ -11105,17 +11320,23 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
           }
         }
 
-        // Smooth animation blend weights
-        const lerp = (a, b, r) => a + (b - a) * Math.min(1, dt * r);
+        // Làm mượt các trọng số trạng thái & góc xoay mặt (siêu êm ở mọi FPS!)
         const isMoving = capoo.state === "walk" || capoo.state === "run";
-        capoo.moveMix = lerp(capoo.moveMix, isMoving ? 1 : 0, 10);
-        capoo.runMix = lerp(capoo.runMix, capoo.state === "run" ? 1 : 0, 9);
-        capoo.sleepMix = lerp(capoo.sleepMix, capoo.state === "sleep" ? 1 : 0, 5.5);
-        capoo.tiredMix = lerp(capoo.tiredMix, capoo.state === "tired" ? 1 : 0, 8);
+        capoo.moveMix = smooth(capoo.moveMix, isMoving ? 1 : 0, 11);
+        capoo.runMix = smooth(capoo.runMix, capoo.state === "run" ? 1 : 0, 10);
+        capoo.sleepMix = smooth(capoo.sleepMix, capoo.state === "sleep" ? 1 : 0, 5.2);
+        capoo.tiredMix = smooth(capoo.tiredMix, capoo.state === "tired" ? 1 : 0, 8.5);
+        capoo.faceDir = smooth(capoo.faceDir, isMoving ? capoo.dir : 0, 9.5);
 
-        // Keep invisible tap hitbox aligned over Capoo
+        let targetTilt = 0;
+        if (isMoving) targetTilt = capoo.dir * (0.06 + capoo.runMix * 0.09);
+        else if (capoo.expr === "question") targetTilt = 0.14;
+        else if (capoo.expr === "happy") targetTilt = Math.sin(capoo.clock * 8.5) * 0.085;
+        else if (capoo.expr === "pout") targetTilt = Math.sin(capoo.clock * 24) * 0.03;
+        capoo.tilt = smooth(capoo.tilt, targetTilt, 12);
+
         if (catHitBox) {
-          catHitBox.style.left = Math.max(0, Math.round(capoo.x - 24)) + "px";
+          catHitBox.style.left = Math.max(0, Math.round(capoo.x - 28)) + "px";
         }
 
         // Update particles
@@ -11124,23 +11345,23 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
           p.age += dt;
           p.x += p.vx * dt;
           p.y += p.vy * dt;
-          if (p.kind === "sweat") p.vy += 125 * dt;
+          if (p.kind === "sweat") p.vy += 128 * dt;
           if (p.kind === "dust") {
-            p.vx *= 0.92;
-            p.vy *= 0.92;
+            p.vx *= 0.91;
+            p.vy *= 0.91;
           }
           if (p.age >= p.life) capoo.particles.splice(i, 1);
         }
       }
 
-      // Vẽ hình trái tim hồng có viền đậm chuẩn style Capoo!
-      function drawCapooHeart(ctx, x, y, s, alpha = 1) {
+      // Trái tim hồng viền đậm chuẩn Capoo
+      function drawCapooHeart(ctx, x, y, s, inkCol, alpha = 1) {
         ctx.save();
         ctx.translate(x, y);
         ctx.globalAlpha = alpha;
-        ctx.fillStyle = CAPOO_PAL.pink;
-        ctx.strokeStyle = CAPOO_PAL.ink;
-        ctx.lineWidth = Math.max(1.3, s * 0.26);
+        ctx.fillStyle = "#FF7B89";
+        ctx.strokeStyle = inkCol;
+        ctx.lineWidth = Math.max(1.25, s * 0.25);
         ctx.lineJoin = "round";
         ctx.beginPath();
         ctx.moveTo(0, s * 0.72);
@@ -11152,38 +11373,129 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
         ctx.restore();
       }
 
-      // Vẽ Capoo chuẩn từng nét theo ảnh mẫu:
-      // 2 tai tam giác bầu nằm phía sau vòm đầu + thân mochi tròn múp + bụng trắng bầu + 4 chân ngắn tũn + viền đậm
-      function traceCapooBun(ctx, rx, ry) {
+      // Ngôi sao 4 cánh lấp lánh (sticker sparkle)
+      function drawCapooSparkle(ctx, x, y, s, alpha = 1) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = "#FFE169";
+        ctx.strokeStyle = "#B8841E";
+        ctx.lineWidth = 0.9;
         ctx.beginPath();
-        // Đáy hơi phẳng nhẹ, 2 má béo phúng phính, đỉnh đầu cong tròn múp
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(rx * 0.88, 0, rx * 1.12, -ry * 0.28, rx * 1.04, -ry * 0.92);
-        ctx.bezierCurveTo(rx * 0.98, -ry * 1.62, rx * 0.54, -ry * 1.92, 0, -ry * 1.92);
-        ctx.bezierCurveTo(-rx * 0.54, -ry * 1.92, -rx * 0.98, -ry * 1.62, -rx * 1.04, -ry * 0.92);
-        ctx.bezierCurveTo(-rx * 1.12, -ry * 0.28, -rx * 0.88, 0, 0, 0);
-        ctx.closePath();
-      }
-
-      function drawCapooEar(ctx, side, rx, ry, droop) {
-        // side: -1 (trái), 1 (phải)
-        const baseX1 = side * rx * 0.16;
-        const baseX2 = side * rx * 0.88;
-        const baseY1 = -ry * 1.62;
-        const baseY2 = -ry * 1.18;
-        const tipX = side * rx * (0.64 + droop * 0.14);
-        const tipY = -ry * 2.46 + droop * 4.2;
-
-        ctx.fillStyle = CAPOO_PAL.blue;
-        ctx.strokeStyle = CAPOO_PAL.ink;
-        ctx.lineWidth = 2.15;
-        ctx.beginPath();
-        ctx.moveTo(baseX1, baseY1);
-        ctx.quadraticCurveTo(side * rx * 0.42, tipY - 0.6, tipX, tipY);
-        ctx.quadraticCurveTo(side * rx * 0.92, tipY + 1.4, baseX2, baseY2);
+        ctx.moveTo(0, -s);
+        ctx.quadraticCurveTo(0, 0, s, 0);
+        ctx.quadraticCurveTo(0, 0, 0, s);
+        ctx.quadraticCurveTo(0, 0, -s, 0);
+        ctx.quadraticCurveTo(0, 0, 0, -s);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
+        ctx.restore();
+      }
+
+      // Dấu gân cáu 💢 kiểu anime/Capoo
+      function drawAngerMark(ctx, x, y, s, alpha = 1) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = "#FF5A67";
+        ctx.lineWidth = 1.65;
+        ctx.lineCap = "round";
+        for (let q = 0; q < 4; q++) {
+          ctx.save();
+          ctx.rotate((q * Math.PI) / 2);
+          ctx.beginPath();
+          ctx.moveTo(s * 0.22, -s * 0.92);
+          ctx.quadraticCurveTo(s * 0.22, -s * 0.22, s * 0.92, -s * 0.22);
+          ctx.stroke();
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
+      // Trace phần thân mochi bánh mì tròn múp (Bugcat Capoo silhouette)
+      function traceCapooLoaf(ctx, rx, ry) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        // 2 má bánh bao phúng phính (hơi phình nhẹ ở dưới rồi vòm mềm lên đỉnh đầu)
+        ctx.bezierCurveTo(rx * 0.92, 0, rx * 1.15, -ry * 0.24, rx * 1.04, -ry * 0.98);
+        ctx.bezierCurveTo(rx * 0.94, -ry * 1.68, rx * 0.56, -ry * 1.94, 0, -ry * 1.94);
+        ctx.bezierCurveTo(-rx * 0.56, -ry * 1.94, -rx * 0.94, -ry * 1.68, -rx * 1.04, -ry * 0.98);
+        ctx.bezierCurveTo(-rx * 1.15, -ry * 0.24, -rx * 0.92, 0, 0, 0);
+        ctx.closePath();
+      }
+
+      // Trace 1 chiếc tai tam giác bo tròn mềm của Capoo
+      function traceCapooEar(ctx, side, rx, ry, droop) {
+        const bx1 = side * rx * 0.2;
+        const bx2 = side * rx * 0.88;
+        const by1 = -ry * 1.66;
+        const by2 = -ry * 1.18;
+        const tx = side * rx * (0.66 + droop * 0.12);
+        const ty = -ry * 2.42 + droop * 4.4;
+        ctx.beginPath();
+        ctx.moveTo(bx1, by1);
+        ctx.quadraticCurveTo(side * rx * 0.44, ty - 0.5, tx, ty);
+        ctx.quadraticCurveTo(side * rx * 0.94, ty + 1.4, bx2, by2);
+        ctx.closePath();
+      }
+
+      // Vẽ toàn bộ hình dáng gộp 1 khối (tai + thân + 6 chân ngắn tũn dính liền nhau + tay giơ lên nếu có)
+      // mode = "outline" (Pass 1: stroke viền ngoài dày gấp đôi) | "fill" (Pass 2: tô màu lông đè sạch mọi đường giao cắt bên trong!)
+      function paintCapooUnifiedSilhouette(ctx, geom, mode, pal, outlineCol) {
+        const { rx, ry, earDroop, legVis, showArms, armWave, legNodes } = geom;
+
+        const drawShape = () => {
+          if (mode === "outline") {
+            ctx.fillStyle = outlineCol;
+            ctx.strokeStyle = outlineCol;
+            ctx.lineWidth = 4.5; // tạo viền ngoài sắc nét ~2.25px bao trọn toàn khối liền mạch!
+            ctx.lineJoin = "round";
+            ctx.lineCap = "round";
+            ctx.stroke();
+            ctx.fill();
+          } else {
+            ctx.fillStyle = pal.body;
+            ctx.fill();
+          }
+        };
+
+        // 1. Hai tai bầu dính liền đầu
+        traceCapooEar(ctx, -1, rx, ry, earDroop);
+        drawShape();
+        traceCapooEar(ctx, 1, rx, ry, earDroop);
+        drawShape();
+
+        // 2. Các mấu chân ngắn tũn DÍNH LIỀN NHAU & DÍNH LIỀN THÂN (kiểu sâu-mèo Capoo 4-6 chân sóng nhịp nhàng!)
+        if (legVis > 0.05) {
+          legNodes.forEach((leg) => {
+            ctx.beginPath();
+            ctx.ellipse(leg.x, leg.y, leg.rw, leg.rh * legVis, leg.rot, 0, Math.PI * 2);
+            drawShape();
+          });
+        }
+
+        // 3. Đôi tay múp dính liền 2 bên sườn khi tung tim / há miệng / cáu cute
+        if (showArms) {
+          // Tay trái
+          ctx.beginPath();
+          ctx.moveTo(-rx * 0.78, -ry * 0.46);
+          ctx.quadraticCurveTo(-rx * 1.28, -ry * 0.85 + armWave, -rx * 1.04, -ry * 1.15 + armWave);
+          ctx.quadraticCurveTo(-rx * 0.82, -ry * 0.98 + armWave, -rx * 0.68, -ry * 0.62);
+          ctx.closePath();
+          drawShape();
+          // Tay phải
+          ctx.beginPath();
+          ctx.moveTo(rx * 0.78, -ry * 0.46);
+          ctx.quadraticCurveTo(rx * 1.28, -ry * 0.85 - armWave, rx * 1.04, -ry * 1.15 - armWave);
+          ctx.quadraticCurveTo(rx * 0.82, -ry * 0.98 - armWave, rx * 0.68, -ry * 0.62);
+          ctx.closePath();
+          drawShape();
+        }
+
+        // 4. Thân bánh bao mochi chính
+        traceCapooLoaf(ctx, rx, ry);
+        drawShape();
       }
 
       function drawCapooScene() {
@@ -11192,51 +11504,57 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
         const w = capoo.w;
         const h = capoo.h;
         const isDark = state.theme === "dark";
-        const groundY = 45.5; // đặt chân ngay trên mép trên của khung Tất cả | Truyện | Sách!
+        const pal = CAT_COLORS[getCapooColorKey()] || CAT_COLORS.blue;
+        const outlineCol = isDark ? pal.inkDark : pal.ink;
+        const groundY = 49.5; // chân mèo đứng sát mép trên thanh Tất cả | Truyện | Sách
 
         ctx.save();
         ctx.setTransform(capoo.dpr, 0, 0, capoo.dpr, 0, 0);
         ctx.clearRect(0, 0, w, h);
 
-        // 1. Bụi chạy phía sau
+        // 1. Bụi chạy mượt phía sau
         capoo.particles.forEach((p) => {
           if (p.kind !== "dust") return;
           const a = Math.max(0, 1 - p.age / p.life);
           ctx.fillStyle = isDark
-            ? `rgba(220, 215, 206, ${(a * 0.35).toFixed(2)})`
-            : `rgba(140, 130, 118, ${(a * 0.35).toFixed(2)})`;
+            ? `rgba(225, 220, 212, ${(a * 0.34).toFixed(2)})`
+            : `rgba(140, 130, 118, ${(a * 0.34).toFixed(2)})`;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size * (0.7 + (1 - a) * 0.7), 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, p.size * (0.7 + (1 - a) * 0.75), 0, Math.PI * 2);
           ctx.fill();
         });
 
         // 2. Bóng mềm bám ngay mép trên thanh tab
-        const shadowRx = 14.5 + capoo.sleepMix * 3.2 + capoo.tiredMix * 3.8 - Math.abs(capoo.hopY) * 0.22;
-        ctx.fillStyle = isDark ? "rgba(0, 0, 0, 0.48)" : "rgba(28, 25, 22, 0.14)";
+        const shadowRx = 15.5 + capoo.sleepMix * 3.5 + capoo.tiredMix * 4.0 - Math.abs(capoo.hopY) * 0.22;
+        ctx.fillStyle = isDark ? "rgba(0, 0, 0, 0.5)" : "rgba(28, 25, 22, 0.14)";
         ctx.beginPath();
-        ctx.ellipse(capoo.x, groundY + 0.4, Math.max(6, shadowRx), 2.0, 0, 0, Math.PI * 2);
+        ctx.ellipse(capoo.x, groundY + 0.5, Math.max(6, shadowRx), 2.0, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // 3. Co giãn mochi (squash & stretch + nhịp chạy/thở)
-        const moveBob = Math.abs(Math.sin(capoo.gait)) * (2.6 + capoo.runMix * 2.2) * capoo.moveMix;
+        // 3. Co giãn mochi + nhún bước chạy siêu mượt
+        const moveBob = Math.abs(Math.sin(capoo.gait * 0.5)) * (2.2 + capoo.runMix * 2.0) * capoo.moveMix;
+        const chewPulse = capoo.expr === "chew" ? Math.sin(capoo.clock * 14) * 0.045 : 0;
         const breath =
           capoo.sleepMix > 0.2
             ? Math.sin(capoo.clock * 2.4) * 0.065 * capoo.sleepMix
             : capoo.tiredMix > 0.2
             ? Math.sin(capoo.clock * 12) * 0.08 * capoo.tiredMix
-            : Math.sin(capoo.clock * 3.1) * 0.024;
-        const wobbleX = capoo.wobble > 0 ? Math.sin(capoo.clock * 48) * capoo.wobble * 2.2 : 0;
+            : Math.sin(capoo.clock * 3.0) * 0.024;
+        const wobbleX = capoo.wobble > 0 ? Math.sin(capoo.clock * 46) * capoo.wobble * 2.2 : 0;
 
-        const scaleY = 1 + capoo.squash + breath - capoo.sleepMix * 0.25 - capoo.tiredMix * 0.32;
-        const scaleX = 1 - capoo.squash * 0.72 - breath * 0.45 + capoo.sleepMix * 0.18 + capoo.tiredMix * 0.25;
-        const lean = capoo.dir * (capoo.moveMix * 0.075 + capoo.runMix * 0.11);
+        // Khi chạy nhanh hơi kéo dài ngang giống Capoo sâu-mèo lướt đi!
+        const sprintStretch = capoo.runMix * 0.14;
+        const scaleY = 1 + capoo.squash + breath - capoo.sleepMix * 0.26 - capoo.tiredMix * 0.32 - sprintStretch * 0.5;
+        const scaleX = 1 - capoo.squash * 0.72 - breath * 0.4 + chewPulse + capoo.sleepMix * 0.2 + capoo.tiredMix * 0.25 + sprintStretch;
 
-        // Vệt gió xanh khi chạy nhanh
-        if (capoo.runMix > 0.4) {
-          ctx.strokeStyle = `rgba(87, 199, 238, ${(capoo.runMix * 0.55).toFixed(2)})`;
+        // Vệt gió khi chạy nước rút
+        if (capoo.runMix > 0.42) {
+          ctx.strokeStyle = pal.isBlack
+            ? `rgba(180, 190, 210, ${(capoo.runMix * 0.45).toFixed(2)})`
+            : `rgba(89, 203, 240, ${(capoo.runMix * 0.52).toFixed(2)})`;
           ctx.lineWidth = 1.6;
           ctx.lineCap = "round";
-          const gx = capoo.x - capoo.dir * 20;
+          const gx = capoo.x - capoo.dir * 22;
           for (let k = 0; k < 2; k++) {
             const gy = groundY - 10 - k * 8 + Math.sin(capoo.clock * 22 + k) * 1.4;
             ctx.beginPath();
@@ -11247,215 +11565,347 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
         }
 
         ctx.save();
-        // Chân mèo chạm đúng groundY (trừ 2.2px cho độ cao chân ngắn tũn)
-        const legLiftOff = 2.2 * Math.max(0, 1 - capoo.sleepMix - capoo.tiredMix);
+        const legVis = Math.max(0, 1 - capoo.sleepMix * 1.25 - capoo.tiredMix * 1.05);
+        const legLiftOff = 2.6 * legVis;
         ctx.translate(capoo.x + wobbleX, groundY - legLiftOff + capoo.hopY - moveBob);
-        ctx.rotate(lean);
+        ctx.rotate(capoo.tilt);
         ctx.scale(scaleX, scaleY);
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
 
-        const rx = 15.2;
+        // Kích thước bánh bao múp míp chuẩn Capoo
+        const rx = 16.0 + capoo.moveMix * 1.4;
         const ry = 11.4;
-        const earDroop = capoo.sleepMix * 0.45 + capoo.tiredMix * 0.75 + capoo.runMix * 0.22;
+        const earDroop = capoo.sleepMix * 0.45 + capoo.tiredMix * 0.72 + capoo.runMix * 0.24 + (capoo.expr === "pout" ? 0.16 : 0);
 
-        // 3a. 2 TAI TAM GIÁC BẦU PHÍA SAU ĐẦU (vẽ trước thân -> đường vòm đầu đè lên cực chuẩn ảnh mẫu!)
-        drawCapooEar(ctx, -1, rx, ry, earDroop);
-        drawCapooEar(ctx, 1, rx, ry, earDroop);
-
-        // 3b. 4 CHÂN NGẮN TŨN MẬP MẠP (vẽ trước thân để ăn liền vào đáy người)
-        const legVis = Math.max(0, 1 - capoo.sleepMix * 1.25 - capoo.tiredMix * 1.0);
-        if (legVis > 0.06) {
-          const swingA = Math.sin(capoo.gait) * (3.8 + capoo.runMix * 2.8) * capoo.moveMix;
-          const liftA = Math.max(0, -Math.cos(capoo.gait)) * (2.4 + capoo.runMix * 1.6) * capoo.moveMix;
-          const swingB = Math.sin(capoo.gait + Math.PI) * (3.8 + capoo.runMix * 2.8) * capoo.moveMix;
-          const liftB = Math.max(0, -Math.cos(capoo.gait + Math.PI)) * (2.4 + capoo.runMix * 1.6) * capoo.moveMix;
-
-          const drawStubLeg = (lx, ly, darker) => {
-            ctx.fillStyle = darker ? CAPOO_PAL.blueDeep : CAPOO_PAL.blue;
-            ctx.strokeStyle = CAPOO_PAL.ink;
-            ctx.lineWidth = 2.0;
-            ctx.beginPath();
-            ctx.ellipse(lx, ly, 2.3, 3.1 * legVis, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-          };
-          drawStubLeg(-6.2 + swingB * 0.8, 0.2 - liftB, true);
-          drawStubLeg(6.2 + swingA * 0.8, 0.2 - liftA, true);
-          drawStubLeg(-9.8 + swingA, 0.5 - liftA, false);
-          drawStubLeg(9.8 + swingB, 0.5 - liftB, false);
+        // Tính 4 cặp mấu chân dính liền sát nhau tạo chuỗi sóng lăn tăn cực cute khi di chuyển!
+        const legCount = 4;
+        const legNodes = [];
+        for (let k = 0; k < legCount; k++) {
+          const frac = (k / (legCount - 1)) * 2 - 1; // -1, -0.33, 0.33, 1
+          const baseX = frac * (rx * 0.62);
+          const phase = capoo.gait + k * 1.45;
+          const swingX = Math.sin(phase) * (2.8 + capoo.runMix * 2.2) * capoo.moveMix;
+          const liftY = Math.max(0, -Math.cos(phase)) * (2.2 + capoo.runMix * 1.4) * capoo.moveMix;
+          legNodes.push({
+            x: baseX + swingX,
+            y: 0.4 - liftY,
+            rw: 2.55,
+            rh: 3.1,
+            rot: Math.sin(phase) * 0.26 * capoo.moveMix,
+          });
         }
 
-        // 3c. THÂN MOCHI XANH + BỤNG TRẮNG TRÒN MŨM MĨM
+        const showArms =
+          (capoo.expr === "love" || capoo.expr === "gasp" || capoo.expr === "happy") &&
+          capoo.tiredMix < 0.25 &&
+          capoo.sleepMix < 0.25 &&
+          capoo.moveMix < 0.3;
+        const armWave = Math.sin(capoo.clock * 18) * 1.9;
+        const geom = { rx, ry, earDroop, legVis, showArms, armWave, legNodes };
+
+        // ===== PASS 1: VIỀN NGOÀI LIỀN MẠCH TOÀN KHỐI (TAI + THÂN + CHÂN + TAY) =====
+        paintCapooUnifiedSilhouette(ctx, geom, "outline", pal, outlineCol);
+
+        // ===== PASS 2: TÔ MÀU LÔNG ĐÈ SẠCH ĐƯỜNG GIAO CẮT -> CHÂN & TAI DÍNH LIỀN 100%! =====
+        paintCapooUnifiedSilhouette(ctx, geom, "fill", pal, outlineCol);
+
+        // ===== PASS 3: HOẠ TIẾT BỤNG TRẮNG & 3 SỌC LƯNG CAPOO (CLIP TRONG THÂN) =====
         ctx.save();
-        traceCapooBun(ctx, rx, ry);
-        ctx.fillStyle = CAPOO_PAL.blue;
-        ctx.fill();
+        traceCapooLoaf(ctx, rx, ry);
         ctx.clip();
-        // Bụng trắng bầu y chang ảnh mẫu!
-        ctx.fillStyle = CAPOO_PAL.white;
-        const bellyShiftX = capoo.dir * capoo.moveMix * 2.4;
+
+        // Bụng trắng bầu múp dưới đáy thân
+        const faceShift = capoo.faceDir * 3.8;
+        ctx.fillStyle = pal.belly;
         ctx.beginPath();
-        ctx.ellipse(bellyShiftX, 1.4, rx * 0.52, ry * 0.78, 0, 0, Math.PI * 2);
+        ctx.ellipse(faceShift * 0.65, 1.8, rx * 0.5, ry * 0.72, 0, 0, Math.PI * 2);
         ctx.fill();
+
+        // 3 sọc nhỏ đặc trưng trên lưng/sườn Capoo (trượt ngược hướng mặt cực tự nhiên!)
+        const stripeSide = capoo.faceDir >= -0.05 ? -1 : 1;
+        ctx.strokeStyle = pal.stripe;
+        ctx.lineWidth = 2.0;
+        ctx.lineCap = "round";
+        for (let st = 0; st < 3; st++) {
+          const sx = stripeSide * (rx * 0.42 + st * 3.1) - faceShift * 0.45;
+          const sy = -ry * 1.82 + st * 1.3;
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.quadraticCurveTo(sx + stripeSide * 1.2, sy + 2.6, sx - stripeSide * 0.6, sy + 4.4);
+          ctx.stroke();
+        }
         ctx.restore();
 
-        // Viền thân đậm nét bo mượt
-        traceCapooBun(ctx, rx, ry);
-        ctx.strokeStyle = CAPOO_PAL.ink;
-        ctx.lineWidth = 2.15;
-        ctx.stroke();
-
-        // 3d. ĐÔI TAY NHỎ GIƠ LÊN CẦM TIM HỒNG KHI VUI / CHẠM VÀO (y hệt ảnh mẫu!)
-        if (capoo.cheerTimer > 0 && capoo.tiredMix < 0.3 && capoo.sleepMix < 0.3) {
-          const wave = Math.sin(capoo.clock * 22) * 2.0;
-          ctx.fillStyle = CAPOO_PAL.blue;
-          ctx.strokeStyle = CAPOO_PAL.ink;
-          ctx.lineWidth = 2.0;
-          // Tay trái
-          ctx.beginPath();
-          ctx.moveTo(-rx * 0.88, -ry * 0.52);
-          ctx.quadraticCurveTo(-rx * 1.28, -ry * 0.88 + wave, -rx * 1.08, -ry * 1.18 + wave);
-          ctx.quadraticCurveTo(-rx * 0.86, -ry * 1.02 + wave, -rx * 0.78, -ry * 0.68);
-          ctx.fill();
-          ctx.stroke();
-          // Tay phải
-          ctx.beginPath();
-          ctx.moveTo(rx * 0.88, -ry * 0.52);
-          ctx.quadraticCurveTo(rx * 1.28, -ry * 0.88 - wave, rx * 1.08, -ry * 1.18 - wave);
-          ctx.quadraticCurveTo(rx * 0.86, -ry * 1.02 - wave, rx * 0.78, -ry * 0.68);
-          ctx.fill();
-          ctx.stroke();
-          // 2 trái tim nhỏ lắc lư trên tay!
-          const ha = Math.min(1, capoo.cheerTimer * 1.6);
-          drawCapooHeart(ctx, -rx * 1.2, -ry * 1.32 + wave, 3.8, ha);
-          drawCapooHeart(ctx, rx * 1.2, -ry * 1.32 - wave, 3.8, ha);
+        // 2 trái tim nhỏ trên tay khi ở biểu cảm tung tim ("love")!
+        if (showArms && capoo.expr === "love") {
+          const ha = Math.min(1, capoo.exprTimer * 1.5);
+          drawCapooHeart(ctx, -rx * 1.18, -ry * 1.28 + armWave, 3.6, outlineCol, ha);
+          drawCapooHeart(ctx, rx * 1.18, -ry * 1.28 - armWave, 3.6, outlineCol, ha);
         }
 
-        // 3e. KHUÔN MẶT CAPOO SIÊU CUTE!
-        const faceX = capoo.dir * capoo.moveMix * 3.6;
-        const faceY = -ry * 1.22 + capoo.sleepMix * 2.0 + capoo.tiredMix * 2.4;
-
+        // ===== PASS 4: KHUÔN MẶT CAPOO SIÊU BIỂU CẢM =====
+        const faceY = -ry * 1.16 + capoo.sleepMix * 2.1 + capoo.tiredMix * 2.4;
         ctx.save();
-        ctx.translate(faceX, faceY);
-        ctx.strokeStyle = CAPOO_PAL.ink;
-        ctx.fillStyle = CAPOO_PAL.ink;
+        ctx.translate(faceShift, faceY);
+        ctx.strokeStyle = pal.mouthLine;
+        ctx.fillStyle = pal.eye;
 
-        // Má hồng nhẹ
+        // Má hồng ửng cute (nổi bật hơn khi vui / phồng má / chạy nhanh)
         if (capoo.sleepMix < 0.7) {
-          ctx.fillStyle = CAPOO_PAL.cheek;
-          ctx.globalAlpha = 0.4 + capoo.runMix * 0.25 + (capoo.cheerTimer > 0 ? 0.25 : 0);
+          ctx.fillStyle = pal.cheek;
+          const blushA =
+            capoo.expr === "pout" || capoo.expr === "love" || capoo.expr === "sparkle" || capoo.expr === "chew"
+              ? 0.72
+              : 0.42 + capoo.runMix * 0.24;
+          ctx.globalAlpha = blushA;
+          const cheekR = capoo.expr === "chew" ? 3.0 + Math.abs(Math.sin(capoo.clock * 14)) * 0.8 : 2.35;
           ctx.beginPath();
-          ctx.ellipse(-7.8, 2.3, 2.2, 1.25, 0, 0, Math.PI * 2);
-          ctx.ellipse(7.8, 2.3, 2.2, 1.25, 0, 0, Math.PI * 2);
+          ctx.ellipse(-8.6, 2.2, cheekR, 1.45, 0, 0, Math.PI * 2);
+          ctx.ellipse(8.6, 2.2, cheekR, 1.45, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.globalAlpha = 1;
         }
 
+        // Helper vẽ 1 mắt tròn to long lanh đặc trưng Capoo (tự xử lý riêng cho Mèo Đen siêu dễ thương!)
+        const drawCapooEye = (ex, ey, rX = 2.25, rY = 2.55, sparkly = false) => {
+          if (pal.isBlack) {
+            // Mèo đen: tròng trắng sáng + con ngươi đen long lanh -> cực cute trên cả nền tối & sáng!
+            ctx.fillStyle = "#FFFDF7";
+            ctx.beginPath();
+            ctx.ellipse(ex, ey, rX * 1.05, rY * 1.05, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#1D1F28";
+            ctx.beginPath();
+            ctx.ellipse(ex + capoo.faceDir * 0.35, ey, rX * 0.65, rY * 0.68, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#FFFFFF";
+            ctx.beginPath();
+            ctx.arc(ex - rX * 0.35, ey - rY * 0.35, sparkly ? 1.05 : 0.72, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillStyle = pal.eye;
+            ctx.beginPath();
+            ctx.ellipse(ex, ey, rX, rY, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Đốm sáng long lanh trong mắt
+            ctx.fillStyle = pal.eyeShine;
+            ctx.beginPath();
+            ctx.arc(ex - rX * 0.32, ey - rY * 0.34, sparkly ? 1.1 : 0.72, 0, Math.PI * 2);
+            ctx.fill();
+            if (sparkly) {
+              ctx.beginPath();
+              ctx.arc(ex + rX * 0.3, ey + rY * 0.32, 0.58, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        };
+
+        // Helper vẽ miệng chữ w (ω) đặc trưng Capoo
+        const drawCapooMouthW = (my = 0.7, spread = 3.2) => {
+          ctx.strokeStyle = pal.mouthLine;
+          ctx.lineWidth = 1.65;
+          ctx.beginPath();
+          ctx.moveTo(-spread, my);
+          ctx.quadraticCurveTo(-spread * 0.5, my + 2.3, 0, my + 0.45);
+          ctx.quadraticCurveTo(spread * 0.5, my + 2.3, spread, my);
+          ctx.stroke();
+        };
+
         if (capoo.sleepMix > 0.55) {
-          // NGỦ: mắt nhắm bình yên ︶ ︶ + miệng :3 nhỏ
+          // NGỦ: mắt nhắm ︶ ︶ + miệng :3 nhỏ + bong bóng ngủ trong suốt phồng xẹp ở mũi!
+          ctx.strokeStyle = pal.mouthLine;
           ctx.lineWidth = 1.75;
           ctx.beginPath();
-          ctx.arc(-5.4, 0.6, 2.2, 0.15 * Math.PI, 0.85 * Math.PI);
+          ctx.arc(-6.0, 0.6, 2.3, 0.15 * Math.PI, 0.85 * Math.PI);
           ctx.stroke();
           ctx.beginPath();
-          ctx.arc(5.4, 0.6, 2.2, 0.15 * Math.PI, 0.85 * Math.PI);
+          ctx.arc(6.0, 0.6, 2.3, 0.15 * Math.PI, 0.85 * Math.PI);
           ctx.stroke();
+          drawCapooMouthW(1.2, 2.3);
 
-          ctx.lineWidth = 1.45;
+          // Bong bóng ngủ Capoo phồng xẹp theo nhịp thở!
+          const bubR = 2.0 + (Math.sin(capoo.clock * 2.4) * 0.5 + 0.5) * 2.2;
+          ctx.fillStyle = "rgba(180, 232, 255, 0.55)";
+          ctx.strokeStyle = pal.mouthLine;
+          ctx.lineWidth = 1.05;
           ctx.beginPath();
-          ctx.arc(-1.3, 1.7, 1.3, 0.05 * Math.PI, 0.92 * Math.PI);
+          ctx.arc(4.2, 1.4, bubR, 0, Math.PI * 2);
+          ctx.fill();
           ctx.stroke();
+          ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
           ctx.beginPath();
-          ctx.arc(1.3, 1.7, 1.3, 0.08 * Math.PI, 0.95 * Math.PI);
-          ctx.stroke();
+          ctx.arc(4.2 - bubR * 0.3, 1.4 - bubR * 0.3, bubR * 0.28, 0, Math.PI * 2);
+          ctx.fill();
         } else if (capoo.tiredMix > 0.5) {
           // MỆT BẸP DÍ: mắt x _ x + lưỡi hồng thè ra thở hổn hển
+          ctx.strokeStyle = pal.mouthLine;
           ctx.lineWidth = 1.75;
           ctx.beginPath();
-          ctx.moveTo(-7.2, -1.6);
-          ctx.lineTo(-4.0, 1.4);
-          ctx.moveTo(-4.0, -1.6);
-          ctx.lineTo(-7.2, 1.4);
-          ctx.moveTo(4.0, -1.6);
-          ctx.lineTo(7.2, 1.4);
-          ctx.moveTo(7.2, -1.6);
-          ctx.lineTo(4.0, 1.4);
+          ctx.moveTo(-7.8, -1.6);
+          ctx.lineTo(-4.4, 1.5);
+          ctx.moveTo(-4.4, -1.6);
+          ctx.lineTo(-7.8, 1.5);
+          ctx.moveTo(4.4, -1.6);
+          ctx.lineTo(7.8, 1.5);
+          ctx.moveTo(7.8, -1.6);
+          ctx.lineTo(4.4, 1.5);
           ctx.stroke();
 
           const pant = Math.abs(Math.sin(capoo.clock * 12));
-          ctx.fillStyle = CAPOO_PAL.pink;
-          ctx.strokeStyle = CAPOO_PAL.ink;
-          ctx.lineWidth = 1.55;
+          ctx.fillStyle = pal.pink;
+          ctx.strokeStyle = pal.mouthLine;
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.ellipse(0, 3.0 + pant * 1.1, 2.6, 2.4 + pant * 1.2, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, 3.0 + pant * 1.0, 2.6, 2.3 + pant * 1.1, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
-        } else if (capoo.runMix > 0.45 || capoo.cheerTimer > 0) {
-          // CHẠY NHANH / VUI VẺ: > < + miệng mở chữ w hồng y chang ảnh mẫu!
+        } else if (capoo.runMix > 0.45 || capoo.expr === "love") {
+          // CHẠY NHANH HOẶC TUNG TIM: > ω < + miệng hồng mở cười tươi!
+          ctx.strokeStyle = pal.mouthLine;
           ctx.lineWidth = 1.9;
           ctx.beginPath();
-          ctx.moveTo(-7.8, -1.9);
-          ctx.lineTo(-4.8, -0.1);
-          ctx.lineTo(-7.8, 1.7);
+          ctx.moveTo(-8.4, -2.0);
+          ctx.lineTo(-5.2, -0.1);
+          ctx.lineTo(-8.4, 1.8);
+          ctx.moveTo(8.4, -2.0);
+          ctx.lineTo(5.2, -0.1);
+          ctx.lineTo(8.4, 1.8);
           ctx.stroke();
 
+          ctx.fillStyle = pal.pink;
+          ctx.strokeStyle = pal.mouthLine;
+          ctx.lineWidth = 1.55;
           ctx.beginPath();
-          ctx.moveTo(7.8, -1.9);
-          ctx.lineTo(4.8, -0.1);
-          ctx.lineTo(7.8, 1.7);
-          ctx.stroke();
-
-          ctx.fillStyle = CAPOO_PAL.pink;
-          ctx.strokeStyle = CAPOO_PAL.ink;
-          ctx.lineWidth = 1.65;
-          ctx.beginPath();
-          ctx.moveTo(-3.5, 0.1);
-          ctx.quadraticCurveTo(-1.7, 2.3, 0, 0.3);
-          ctx.quadraticCurveTo(1.7, 2.3, 3.5, 0.1);
-          ctx.bezierCurveTo(3.3, 5.4, -3.3, 5.4, -3.5, 0.1);
+          ctx.moveTo(-3.4, 0.2);
+          ctx.quadraticCurveTo(-1.7, 2.2, 0, 0.35);
+          ctx.quadraticCurveTo(1.7, 2.2, 3.4, 0.2);
+          ctx.bezierCurveTo(3.2, 5.2, -3.2, 5.2, -3.4, 0.2);
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
+        } else if (capoo.expr === "happy") {
+          // VUI VẺ: mắt cong ^ ^ + miệng cười hồng
+          ctx.strokeStyle = pal.mouthLine;
+          ctx.lineWidth = 1.85;
+          ctx.beginPath();
+          ctx.arc(-6.4, 1.0, 2.3, 1.15 * Math.PI, 1.85 * Math.PI);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(6.4, 1.0, 2.3, 1.15 * Math.PI, 1.85 * Math.PI);
+          ctx.stroke();
+          drawCapooMouthW(0.6, 3.1);
+        } else if (capoo.expr === "sparkle") {
+          // LONG LANH LẤP LÁNH: mắt to tròn cực long lanh!
+          drawCapooEye(-6.4, -0.3, 2.7, 3.0, true);
+          drawCapooEye(6.4, -0.3, 2.7, 3.0, true);
+          drawCapooMouthW(0.8, 3.0);
+        } else if (capoo.expr === "question") {
+          // NGƠ NGÁC ?: 1 mắt to 1 mắt nhỏ + dấu ? lắc lư trên đầu
+          drawCapooEye(-6.4, -0.3, 2.45, 2.75, false);
+          drawCapooEye(6.4, -0.1, 1.85, 2.05, false);
+          drawCapooMouthW(0.9, 2.6);
+        } else if (capoo.expr === "blep") {
+          // THÈ LƯỠI TRÊU: nháy 1 mắt > + 1 mắt tròn + lưỡi hồng nhỏ thè sang bên!
+          ctx.strokeStyle = pal.mouthLine;
+          ctx.lineWidth = 1.85;
+          ctx.beginPath();
+          ctx.moveTo(-8.2, -1.6);
+          ctx.lineTo(-5.2, -0.1);
+          ctx.lineTo(-8.2, 1.4);
+          ctx.stroke();
+          drawCapooEye(6.4, -0.2, 2.25, 2.55, false);
+          drawCapooMouthW(0.5, 3.1);
+          // Cái lưỡi hồng nhỏ thò ra lắc nhẹ!
+          const lick = Math.sin(capoo.clock * 14) * 0.45;
+          ctx.fillStyle = pal.pink;
+          ctx.strokeStyle = pal.mouthLine;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.ellipse(2.2 + lick, 2.8, 1.9, 2.2, 0.25, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        } else if (capoo.expr === "pout") {
+          // PHỒNG MÁ DỖI / CÁU CUTE: mắt liếc + chân mày nhíu + miệng chu nhỏ ^
+          drawCapooEye(-6.2, 0.0, 2.1, 2.3, false);
+          drawCapooEye(6.2, 0.0, 2.1, 2.3, false);
+          ctx.strokeStyle = pal.mouthLine;
+          ctx.lineWidth = 1.75;
+          ctx.beginPath();
+          ctx.moveTo(-8.6, -2.8);
+          ctx.lineTo(-4.4, -1.5);
+          ctx.moveTo(8.6, -2.8);
+          ctx.lineTo(4.4, -1.5);
+          // Miệng dỗi cong ngược nhỏ xíu
+          ctx.moveTo(-2.4, 2.2);
+          ctx.quadraticCurveTo(0, 0.3, 2.4, 2.2);
+          ctx.stroke();
+        } else if (capoo.expr === "gasp") {
+          // HÓNG HỚT / BẤT NGỜ: mắt tròn xoe + miệng hồng mở to chữ D
+          drawCapooEye(-6.6, -0.4, 2.3, 2.65, true);
+          drawCapooEye(6.6, -0.4, 2.3, 2.65, true);
+          ctx.fillStyle = pal.pink;
+          ctx.strokeStyle = pal.mouthLine;
+          ctx.lineWidth = 1.55;
+          ctx.beginPath();
+          ctx.ellipse(0, 2.2, 2.7, 3.3, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        } else if (capoo.expr === "chew") {
+          // NHAI NHÓP NHÉP PHỒNG MÁ (sticker Capoo nhai siêu dễ thương!)
+          drawCapooEye(-6.8, -0.3, 2.2, 2.4, false);
+          drawCapooEye(6.8, -0.3, 2.2, 2.4, false);
+          const chY = Math.sin(capoo.clock * 14) * 0.7;
+          drawCapooMouthW(0.7 + chY, 2.8);
         } else {
-          // ĐI BỘ / ĐỨNG NGHỈ: mắt tròn đen long lanh + miệng chữ w nhỏ cute
+          // MẶC ĐỊNH (ĐI BỘ / ĐỨNG NGHỈ): mắt tròn to long lanh đặt xa nhau + miệng chữ ω siêu Capoo!
           if (capoo.blinkDur > 0) {
-            ctx.lineWidth = 1.75;
+            ctx.strokeStyle = pal.mouthLine;
+            ctx.lineWidth = 1.8;
             ctx.beginPath();
-            ctx.moveTo(-7.2, 0);
-            ctx.lineTo(-4.4, 0);
-            ctx.moveTo(4.4, 0);
-            ctx.lineTo(7.2, 0);
+            ctx.moveTo(-8.2, 0);
+            ctx.lineTo(-4.6, 0);
+            ctx.moveTo(4.6, 0);
+            ctx.lineTo(8.2, 0);
             ctx.stroke();
           } else {
-            ctx.fillStyle = CAPOO_PAL.ink;
-            ctx.beginPath();
-            ctx.arc(-5.8, -0.2, 1.9, 0, Math.PI * 2);
-            ctx.arc(5.8, -0.2, 1.9, 0, Math.PI * 2);
-            ctx.fill();
+            drawCapooEye(-6.4, -0.25, 2.25, 2.55, false);
+            drawCapooEye(6.4, -0.25, 2.25, 2.55, false);
           }
-          ctx.lineWidth = 1.65;
-          ctx.beginPath();
-          ctx.moveTo(-3.2, 0.3);
-          ctx.quadraticCurveTo(-1.6, 2.5, 0, 0.6);
-          ctx.quadraticCurveTo(1.6, 2.5, 3.2, 0.3);
-          ctx.stroke();
+          drawCapooMouthW(0.7, 3.15);
         }
 
         ctx.restore(); // end face
+
+        // Biểu tượng gắn ngay trên đầu cho ? và 💢
+        if (capoo.expr === "question" && capoo.exprTimer > 0) {
+          ctx.save();
+          ctx.translate(0, -ry * 2.55 + Math.sin(capoo.clock * 9) * 1.4);
+          ctx.fillStyle = "#FF5A67";
+          ctx.font = '700 12px "Be Vietnam Pro", sans-serif';
+          ctx.textAlign = "center";
+          ctx.fillText("?", 0, 0);
+          ctx.restore();
+        } else if (capoo.expr === "pout" && capoo.exprTimer > 0) {
+          const pulse = 1 + Math.sin(capoo.clock * 16) * 0.12;
+          drawAngerMark(ctx, rx * 0.95, -ry * 1.95, 4.4 * pulse, Math.min(1, capoo.exprTimer * 2));
+        }
+
         ctx.restore(); // end capoo transform
 
-        // 4. Particles phía trước (tim hồng có viền, mồ hôi, z Z z)
+        // 4. Particles phía trước (tim hồng, sao vàng, nốt nhạc, ?!, mồ hôi, z Z z)
         capoo.particles.forEach((p) => {
           if (p.kind === "dust") return;
           const a = Math.max(0, 1 - p.age / p.life);
           if (p.kind === "heart") {
-            drawCapooHeart(ctx, p.x, p.y, p.size * (0.85 + (1 - a) * 0.25), a);
+            drawCapooHeart(ctx, p.x, p.y, p.size * (0.85 + (1 - a) * 0.25), outlineCol, a);
+          } else if (p.kind === "star") {
+            drawCapooSparkle(ctx, p.x, p.y, p.size * (0.7 + Math.sin(p.age * 14) * 0.25), a);
           } else if (p.kind === "sweat") {
             ctx.save();
             ctx.globalAlpha = a;
-            ctx.fillStyle = CAPOO_PAL.sweat;
-            ctx.strokeStyle = CAPOO_PAL.ink;
+            ctx.fillStyle = "#9BE5FF";
+            ctx.strokeStyle = outlineCol;
             ctx.lineWidth = 1.1;
             ctx.beginPath();
             ctx.moveTo(p.x, p.y - p.size * 1.3);
@@ -11463,6 +11913,14 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
             ctx.quadraticCurveTo(p.x - p.size, p.y, p.x, p.y - p.size * 1.3);
             ctx.fill();
             ctx.stroke();
+            ctx.restore();
+          } else if (p.kind === "note" || p.kind === "exclaim") {
+            ctx.save();
+            ctx.globalAlpha = a;
+            ctx.fillStyle = p.color || "#FF7B89";
+            ctx.font = '700 11px "Be Vietnam Pro", sans-serif';
+            ctx.textAlign = "center";
+            ctx.fillText(p.text || "♪", p.x, p.y);
             ctx.restore();
           } else if (p.kind === "zzz") {
             ctx.save();
@@ -11485,7 +11943,6 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
           lastCatFrame = ts;
           return;
         }
-        // Chỉ cần vẽ khi đang ở tab Tủ sách (tiết kiệm pin tối đa)
         const booksView = document.getElementById("view-books");
         if (booksView && !booksView.classList.contains("active")) {
           lastCatFrame = ts;
