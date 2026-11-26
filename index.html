@@ -1205,6 +1205,66 @@
       background: var(--surface-2);
     }
 
+    .sec-thumb {
+      width: 44px;
+      height: 60px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      overflow: hidden;
+      flex-shrink: 0;
+      cursor: zoom-in;
+      padding: 0;
+      display: block;
+    }
+
+    .sec-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .quick-box {
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 10px 11px;
+    }
+
+    .quick-box-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .quick-box-title {
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .bulk-textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 9px 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 13.5px;
+      line-height: 1.55;
+      outline: none;
+      resize: vertical;
+    }
+
+    .bulk-textarea:focus {
+      border-color: var(--ink);
+    }
+
     .section-card-title {
       font-size: 13.5px;
       font-weight: 600;
@@ -1877,6 +1937,13 @@
         budgetLimit: 1000000,
         newsUrl: "./news.json",
         lastBackupAt: "",
+        lastEntry: {
+          publisher: "Kim Đồng",
+          category: "Manga",
+          sectionName: "Bản thường",
+          coverPrice: 35000,
+          discount: 15,
+        },
         series: [],     // { id, title, publisher, category, status, aliases, note, cover, createdAt, sections: [{ id, name, note, volumes: [...] }] }
         giftGroups: [], // { id, title, publisher, cover, note, createdAt, gifts: [{ id, name, quantity, price, source, status, date, image, note }] }
         pinned: [],     // { id, title, publisher, type, channel, releaseDate, estPrice, gift, url, manual }
@@ -2023,6 +2090,7 @@
         (obj.series || []).forEach((s) => {
           s.cover = packRef(s.cover);
           (s.sections || []).forEach((sec) => {
+            sec.image = packRef(sec.image);
             (sec.volumes || []).forEach((v) => {
               v.image = packRef(v.image);
             });
@@ -2050,6 +2118,7 @@
               cover: "",
               sections: (s.sections || []).map((sec) => ({
                 ...sec,
+                image: "",
                 volumes: (sec.volumes || []).map((v) => ({ ...v, image: "" })),
               })),
             })),
@@ -2093,6 +2162,7 @@
           giftGroups: Array.isArray(rawObj?.giftGroups) ? rawObj.giftGroups : [],
           pinned: Array.isArray(rawObj?.pinned) ? rawObj.pinned : [],
           images: rawObj?.images && typeof rawObj.images === "object" ? { ...rawObj.images } : {},
+          lastEntry: { ...DEFAULT_STATE.lastEntry, ...(rawObj?.lastEntry || {}) },
         };
 
         const edNameMap = {
@@ -2126,6 +2196,7 @@
             copy.sections = [...byEd.entries()].map(([name, vols]) => ({
               id: uid(),
               name,
+              image: "",
               note: "",
               volumes: vols,
             }));
@@ -2133,6 +2204,7 @@
             copy.sections = copy.sections.map((sec) => ({
               id: sec.id || uid(),
               name: sec.name || "Mục chưa đặt tên",
+              image: sec.image || "",
               note: sec.note || "",
               volumes: Array.isArray(sec.volumes)
                 ? sec.volumes.map((v) => ({
@@ -2704,33 +2776,208 @@
         });
       }
 
-      function openSeriesForm(existingId = null) {
+      // Helper đọc từng dòng khi Nhập nhanh nhiều bộ từ danh sách
+      // Hỗ trợ linh hoạt:
+      //   "Chainsaw Man"
+      //   "Chainsaw Man - 16 tập" / "Chainsaw Man (1-16)"
+      //   "Chainsaw Man | 1-16 | 45000"
+      //   "Chainsaw Man | Kim Đồng | 1-16 | 45000 | 15"
+      function parseBatchSeriesLines(rawText, defaults) {
+        const lines = (rawText || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+        const pubMap = {
+          tre: "Trẻ",
+          "nxb tre": "Trẻ",
+          kim: "Kim Đồng",
+          "kim dong": "Kim Đồng",
+          "nxb kim dong": "Kim Đồng",
+          ipm: "IPM",
+          "nha nam": "Nhã Nam",
+          nn: "Nhã Nam",
+        };
+        const parsePub = (str) => {
+          const k = normVN(str);
+          return pubMap[k] || null;
+        };
+        const parseRange = (str) => {
+          const s = (str || "").trim();
+          let m = s.match(/^(\d+)\s*[-–~]\s*(\d+)$/);
+          if (m) return { from: Math.max(1, Number(m[1])), to: Math.max(1, Number(m[2])) };
+          m = s.match(/^(\d+)\s*(?:tập|tap|q|quyển|quyen|vol)?$/i);
+          if (m && Number(m[1]) >= 1 && Number(m[1]) <= 300) {
+            return { from: 1, to: Number(m[1]) };
+          }
+          return null;
+        };
+
+        const parsed = [];
+        for (const line of lines) {
+          let title = line;
+          let publisher = defaults.publisher;
+          let from = defaults.defaultFrom;
+          let to = defaults.defaultTo;
+          let coverPrice = defaults.coverPrice;
+          let discount = defaults.discount;
+
+          if (line.includes("|")) {
+            const parts = line.split("|").map((p) => p.trim()).filter(Boolean);
+            title = parts[0] || "";
+            for (let i = 1; i < parts.length; i++) {
+              const p = parts[i];
+              const maybePub = parsePub(p);
+              if (maybePub) {
+                publisher = maybePub;
+                continue;
+              }
+              if (/^\d{1,2}\s*%$/.test(p)) {
+                discount = Math.min(100, Math.max(0, Number(p.replace("%", "").trim())));
+                continue;
+              }
+              const rng = parseRange(p);
+              if (rng && (p.includes("-") || p.includes("–") || /tập|tap|q|vol/i.test(p) || Number(p) <= 300)) {
+                if (Number(p) <= 300 && i >= 3 && from && to) {
+                  // Nếu đã có range trước đó và số nhỏ <= 100 ở cuối -> hiểu là % chiết khấu
+                  if (Number(p) <= 100) {
+                    discount = Number(p);
+                    continue;
+                  }
+                }
+                from = rng.from;
+                to = Math.max(rng.from, rng.to);
+                continue;
+              }
+              const digits = Number(p.replace(/[^\d]/g, ""));
+              if (digits >= 1000) {
+                coverPrice = digits;
+              } else if (digits > 0 && digits <= 100 && p.match(/^\d+$/)) {
+                discount = digits;
+              }
+            }
+          } else {
+            // Cú pháp tự nhiên không cần dấu |:
+            // "Chainsaw Man (1-16)", "Chainsaw Man - 16 tập", "Chainsaw Man 1-16"
+            let m = line.match(/^(.*?)\s*[\(\[]\s*(\d+)\s*[-–~]\s*(\d+)\s*[\)\]]\s*$/);
+            if (m) {
+              title = m[1].trim();
+              from = Math.max(1, Number(m[2]));
+              to = Math.max(from, Number(m[3]));
+            } else {
+              m = line.match(/^(.*?)\s*[-–:,]?\s*(\d+)\s*[-–~]\s*(\d+)\s*(?:tập|tap|vol)?$/i);
+              if (m && m[1].trim().length >= 2) {
+                title = m[1].trim();
+                from = Math.max(1, Number(m[2]));
+                to = Math.max(from, Number(m[3]));
+              } else {
+                m = line.match(/^(.*?)\s*[-–:,(\s]+(\d+)\s*(?:tập|tap|quyển|quyen)\)?$/i);
+                if (m && m[1].trim().length >= 2) {
+                  title = m[1].trim();
+                  from = 1;
+                  to = Math.max(1, Number(m[2]));
+                }
+              }
+            }
+          }
+
+          if (!title) continue;
+          const volCount = from && to && to >= from ? Math.min(150, to - from + 1) : 0;
+          const paidPerVol = Math.round(coverPrice * (1 - discount / 100));
+          parsed.push({
+            title,
+            publisher,
+            from: volCount ? from : 0,
+            to: volCount ? from + volCount - 1 : 0,
+            volCount,
+            coverPrice,
+            discount,
+            paidPerVol,
+            totalPaid: paidPerVol * volCount,
+          });
+        }
+        return parsed;
+      }
+
+      function openSeriesForm(existingId = null, initialMode = "single") {
         const s = existingId ? state.series.find((x) => x.id === existingId) : null;
         let currentCover = resolveImg(s?.cover || "");
+        const last = { ...DEFAULT_STATE.lastEntry, ...(state.lastEntry || {}) };
+        const defCat = s ? s.category : filters.bookGroup === "sach" ? "Sách" : last.category || "Manga";
+        const defPub = s ? s.publisher : last.publisher || "Kim Đồng";
+        const defSecName = defCat === "Sách" ? "Sách chữ" : last.sectionName || "Bản thường";
+        const isCreate = !s;
 
-        const html = `
-          <form id="seriesForm" class="form-grid">
+        const modeSwitchHtml = isCreate
+          ? `<div class="scope-switch" id="addSeriesModeSwitch" style="margin-bottom:12px;">
+               <button type="button" class="${initialMode === "single" ? "active" : ""}" data-smode="single">Nhập 1 bộ (đủ tập)</button>
+               <button type="button" class="${initialMode === "batch" ? "active" : ""}" data-smode="batch">Nhập nhiều bộ nhanh</button>
+             </div>`
+          : "";
+
+        const quickVolBlockHtml = isCreate
+          ? `<div class="quick-box">
+               <div class="quick-box-head">
+                 <span class="quick-box-title">Nhập luôn Mục & Tập (tuỳ chọn)</span>
+                 <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; margin:0; cursor:pointer;">
+                   <input type="checkbox" id="quickVolEnable" checked style="width:15px; height:15px;" />
+                   <span>Thêm tập ngay</span>
+                 </label>
+               </div>
+               <div id="quickVolFields" class="form-grid" style="gap:9px;">
+                 <div class="field">
+                   <label>Tên mục</label>
+                   <input name="quickSecName" id="quickSecNameInput" value="${esc(defSecName)}" placeholder="VD: Bản thường, Boxset, Limited..." />
+                   <div class="preset-chips" id="quickSecPresets">
+                     ${["Bản thường", "Boxset", "Limited", "Tái bản", "Bìa cứng"]
+                       .map((p) => `<button type="button" class="preset-chip" data-qsec="${esc(p)}">${esc(p)}</button>`)
+                       .join("")}
+                   </div>
+                 </div>
+                 <div class="form-row-2">
+                   <div class="field">
+                     <label>Từ tập</label>
+                     <input name="quickFrom" id="quickFromIn" type="number" min="1" value="1" />
+                   </div>
+                   <div class="field">
+                     <label>Đến tập</label>
+                     <input name="quickTo" id="quickToIn" type="number" min="1" value="1" />
+                   </div>
+                 </div>
+                 <div class="form-row-2">
+                   <div class="field">
+                     <label id="quickCoverPriceLabel">Giá bìa / tập (VNĐ)</label>
+                     <input name="quickCoverPrice" id="quickCoverPriceIn" type="number" min="0" value="${last.coverPrice ?? 35000}" />
+                   </div>
+                   <div class="field">
+                     <label>Chiết khấu (%)</label>
+                     <input name="quickDiscount" id="quickDiscountIn" type="number" min="0" max="100" value="${last.discount ?? 15}" />
+                   </div>
+                 </div>
+                 <div class="ck-row" id="quickCkRow">
+                   ${CK_PRESETS.map((pct) => `<button type="button" class="ck-btn mono" data-sck="${pct}">-${pct}%</button>`).join("")}
+                 </div>
+                 <div class="small-muted mono" id="quickVolSummary"></div>
+               </div>
+             </div>`
+          : "";
+
+        const singleFormHtml = `
+          <form id="seriesForm" class="form-grid" style="${initialMode === "batch" && isCreate ? "display:none;" : ""}">
             <div class="field">
               <label>Tên bộ truyện / Đầu sách *</label>
-              <input name="title" required value="${esc(s?.title || "")}" placeholder="VD: Dungeon Meshi, Chainsaw Man, Rừng Na Uy..." />
+              <input name="title" id="seriesTitleInput" required value="${esc(s?.title || "")}" placeholder="VD: Dungeon Meshi, Chainsaw Man, Rừng Na Uy..." />
             </div>
             <div class="form-row-2">
               <div class="field">
                 <label>Nhà xuất bản</label>
-                <select name="publisher">
+                <select name="publisher" id="seriesPubSel">
                   ${["Trẻ", "Kim Đồng", "IPM", "Nhã Nam", "Khác"]
-                    .map((p) => `<option value="${p}" ${s?.publisher === p ? "selected" : ""}>${p}</option>`)
+                    .map((p) => `<option value="${p}" ${defPub === p ? "selected" : ""}>${p}</option>`)
                     .join("")}
                 </select>
               </div>
               <div class="field">
                 <label>Danh mục</label>
-                <select name="category">
+                <select name="category" id="seriesCatSel">
                   ${["Manga", "Light Novel", "Sách", "Artbook"]
-                    .map((c) => {
-                      const defCat = s ? s.category : filters.bookGroup === "sach" ? "Sách" : "Manga";
-                      return `<option value="${c}" ${defCat === c ? "selected" : ""}>${c}</option>`;
-                    })
+                    .map((c) => `<option value="${c}" ${defCat === c ? "selected" : ""}>${c}</option>`)
                     .join("")}
                 </select>
               </div>
@@ -2743,6 +2990,7 @@
                   .join("")}
               </select>
             </div>
+            ${quickVolBlockHtml}
             <div class="field">
               <label>Ảnh bìa đại diện (tuỳ chọn)</label>
               <div class="cover-preview-wrap">
@@ -2766,15 +3014,95 @@
               <label>Ghi chú</label>
               <textarea name="note" placeholder="Bản in, bọc plastic, chỗ hay mua...">${esc(s?.note || "")}</textarea>
             </div>
-            <div class="modal-actions">
-              <button type="button" class="btn" id="cancelSeriesBtn">Huỷ</button>
-              <button type="submit" class="btn btn-primary">${s ? "Lưu thay đổi" : "Tạo đầu sách"}</button>
+            <div class="modal-actions" style="justify-content:space-between; flex-wrap:wrap;">
+              <div>
+                ${isCreate ? `<button type="button" class="btn btn-sm" id="saveAndNextSeriesBtn">Lưu & Nhập bộ tiếp</button>` : `<button type="button" class="btn btn-sm" id="cancelSeriesBtn">Huỷ</button>`}
+              </div>
+              <div style="display:flex; gap:8px;">
+                ${isCreate ? `<button type="button" class="btn btn-sm" id="cancelSeriesBtn">Huỷ</button>` : ""}
+                <button type="submit" class="btn btn-sm btn-primary">${s ? "Lưu thay đổi" : "Lưu & Mở bộ"}</button>
+              </div>
             </div>
           </form>`;
 
-        openModal(s ? "Sửa đầu sách" : "Thêm đầu sách mới", html, (body) => {
+        const batchFormHtml = isCreate
+          ? `<form id="batchSeriesForm" class="form-grid" style="${initialMode === "batch" ? "" : "display:none;"}">
+               <div class="small-muted">
+                 Mỗi dòng là 1 bộ truyện/sách — dán từ Ghi chú iPhone hoặc gõ nhanh. Hỗ trợ:<br/>
+                 <code>Chainsaw Man - 16 tập</code> · <code>Vagabond (1-12)</code> · <code>Rừng Na Uy</code><br/>
+                 Hoặc đủ cột: <code>Tên bộ | NXB | 1-10 | 45000 | 15</code>
+               </div>
+               <div class="field">
+                 <label>Danh sách bộ truyện / sách *</label>
+                 <textarea class="bulk-textarea" id="batchLinesInput" placeholder="Chainsaw Man - 16 tập&#10;Dungeon Meshi (1-14)&#10;JoJo Phần 1 | Kim Đồng | 1-3 | 120000 | 15&#10;Rừng Na Uy"></textarea>
+               </div>
+               <div class="form-row-2">
+                 <div class="field">
+                   <label>NXB mặc định</label>
+                   <select id="batchPubSel">
+                     ${["Trẻ", "Kim Đồng", "IPM", "Nhã Nam", "Khác"]
+                       .map((p) => `<option value="${p}" ${defPub === p ? "selected" : ""}>${p}</option>`)
+                       .join("")}
+                   </select>
+                 </div>
+                 <div class="field">
+                   <label>Danh mục mặc định</label>
+                   <select id="batchCatSel">
+                     ${["Manga", "Light Novel", "Sách", "Artbook"]
+                       .map((c) => `<option value="${c}" ${defCat === c ? "selected" : ""}>${c}</option>`)
+                       .join("")}
+                   </select>
+                 </div>
+               </div>
+               <div class="form-row-2">
+                 <div class="field">
+                   <label>Tên mục mặc định</label>
+                   <input id="batchSecInput" value="${esc(defSecName)}" placeholder="Bản thường" />
+                 </div>
+                 <div class="field">
+                   <label>Số tập mặc định (khi dòng chỉ ghi tên)</label>
+                   <input id="batchDefVols" type="number" min="0" value="1" />
+                 </div>
+               </div>
+               <div class="form-row-2">
+                 <div class="field">
+                   <label>Giá bìa mặc định / tập</label>
+                   <input id="batchDefPrice" type="number" min="0" value="${last.coverPrice ?? 35000}" />
+                 </div>
+                 <div class="field">
+                   <label>Chiết khấu mặc định (%)</label>
+                   <input id="batchDefCk" type="number" min="0" max="100" value="${last.discount ?? 15}" />
+                 </div>
+               </div>
+               <div class="ck-row" id="batchCkRow">
+                 ${CK_PRESETS.map((pct) => `<button type="button" class="ck-btn mono" data-batchck="${pct}">-${pct}%</button>`).join("")}
+               </div>
+               <div class="boxset-hint mono" id="batchPreviewSummary">Gõ hoặc dán danh sách ở trên để xem trước.</div>
+               <div class="modal-actions">
+                 <button type="button" class="btn btn-sm" id="cancelBatchBtn">Huỷ</button>
+                 <button type="submit" class="btn btn-sm btn-primary" id="submitBatchBtn">Nhập tất cả vào tủ</button>
+               </div>
+             </form>`
+          : "";
+
+        openModal(s ? "Sửa đầu sách" : "Thêm đầu sách", modeSwitchHtml + singleFormHtml + batchFormHtml, (body) => {
+          const singleForm = body.querySelector("#seriesForm");
+          const batchForm = body.querySelector("#batchSeriesForm");
           const previewBox = body.querySelector("#coverPreviewBox");
           const clearBtn = body.querySelector("#clearCoverBtn");
+
+          // Mode switch (1 bộ vs Nhập nhiều bộ)
+          const modeSwitch = body.querySelector("#addSeriesModeSwitch");
+          if (modeSwitch) {
+            modeSwitch.addEventListener("click", (e) => {
+              const btn = e.target.closest("button[data-smode]");
+              if (!btn) return;
+              const isBatch = btn.dataset.smode === "batch";
+              modeSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+              singleForm.style.display = isBatch ? "none" : "grid";
+              if (batchForm) batchForm.style.display = isBatch ? "grid" : "none";
+            });
+          }
 
           const setPreview = (url) => {
             currentCover = url || "";
@@ -2801,15 +3129,67 @@
             }
           });
 
-          body.querySelector("#seriesForm").addEventListener("submit", (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
+          // Quick Volume block inside Single Series Form
+          const qEnable = body.querySelector("#quickVolEnable");
+          const qFields = body.querySelector("#quickVolFields");
+          const qSecIn = body.querySelector("#quickSecNameInput");
+          const qFromIn = body.querySelector("#quickFromIn");
+          const qToIn = body.querySelector("#quickToIn");
+          const qPriceIn = body.querySelector("#quickCoverPriceIn");
+          const qDiscIn = body.querySelector("#quickDiscountIn");
+          const qCkRow = body.querySelector("#quickCkRow");
+          const qSummary = body.querySelector("#quickVolSummary");
+
+          const updateQuickVolPreview = () => {
+            if (!qEnable || !qFields) return;
+            qFields.style.display = qEnable.checked ? "grid" : "none";
+            if (!qEnable.checked) return;
+            const f = Math.round(Number(qFromIn.value) || 0);
+            const t = Math.round(Number(qToIn.value) || 0);
+            const cp = Math.max(0, Number(qPriceIn.value) || 0);
+            const d = Math.min(100, Math.max(0, Number(qDiscIn.value) || 0));
+            qCkRow.querySelectorAll(".ck-btn").forEach((b) => {
+              b.classList.toggle("active", Number(b.dataset.sck) === d);
+            });
+            const count = t - f + 1;
+            if (count < 1) {
+              qSummary.textContent = "Đến tập phải >= Từ tập.";
+              return;
+            }
+            const paid = Math.round(cp * (1 - d / 100));
+            qSummary.textContent = `Tạo mục "${qSecIn.value.trim() || "Bản thường"}" gồm ${count} tập · ${fmtMoney(paid)}/tập (Tổng ${fmtMoney(paid * count)})`;
+          };
+
+          if (qEnable) {
+            qEnable.addEventListener("change", updateQuickVolPreview);
+            [qSecIn, qFromIn, qToIn, qPriceIn, qDiscIn].forEach((el) => el.addEventListener("input", updateQuickVolPreview));
+            body.querySelectorAll("#quickSecPresets [data-qsec]").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                qSecIn.value = btn.dataset.qsec;
+                updateQuickVolPreview();
+              });
+            });
+            qCkRow.querySelectorAll(".ck-btn").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                qDiscIn.value = btn.dataset.sck;
+                updateQuickVolPreview();
+              });
+            });
+            updateQuickVolPreview();
+          }
+
+          const handleSaveSingle = (continueAdding) => {
+            if (!singleForm.reportValidity()) return;
+            const fd = new FormData(singleForm);
             const title = fd.get("title").trim();
             if (!title) return;
+            const publisher = fd.get("publisher");
+            const category = fd.get("category");
+
             if (s) {
               s.title = title;
-              s.publisher = fd.get("publisher");
-              s.category = fd.get("category");
+              s.publisher = publisher;
+              s.category = category;
               s.status = fd.get("status");
               s.aliases = (fd.get("aliases") || "").trim();
               s.note = fd.get("note").trim();
@@ -2820,28 +3200,193 @@
               renderSpending();
               openSeriesDetail(s.id);
               showToast("Đã cập nhật đầu sách.");
+              return;
+            }
+
+            const newS = {
+              id: uid(),
+              title,
+              publisher,
+              category,
+              status: fd.get("status"),
+              aliases: (fd.get("aliases") || "").trim(),
+              note: fd.get("note").trim(),
+              cover: currentCover,
+              sections: [],
+              createdAt: todayISO(),
+            };
+
+            let addedVols = 0;
+            if (qEnable && qEnable.checked) {
+              const f = Math.round(Number(qFromIn.value) || 1);
+              const t = Math.round(Number(qToIn.value) || f);
+              if (t >= f && t - f <= 150) {
+                const secName = (qSecIn.value || "Bản thường").trim();
+                const cp = Math.max(0, Number(qPriceIn.value) || 0);
+                const disc = Math.min(100, Math.max(0, Number(qDiscIn.value) || 0));
+                const sec = { id: uid(), name: secName, image: "", note: "", volumes: [] };
+                addedVols = addBatchVolumesToSection(sec, {
+                  from: f,
+                  to: t,
+                  priceMode: "unit",
+                  coverInput: cp,
+                  paidInput: 0,
+                  discount: disc,
+                  date: todayISO(),
+                  image: "",
+                  note: "",
+                });
+                newS.sections.push(sec);
+                state.lastEntry = {
+                  publisher,
+                  category,
+                  sectionName: secName,
+                  coverPrice: cp,
+                  discount: disc,
+                };
+              }
             } else {
-              const newS = {
-                id: uid(),
-                title,
-                publisher: fd.get("publisher"),
-                category: fd.get("category"),
-                status: fd.get("status"),
-                aliases: (fd.get("aliases") || "").trim(),
-                note: fd.get("note").trim(),
-                cover: currentCover,
-                sections: [],
-                createdAt: todayISO(),
+              state.lastEntry = { ...last, publisher, category };
+            }
+
+            state.series.unshift(newS);
+            saveState();
+            renderBooks();
+            renderNews();
+            renderSpending();
+
+            if (continueAdding) {
+              showToast(`Đã lưu "${title}"${addedVols ? ` (${addedVols} tập)` : ""} — nhập tiếp bộ mới!`);
+              openSeriesForm(null, "single");
+              setTimeout(() => {
+                const inp = document.getElementById("seriesTitleInput");
+                if (inp) inp.focus();
+              }, 30);
+            } else {
+              openSeriesDetail(newS.id);
+              showToast(`Đã thêm "${title}"${addedVols ? ` (${addedVols} tập)` : ""}.`);
+            }
+          };
+
+          singleForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            handleSaveSingle(false);
+          });
+
+          const saveNextBtn = body.querySelector("#saveAndNextSeriesBtn");
+          if (saveNextBtn) {
+            saveNextBtn.addEventListener("click", () => handleSaveSingle(true));
+          }
+
+          // Batch Multi-Series Import Form
+          if (batchForm) {
+            const linesIn = body.querySelector("#batchLinesInput");
+            const bPub = body.querySelector("#batchPubSel");
+            const bCat = body.querySelector("#batchCatSel");
+            const bSec = body.querySelector("#batchSecInput");
+            const bDefVols = body.querySelector("#batchDefVols");
+            const bDefPrice = body.querySelector("#batchDefPrice");
+            const bDefCk = body.querySelector("#batchDefCk");
+            const bCkRow = body.querySelector("#batchCkRow");
+            const bSummary = body.querySelector("#batchPreviewSummary");
+
+            const getBatchDefaults = () => {
+              const dv = Math.max(0, Math.round(Number(bDefVols.value) || 0));
+              return {
+                publisher: bPub.value,
+                category: bCat.value,
+                sectionName: (bSec.value || "Bản thường").trim(),
+                defaultFrom: dv >= 1 ? 1 : 0,
+                defaultTo: dv >= 1 ? dv : 0,
+                coverPrice: Math.max(0, Number(bDefPrice.value) || 0),
+                discount: Math.min(100, Math.max(0, Number(bDefCk.value) || 0)),
               };
-              state.series.unshift(newS);
+            };
+
+            const updateBatchPreview = () => {
+              const defs = getBatchDefaults();
+              bCkRow.querySelectorAll(".ck-btn").forEach((b) => {
+                b.classList.toggle("active", Number(b.dataset.batchck) === defs.discount);
+              });
+              const items = parseBatchSeriesLines(linesIn.value, defs);
+              if (!items.length) {
+                bSummary.textContent = "Gõ hoặc dán danh sách ở trên để xem trước.";
+                return;
+              }
+              const totalV = items.reduce((acc, x) => acc + x.volCount, 0);
+              const totalP = items.reduce((acc, x) => acc + x.totalPaid, 0);
+              bSummary.textContent = `Sẽ thêm ${items.length} bộ · ${totalV} tập · Tổng thực chi ${fmtMoney(totalP)}`;
+            };
+
+            bCkRow.querySelectorAll(".ck-btn").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                bDefCk.value = btn.dataset.batchck;
+                updateBatchPreview();
+              });
+            });
+
+            [linesIn, bPub, bCat, bSec, bDefVols, bDefPrice, bDefCk].forEach((el) =>
+              el.addEventListener("input", updateBatchPreview)
+            );
+            updateBatchPreview();
+
+            body.querySelector("#cancelBatchBtn").addEventListener("click", closeModal);
+            batchForm.addEventListener("submit", (e) => {
+              e.preventDefault();
+              const defs = getBatchDefaults();
+              const items = parseBatchSeriesLines(linesIn.value, defs);
+              if (!items.length) {
+                showToast("Hãy nhập ít nhất 1 tên truyện/sách.");
+                return;
+              }
+              let totalCreatedVols = 0;
+              // Duyệt ngược để thứ tự đầu danh sách vẫn đứng trên cùng
+              for (let i = items.length - 1; i >= 0; i--) {
+                const it = items[i];
+                const newS = {
+                  id: uid(),
+                  title: it.title,
+                  publisher: it.publisher,
+                  category: defs.category,
+                  status: "Đang theo",
+                  aliases: "",
+                  note: "",
+                  cover: "",
+                  sections: [],
+                  createdAt: todayISO(),
+                };
+                if (it.volCount > 0) {
+                  const sec = { id: uid(), name: defs.sectionName, image: "", note: "", volumes: [] };
+                  totalCreatedVols += addBatchVolumesToSection(sec, {
+                    from: it.from,
+                    to: it.to,
+                    priceMode: "unit",
+                    coverInput: it.coverPrice,
+                    paidInput: 0,
+                    discount: it.discount,
+                    date: todayISO(),
+                    image: "",
+                    note: "",
+                  });
+                  newS.sections.push(sec);
+                }
+                state.series.unshift(newS);
+              }
+              state.lastEntry = {
+                publisher: defs.publisher,
+                category: defs.category,
+                sectionName: defs.sectionName,
+                coverPrice: defs.coverPrice,
+                discount: defs.discount,
+              };
               saveState();
               renderBooks();
               renderNews();
               renderSpending();
-              openSeriesDetail(newS.id);
-              showToast("Đã thêm vào tủ — giờ tạo các mục bên trong nhé.");
-            }
-          });
+              closeModal();
+              showToast(`Đã nhập nhanh ${items.length} bộ (${totalCreatedVols} tập)!`);
+            });
+          }
         });
       }
 
@@ -2861,24 +3406,32 @@
                 const vols = sec.volumes || [];
                 const secPaid = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
                 const imgCount = vols.filter((v) => v.image).length;
+                const secImg = resolveImg(sec.image);
                 return `
-                  <button type="button" class="section-card" data-open-sec="${sec.id}">
+                  <div class="section-card" data-open-sec="${sec.id}" style="cursor:pointer;">
+                    ${
+                      secImg
+                        ? `<button type="button" class="sec-thumb" data-zoom-sec="${sec.id}" title="Xem ảnh mục">
+                             <img src="${esc(secImg)}" alt="${esc(sec.name)}" loading="lazy" />
+                           </button>`
+                        : ""
+                    }
                     <div style="min-width:0; flex:1;">
                       <div class="section-card-title">
                         <span>${esc(sec.name)}</span>
                         <span class="tag mono">${vols.length} tập</span>
                       </div>
                       <div class="section-card-sub mono">
-                        Thực chi ${fmtMoney(secPaid)}${imgCount ? ` · ${imgCount} ảnh` : ""}${sec.note ? ` · ${esc(sec.note)}` : ""}
+                        Thực chi ${fmtMoney(secPaid)}${imgCount ? ` · ${imgCount} ảnh tập` : ""}${sec.note ? ` · ${esc(sec.note)}` : ""}
                       </div>
                     </div>
                     <span class="section-arrow">Mở →</span>
-                  </button>`;
+                  </div>`;
               })
               .join("")}</div>`
           : `<div class="empty" style="padding:20px 14px; margin:10px 0;">
                <div class="empty-title" style="font-size:13px;">Chưa có mục nào</div>
-               <div class="empty-desc" style="margin-bottom:10px;">Tạo các mục như <strong>Manga</strong>, <strong>Boxset</strong>, <strong>Limited</strong>, <strong>Tái bản</strong>... rồi bấm vào từng mục để thêm số tập, ảnh và giá.</div>
+               <div class="empty-desc" style="margin-bottom:10px;">Tạo các mục như <strong>Manga</strong>, <strong>Boxset</strong>, <strong>Limited</strong>, <strong>Tái bản</strong>... (kèm ảnh mục) rồi bấm vào để thêm tập và giá.</div>
                <button type="button" class="btn btn-sm btn-primary" id="emptyCreateSecBtn">+ Tạo mục đầu tiên</button>
              </div>`;
 
@@ -2929,18 +3482,29 @@
             closeModal();
             showToast("Đã xoá đầu sách.");
           });
-          body.querySelectorAll("[data-open-sec]").forEach((btn) => {
-            btn.addEventListener("click", () => openSectionDetail(seriesId, btn.dataset.openSec));
+          body.querySelectorAll("[data-zoom-sec]").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const secObj = (s.sections || []).find((x) => x.id === btn.dataset.zoomSec);
+              const imgUrl = resolveImg(secObj?.image);
+              if (imgUrl) {
+                openImageLightbox(imgUrl, `${s.title} — ${secObj.name}`, () => openSeriesDetail(seriesId));
+              }
+            });
+          });
+          body.querySelectorAll("[data-open-sec]").forEach((el) => {
+            el.addEventListener("click", () => openSectionDetail(seriesId, el.dataset.openSec));
           });
         });
       }
 
-      // Form tạo / sửa Mục bên trong đầu sách
+      // Form tạo / sửa Mục bên trong đầu sách (có thêm Ảnh đại diện mục!)
       function openSectionForm(seriesId, sectionId = null) {
         const s = state.series.find((x) => x.id === seriesId);
         if (!s) return;
         const sec = sectionId ? (s.sections || []).find((x) => x.id === sectionId) : null;
         const presets = ["Manga", "Bản thường", "Boxset", "Limited", "Tái bản", "Bìa cứng", "Artbook", "Sách chữ"];
+        let currentSecImg = resolveImg(sec?.image || "");
 
         const html = `
           <form id="sectionForm" class="form-grid">
@@ -2951,6 +3515,23 @@
                 ${presets.map((p) => `<button type="button" class="preset-chip" data-preset="${esc(p)}">${esc(p)}</button>`).join("")}
               </div>
             </div>
+
+            <div class="field">
+              <label>Ảnh minh họa mục (VD: ảnh hộp Boxset, ảnh bản ĐB/tái bản...)</label>
+              <div class="cover-preview-wrap">
+                <div class="cover-preview" id="secImgPreview" style="cursor:${currentSecImg ? "zoom-in" : "default"};">
+                  ${currentSecImg ? `<img src="${esc(currentSecImg)}" alt="" />` : "Chưa có"}
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                  <label class="btn btn-sm" style="margin:0;">
+                    ${currentSecImg ? "Đổi ảnh" : "Chọn ảnh"}
+                    <input type="file" id="secImgInput" accept="image/*" style="display:none;" />
+                  </label>
+                  <button type="button" class="btn btn-sm btn-danger" id="clearSecImgBtn" style="${currentSecImg ? "" : "display:none;"}">Xoá ảnh</button>
+                </div>
+              </div>
+            </div>
+
             <div class="field">
               <label>Ghi chú mục (tuỳ chọn)</label>
               <input name="note" value="${esc(sec?.note || "")}" placeholder="VD: Bản có áo bọc, hộp cứng, in lần đầu..." />
@@ -2963,6 +3544,39 @@
 
         openModal(`${s.title} — ${sec ? "Sửa mục" : "Tạo mục mới"}`, html, (body) => {
           const nameInput = body.querySelector("#secNameInput");
+          const previewEl = body.querySelector("#secImgPreview");
+          const clearBtn = body.querySelector("#clearSecImgBtn");
+
+          const setSecPreview = (url) => {
+            currentSecImg = url || "";
+            previewEl.innerHTML = currentSecImg ? `<img src="${esc(currentSecImg)}" alt="" />` : "Chưa có";
+            previewEl.style.cursor = currentSecImg ? "zoom-in" : "default";
+            clearBtn.style.display = currentSecImg ? "" : "none";
+          };
+
+          previewEl.addEventListener("click", () => {
+            if (!currentSecImg) return;
+            openImageLightbox(currentSecImg, `${s.title} — ${nameInput.value || "Mục"}`, () =>
+              openSectionForm(seriesId, sectionId)
+            );
+          });
+
+          clearBtn.addEventListener("click", () => {
+            setSecPreview("");
+            showToast("Đã xoá ảnh mục.");
+          });
+
+          body.querySelector("#secImgInput").addEventListener("change", async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+              const compressed = await compressImageFile(file, 360, 520, 0.74);
+              setSecPreview(compressed);
+            } catch {
+              showToast("Không đọc được ảnh này.");
+            }
+          });
+
           body.querySelectorAll("[data-preset]").forEach((chip) => {
             chip.addEventListener("click", () => {
               nameInput.value = chip.dataset.preset;
@@ -2981,6 +3595,7 @@
             s.sections = s.sections || [];
             if (sec) {
               sec.name = name;
+              sec.image = currentSecImg;
               sec.note = fd.get("note").trim();
               saveState();
               renderBooks();
@@ -2990,6 +3605,7 @@
               const newSec = {
                 id: uid(),
                 name,
+                image: currentSecImg,
                 note: fd.get("note").trim(),
                 volumes: [],
               };
@@ -3022,7 +3638,7 @@
 
       const CK_PRESETS = [0, 5, 10, 15, 20, 25, 30];
 
-      // Cấp 2: Bên trong 1 Mục -> xem các tập (Thẻ ảnh / Ô gọn), phát hiện lủng tập, thêm tập
+      // Cấp 2: Bên trong 1 Mục -> ảnh mục, + Tập tiếp 1 chạm, Thẻ ảnh / Ô gọn, phát hiện lủng tập
       function openSectionDetail(seriesId, sectionId) {
         const s = state.series.find((x) => x.id === seriesId);
         if (!s) return;
@@ -3036,6 +3652,10 @@
         const missing = findMissingVolumes(vols);
         const lentCount = vols.filter((v) => (v.lentTo || "").trim()).length;
         const viewMode = state.volView || "cards";
+        const secImg = resolveImg(sec.image);
+        const maxNum = vols.reduce((m, x) => Math.max(m, Math.floor(Number(x.number) || 0)), 0);
+        const nextQuickNum = maxNum + 1;
+        const lastVol = vols[vols.length - 1];
 
         const missingHtml = missing.length
           ? `<div class="missing-strip">
@@ -3054,7 +3674,7 @@
         if (!vols.length) {
           volsHtml = `<div class="empty" style="padding:20px 14px; margin:10px 0;">
                <div class="empty-title" style="font-size:13px;">Mục "${esc(sec.name)}" chưa có tập nào</div>
-               <div class="empty-desc">Bấm <strong>+ 1 tập</strong> để nhập tập (có nút tính chiết khấu 5–30%), hoặc <strong>+ Nhiều tập</strong> cho loạt tập / Boxset.</div>
+               <div class="empty-desc">Bấm <strong>+ T.1</strong> để thêm nhanh 1 chạm, <strong>+ 1 tập</strong> để thêm kèm ảnh/CK%, hoặc <strong>+ Nhiều tập</strong> cho loạt tập / Boxset.</div>
              </div>`;
         } else if (viewMode === "compact") {
           volsHtml = `<div class="vol-compact-grid">${vols
@@ -3111,8 +3731,15 @@
             </div>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
-            <div>
+          <div style="display:flex; align-items:flex-start; gap:11px;">
+            ${
+              secImg
+                ? `<button type="button" class="sec-thumb" id="secDetailImgZoom" style="width:52px; height:72px;" title="Xem ảnh lớn">
+                     <img src="${esc(secImg)}" alt="${esc(sec.name)}" />
+                   </button>`
+                : ""
+            }
+            <div style="flex:1; min-width:0;">
               <div style="font-size:15px; font-weight:700;">${esc(sec.name)}</div>
               <div class="mono small-muted" style="margin-top:3px;">
                 ${vols.length} tập · Thực chi ${fmtMoney(totalPaid)} · Giá bìa ${fmtMoney(totalCover)}
@@ -3131,7 +3758,8 @@
               <button type="button" class="${viewMode === "cards" ? "active" : ""}" data-vmode="cards">Thẻ ảnh</button>
               <button type="button" class="${viewMode === "compact" ? "active" : ""}" data-vmode="compact">Ô gọn</button>
             </div>
-            <div style="display:flex; gap:6px;">
+            <div style="display:flex; gap:5px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-sm btn-accent mono" id="quickAddNextVolBtn" title="Thêm nhanh 1 chạm theo giá tập trước">+ T.${nextQuickNum}</button>
               <button type="button" class="btn btn-sm" id="addBulkVolBtn">+ Nhiều tập</button>
               <button type="button" class="btn btn-sm btn-primary" id="addOneVolBtn">+ 1 tập</button>
             </div>
@@ -3142,6 +3770,12 @@
         openModal(`${s.title} / ${sec.name}`, html, (body) => {
           body.querySelector("#backToSeriesBtn").addEventListener("click", () => openSeriesDetail(seriesId));
           body.querySelector("#editSecBtn").addEventListener("click", () => openSectionForm(seriesId, sectionId));
+          const secZoom = body.querySelector("#secDetailImgZoom");
+          if (secZoom && secImg) {
+            secZoom.addEventListener("click", () =>
+              openImageLightbox(secImg, `${s.title} — ${sec.name}`, () => openSectionDetail(seriesId, sectionId))
+            );
+          }
           body.querySelector("#delSecBtn").addEventListener("click", () => {
             if (!confirm(`Xoá mục "${sec.name}" cùng ${vols.length} tập bên trong?`)) return;
             s.sections = (s.sections || []).filter((x) => x.id !== sectionId);
@@ -3161,6 +3795,35 @@
           body.querySelectorAll("[data-add-missing]").forEach((btn) => {
             btn.addEventListener("click", () => openVolumeForm(seriesId, sectionId, null, Number(btn.dataset.addMissing)));
           });
+
+          // 1-Tap Quick Add Next Volume!
+          body.querySelector("#quickAddNextVolBtn").addEventListener("click", () => {
+            const last = { ...DEFAULT_STATE.lastEntry, ...(state.lastEntry || {}) };
+            const cp = lastVol ? Number(lastVol.coverPrice) || 0 : Number(last.coverPrice) || 35000;
+            const pp = lastVol
+              ? Number(lastVol.paidPrice) || 0
+              : Math.round(cp * (1 - (Number(last.discount) || 0) / 100));
+            sec.volumes = sec.volumes || [];
+            sec.volumes.push({
+              id: uid(),
+              number: nextQuickNum,
+              coverPrice: cp,
+              paidPrice: pp,
+              date: todayISO(),
+              image: "",
+              readState: "Chưa đọc",
+              lentTo: "",
+              note: "",
+              groupId: "",
+              groupLabel: "",
+            });
+            saveState();
+            renderBooks();
+            renderSpending();
+            openSectionDetail(seriesId, sectionId);
+            showToast(`Đã thêm nhanh Tập ${nextQuickNum} (${fmtMoney(pp)}).`);
+          });
+
           body.querySelector("#addOneVolBtn").addEventListener("click", () => openVolumeForm(seriesId, sectionId));
           body.querySelector("#addBulkVolBtn").addEventListener("click", () => openBulkVolumeForm(seriesId, sectionId));
           body.querySelectorAll("[data-vol-id]").forEach((btn) => {
@@ -3169,7 +3832,7 @@
         });
       }
 
-      // Thêm / sửa 1 tập trong Mục (Tính giá theo CK 0–30% + Ảnh riêng + Trạng thái đọc / Nguyên seal / Cho mượn)
+      // Thêm / sửa 1 tập trong Mục (Tính giá theo CK 0–30% + Ảnh riêng + Lưu & Tập tiếp)
       function openVolumeForm(seriesId, sectionId, volId = null, prefillVolNum = null) {
         const s = state.series.find((x) => x.id === seriesId);
         const sec = s ? (s.sections || []).find((x) => x.id === sectionId) : null;
@@ -3254,7 +3917,7 @@
 
             <div class="modal-actions" style="justify-content:space-between; flex-wrap:wrap;">
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                ${v ? `<button type="button" class="btn btn-sm btn-danger" id="delVolBtn">Xoá tập</button>` : ""}
+                ${v ? `<button type="button" class="btn btn-sm btn-danger" id="delVolBtn">Xoá tập</button>` : `<button type="button" class="btn btn-sm" id="saveAndNextVolBtn">Lưu & Tập tiếp</button>`}
                 ${
                   groupSiblings.length > 1
                     ? `<button type="button" class="btn btn-sm btn-danger" id="delVolGroupBtn">Xoá cả đợt (${groupSiblings.length} tập)</button>`
@@ -3269,6 +3932,7 @@
           </form>`;
 
         openModal(`${sec.name} — ${v ? `Tập ${v.number}` : `Thêm tập ${defaultNum}`}`, html, (body) => {
+          const form = body.querySelector("#volForm");
           const previewEl = body.querySelector("#volImgPreview");
           const clearBtn = body.querySelector("#clearVolImgBtn");
           const coverIn = body.querySelector("#volCoverInput");
@@ -3379,9 +4043,9 @@
             });
           }
 
-          body.querySelector("#volForm").addEventListener("submit", (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
+          const commitVol = (addAnother) => {
+            if (!form.reportValidity()) return;
+            const fd = new FormData(form);
             const rec = {
               id: v?.id || uid(),
               number: Number(fd.get("number")),
@@ -3405,9 +4069,25 @@
             saveState();
             renderBooks();
             renderSpending();
-            openSectionDetail(seriesId, sectionId);
-            showToast(v ? "Đã lưu tập." : `Đã thêm tập ${rec.number}.`);
+            if (addAnother) {
+              const nextN = Math.floor(rec.number) + 1;
+              showToast(`Đã lưu Tập ${rec.number} — nhập tiếp Tập ${nextN}!`);
+              openVolumeForm(seriesId, sectionId, null, nextN);
+            } else {
+              openSectionDetail(seriesId, sectionId);
+              showToast(v ? "Đã lưu tập." : `Đã thêm tập ${rec.number}.`);
+            }
+          };
+
+          form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            commitVol(false);
           });
+
+          const nextVolBtn = body.querySelector("#saveAndNextVolBtn");
+          if (nextVolBtn) {
+            nextVolBtn.addEventListener("click", () => commitVol(true));
+          }
         });
       }
 
@@ -4676,7 +5356,7 @@
               existing.sections = existing.sections || [];
               let sec = existing.sections.find((x) => normVN(x.name) === normVN(secName));
               if (!sec) {
-                sec = { id: uid(), name: secName, note: "", volumes: [] };
+                sec = { id: uid(), name: secName, image: "", note: "", volumes: [] };
                 existing.sections.push(sec);
               }
               const f = Number(fd.get("volFrom")) || 1;
