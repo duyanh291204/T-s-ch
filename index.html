@@ -2194,6 +2194,154 @@
       }
     }
 
+    /* Topbar Undo auto-hide (chỉ hiện 5s sau thao tác xoá/sửa) */
+    #undoBtn {
+      display: none;
+    }
+
+    #undoBtn.undo-visible {
+      display: inline-flex;
+      animation: undoPopIn 0.24s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes undoPopIn {
+      from { opacity: 0; transform: scale(0.82); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Barcode Scanner Overlay */
+    .scan-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 75;
+      background: rgba(12, 11, 10, 0.84);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    .scan-backdrop.open {
+      display: flex;
+      animation: fadeOverlayIn 0.2s ease both;
+    }
+
+    .scan-modal {
+      width: 100%;
+      max-width: 440px;
+      max-height: 92dvh;
+      background: var(--bg);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: cropPopIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .scan-stage {
+      position: relative;
+      width: 100%;
+      min-height: 240px;
+      max-height: 310px;
+      background: #0F0E0D;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #barcodeReaderBox {
+      width: 100%;
+      min-height: 240px;
+    }
+
+    #barcodeReaderBox video {
+      width: 100% !important;
+      height: 260px !important;
+      object-fit: cover !important;
+      display: block;
+    }
+
+    .scan-reticle {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scan-box-frame {
+      position: relative;
+      width: 78%;
+      height: 118px;
+      border: 1.5px solid rgba(246, 245, 241, 0.88);
+      border-radius: 2px;
+      box-shadow: 0 0 0 999px rgba(10, 9, 8, 0.48);
+      overflow: hidden;
+    }
+
+    .scan-laser {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      height: 2px;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      top: 15%;
+      animation: scanLaserMove 1.8s ease-in-out infinite;
+    }
+
+    @keyframes scanLaserMove {
+      0%, 100% { top: 14%; opacity: 0.75; }
+      50% { top: 82%; opacity: 1; }
+    }
+
+    .scan-controls {
+      padding: 12px 14px calc(14px + var(--safe-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--bg);
+      overflow-y: auto;
+    }
+
+    .scan-manual-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .scan-manual-row input {
+      flex: 1;
+      height: 36px;
+      padding: 0 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      outline: none;
+    }
+
+    .scan-manual-row input:focus {
+      border-color: var(--ink);
+    }
+
+    .scan-btn-icon {
+      width: 38px;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .scan-btn-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.7;
+    }
+
     .divider {
       height: 1px;
       background: var(--line);
@@ -2213,10 +2361,9 @@
       <div class="brand">
         <div class="brand-title">Tủ Sách</div>
         <div class="brand-meta mono" id="headerSummary">Đang tải...</div>
-        <span class="save-status mono" id="saveIndicator"></span>
       </div>
       <div class="topbar-actions">
-        <button class="icon-btn" id="undoBtn" title="Hoàn tác thao tác vừa rồi" disabled>
+        <button class="icon-btn undo-ready" id="undoBtn" title="Hoàn tác thao tác vừa rồi">
           <svg viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
           <span id="undoBtnLabel">Hoàn tác</span>
         </button>
@@ -2239,7 +2386,10 @@
         </div>
 
         <div class="toolbar">
-          <input type="search" class="search-input" id="bookSearch" placeholder="Tìm tên truyện, sách, NXB..." />
+          <input type="search" class="search-input" id="bookSearch" placeholder="Tìm tên truyện, sách, tác giả, NXB..." />
+          <button class="btn scan-btn-icon" id="scanBarcodeBtn" title="Quét mã vạch sách / manga">
+            <svg viewBox="0 0 24 24"><path d="M3 5v14"/><path d="M7 5v14"/><path d="M10 5v14"/><path d="M14 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
+          </button>
           <button class="btn btn-primary" id="addSeriesBtn">+ Thêm bộ</button>
         </div>
 
@@ -2473,6 +2623,38 @@
     </div>
   </div>
 
+  <!-- Dedicated Barcode Scanner Modal -->
+  <div class="scan-backdrop" id="scanBackdrop">
+    <div class="scan-modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div class="modal-title">Quét mã vạch (893 / 978)</div>
+        <button type="button" class="btn btn-sm" id="scanCloseBtn">Đóng</button>
+      </div>
+      <div class="scan-stage" id="scanStage">
+        <div id="barcodeReaderBox"></div>
+        <div class="scan-reticle" id="scanReticle">
+          <div class="scan-box-frame">
+            <div class="scan-laser"></div>
+          </div>
+        </div>
+      </div>
+      <div class="scan-controls">
+        <div class="small-muted mono" id="scanStatusText">Đưa mã vạch sau bìa sách vào khung...</div>
+        <div class="scan-manual-row">
+          <input type="text" inputmode="numeric" id="scanManualInput" placeholder="Hoặc gõ 13 số mã vạch (893... / 978...)" />
+          <button type="button" class="btn btn-sm btn-primary" id="scanManualGoBtn">Tra cứu</button>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+          <label class="btn btn-sm" style="margin:0;">
+            Quét từ ảnh chụp
+            <input type="file" id="scanFileInput" accept="image/*" style="display:none;" />
+          </label>
+          <button type="button" class="btn btn-sm" id="scanOpenSettingsBtn">Cài đặt nguồn VN</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
   <input type="file" id="importFileInput" accept=".json,application/json" style="display:none" />
 
@@ -2491,6 +2673,7 @@
         volView: "cards", // "cards" | "compact"
         budgetLimit: 1000000,
         newsUrl: "./news.json",
+        barcodeWorkerUrl: "",
         lastBackupAt: "",
         lastEntry: {
           publisher: "Kim Đồng",
@@ -2727,7 +2910,7 @@
           "Boxset": "Boxset",
         };
         merged.series = merged.series.map((s) => {
-          const copy = { ...s };
+          const copy = { author: "", ...s };
           if (!Array.isArray(copy.sections)) {
             const legacyVols = Array.isArray(copy.volumes) ? copy.volumes : [];
             const byEd = new Map();
@@ -3074,24 +3257,46 @@
       // HỆ THỐNG HOÀN TÁC (UNDO) TIẾT KIỆM RAM CHO IPHONE
       // ============================
       const MAX_UNDO_STEPS = 25;
+      const UNDO_BTN_DURATION_MS = 5000;
       const undoStack = [];
       const undoImageBank = {}; // Giữ mỗi ảnh duy nhất 1 lần trong RAM để hoàn tác xoá nhầm ảnh/bộ
+      let undoHideTimer = null;
 
-      function updateUndoBtnUI() {
+      function hideUndoBtn() {
+        const btn = document.getElementById("undoBtn");
+        if (btn) btn.classList.remove("undo-visible");
+        clearTimeout(undoHideTimer);
+        undoHideTimer = null;
+      }
+
+      function flashUndoBtnFor5s() {
         const btn = document.getElementById("undoBtn");
         const lbl = document.getElementById("undoBtnLabel");
         if (!btn) return;
         const count = undoStack.length;
-        btn.disabled = count === 0;
-        btn.classList.toggle("undo-ready", count > 0);
-        if (lbl) lbl.textContent = count > 0 ? `Hoàn tác (${count})` : "Hoàn tác";
-        btn.title = count > 0 ? `Hoàn tác: ${undoStack[count - 1].label}` : "Chưa có thao tác để hoàn tác";
+        if (count === 0) {
+          hideUndoBtn();
+          return;
+        }
+        if (lbl) lbl.textContent = "Hoàn tác";
+        btn.title = `Hoàn tác: ${undoStack[count - 1].label}`;
+        btn.classList.add("undo-visible");
+        if (isRichFx()) {
+          btn.classList.remove("undo-wiggle");
+          void btn.offsetWidth;
+          btn.classList.add("undo-wiggle");
+        }
+        clearTimeout(undoHideTimer);
+        undoHideTimer = setTimeout(hideUndoBtn, UNDO_BTN_DURATION_MS);
+      }
+
+      function updateUndoBtnUI() {
+        if (undoStack.length === 0) hideUndoBtn();
       }
 
       function pushUndo(label) {
         if (!appReady) return;
         compactImagesInState(state);
-        // Cất toàn bộ ảnh hiện có vào kho RAM dùng chung (không nhân bản giữa các bước undo)
         const pool = state.images || {};
         for (const k in pool) {
           if (pool[k] && !undoImageBank[k]) undoImageBank[k] = pool[k];
@@ -3099,15 +3304,7 @@
         const lightSnap = structuredClone({ ...state, images: {} });
         undoStack.push({ label: label || "thao tác vừa rồi", snap: lightSnap });
         if (undoStack.length > MAX_UNDO_STEPS) undoStack.shift();
-        updateUndoBtnUI();
-        if (isRichFx()) {
-          const ub = document.getElementById("undoBtn");
-          if (ub) {
-            ub.classList.remove("undo-wiggle");
-            void ub.offsetWidth;
-            ub.classList.add("undo-wiggle");
-          }
-        }
+        flashUndoBtnFor5s();
       }
 
       function collectImgKeysFromState(obj) {
@@ -3131,6 +3328,7 @@
 
       function performUndo() {
         if (!undoStack.length) {
+          hideUndoBtn();
           showToast("Không còn bước nào để hoàn tác.");
           return;
         }
@@ -3149,16 +3347,17 @@
         applyFxLevel();
         renderAll();
         closeModal();
-        updateUndoBtnUI();
+        if (undoStack.length > 0) flashUndoBtnFor5s();
+        else hideUndoBtn();
         showToast(`Đã hoàn tác: ${entry.label}`);
       }
 
-      // Toast thông minh: hỗ trợ nút "Hoàn tác" trực tiếp trên thông báo
+      // Toast thông minh: nút "Hoàn tác" hiện đúng 5 giây cùng nhịp với nút trên header
       let toastTimer = null;
       function showToast(msg, opts = {}) {
         const el = document.getElementById("toast");
         const undoable = Boolean(opts && opts.undoable && undoStack.length > 0);
-        const duration = opts.duration || (undoable ? 6000 : 2600);
+        const duration = opts.duration || (undoable ? UNDO_BTN_DURATION_MS : 2600);
         el.innerHTML = `<span>${esc(msg)}</span>${
           undoable ? `<button type="button" class="toast-undo-btn" id="toastUndoAction">Hoàn tác</button>` : ""
         }`;
@@ -3822,7 +4021,7 @@
           }
           if (q) {
             const secNames = (s.sections || []).map((sec) => sec.name).join(" ");
-            const hay = normVN(`${s.title} ${s.publisher} ${s.category} ${s.aliases || ""} ${secNames} ${s.note || ""}`);
+            const hay = normVN(`${s.title} ${s.author || ""} ${s.publisher} ${s.category} ${s.aliases || ""} ${secNames} ${s.note || ""}`);
             if (!hay.includes(q)) return false;
           }
           return true;
@@ -4117,6 +4316,10 @@
               <label>Tên bộ truyện / Đầu sách *</label>
               <input name="title" id="seriesTitleInput" required value="${esc(s?.title || "")}" placeholder="VD: Dungeon Meshi, Chainsaw Man, Rừng Na Uy..." />
             </div>
+            <div class="field">
+              <label>Tác giả (tuỳ chọn)</label>
+              <input name="author" id="seriesAuthorInput" value="${esc(s?.author || "")}" placeholder="VD: Tatsuki Fujimoto, Haruki Murakami..." />
+            </div>
             <div class="form-row-2">
               <div class="field">
                 <label>Nhà xuất bản</label>
@@ -4362,6 +4565,7 @@
             if (s) {
               pushUndo(`sửa "${s.title}"`);
               s.title = title;
+              s.author = (fd.get("author") || "").trim();
               s.publisher = publisher;
               s.category = category;
               s.status = fd.get("status");
@@ -4380,6 +4584,7 @@
             const newS = {
               id: uid(),
               title,
+              author: (fd.get("author") || "").trim(),
               publisher,
               category,
               status: fd.get("status"),
@@ -4621,6 +4826,7 @@
             </div>
             <div style="flex:1; min-width:0;">
               <div style="font-size:15px; font-weight:700; line-height:1.3;">${esc(s.title)}</div>
+              ${s.author ? `<div class="small-muted" style="margin-top:2px;">Tác giả: ${esc(s.author)}</div>` : ""}
               <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:6px;">
                 <span class="tag">${esc(s.publisher)}</span>
                 <span class="tag">${esc(s.category)}</span>
@@ -5569,6 +5775,585 @@
             if (typeof onBack === "function") onBack();
             else closeModal();
           });
+        });
+      }
+
+      // ============================
+      // QUÉT MÃ VẠCH (CAMERA IPHONE + CLOUDFLARE WORKER HƯỚNG 1)
+      // ============================
+      let qrLibPromise = null;
+      let activeScanner = null;
+      let scanBusy = false;
+
+      function loadHtml5QrcodeLib() {
+        if (window.Html5Qrcode) return Promise.resolve(window.Html5Qrcode);
+        if (qrLibPromise) return qrLibPromise;
+        const urls = [
+          "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js",
+          "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js",
+        ];
+        qrLibPromise = new Promise((resolve, reject) => {
+          let idx = 0;
+          const tryNext = () => {
+            if (idx >= urls.length) {
+              qrLibPromise = null;
+              reject(new Error("Không tải được thư viện quét mã (cần mạng lần đầu)."));
+              return;
+            }
+            const s = document.createElement("script");
+            s.src = urls[idx++];
+            s.async = true;
+            s.onload = () => (window.Html5Qrcode ? resolve(window.Html5Qrcode) : tryNext());
+            s.onerror = () => tryNext();
+            document.head.appendChild(s);
+          };
+          tryNext();
+        });
+        return qrLibPromise;
+      }
+
+      function detectPubFromBarcodeLocal(code) {
+        const c = String(code || "").replace(/\D/g, "");
+        if (c.startsWith("8935244") || c.startsWith("9786042")) return "Kim Đồng";
+        if (c.startsWith("8934974") || c.startsWith("9786041")) return "Trẻ";
+        if (c.startsWith("8935250") || c.startsWith("8935325")) return "IPM";
+        if (c.startsWith("8935235") || c.startsWith("8935337")) return "Nhã Nam";
+        return "Khác";
+      }
+
+      function parseLocalBookTitle(rawTitle) {
+        const clean = String(rawTitle || "").replace(/\s+/g, " ").trim();
+        let seriesTitle = clean;
+        let volumeNumber = 1;
+        const m = clean.match(/^(.*?)[\s\-–:|]+(?:tập|tap|vol\.?|volume|quyển|quyen|#)\s*(\d+(?:\.\d+)?)\b.*$/i);
+        if (m && m[1].trim().length >= 2) {
+          seriesTitle = m[1].replace(/[\s\-–:|(]+$/, "").trim();
+          volumeNumber = Number(m[2]) || 1;
+        }
+        return { fullTitle: clean, seriesTitle, volumeNumber, editionHint: "Bản thường" };
+      }
+
+      async function lookupBarcode(rawCode) {
+        const code = String(rawCode || "").replace(/[^\dX]/gi, "").trim();
+        const workerBase = (state.barcodeWorkerUrl || "").trim().replace(/\/+$/, "");
+
+        // 1. Ưu tiên gọi Cloudflare Worker (tra Tiki + Kim Đồng + Fahasa + Google Books cho truyện Việt)
+        if (workerBase) {
+          try {
+            const res = await fetch(`${workerBase}/?code=${encodeURIComponent(code)}`, { cache: "no-store" });
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.found) {
+                return { ...data, viaWorker: true };
+              }
+              return {
+                found: false,
+                viaWorker: true,
+                barcode: code,
+                publisher: data?.publisher || detectPubFromBarcodeLocal(code),
+                message: data?.message || "Chưa tìm thấy mã này trên các nguồn VN.",
+              };
+            }
+          } catch (err) {
+            showToast("Không gọi được Worker — chuyển sang tra Google Books.");
+          }
+        }
+
+        // 2. Fallback trực tiếp Google Books + Open Library (không cần Worker)
+        try {
+          const gRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(code)}`);
+          if (gRes.ok) {
+            const gData = await gRes.json();
+            const item = Array.isArray(gData?.items) ? gData.items[0] : null;
+            if (item?.volumeInfo) {
+              const v = item.volumeInfo;
+              const full = v.subtitle ? `${v.title} — ${v.subtitle}` : v.title || "";
+              const meta = parseLocalBookTitle(full);
+              const pub = detectPubFromBarcodeLocal(code);
+              let cover = v.imageLinks?.large || v.imageLinks?.medium || v.imageLinks?.thumbnail || "";
+              if (cover.startsWith("http://")) cover = cover.replace("http://", "https://");
+              return {
+                found: true,
+                viaWorker: false,
+                source: "Google Books",
+                barcode: code,
+                fullTitle: meta.fullTitle,
+                seriesTitle: meta.seriesTitle,
+                volumeNumber: meta.volumeNumber,
+                editionHint: meta.editionHint,
+                author: Array.isArray(v.authors) ? v.authors.join(", ") : "",
+                publisher: pub,
+                category: pub === "Kim Đồng" || pub === "IPM" ? "Manga" : "Sách",
+                coverPrice: 0,
+                coverUrl: cover,
+              };
+            }
+          }
+        } catch {}
+
+        try {
+          const oRes = await fetch(
+            `https://openlibrary.org/api/books?bibkeys=ISBN:${encodeURIComponent(code)}&format=json&jscmd=data`
+          );
+          if (oRes.ok) {
+            const oData = await oRes.json();
+            const b = oData?.[`ISBN:${code}`];
+            if (b) {
+              const meta = parseLocalBookTitle(b.title || "");
+              return {
+                found: true,
+                viaWorker: false,
+                source: "Open Library",
+                barcode: code,
+                fullTitle: meta.fullTitle,
+                seriesTitle: meta.seriesTitle,
+                volumeNumber: meta.volumeNumber,
+                editionHint: meta.editionHint,
+                author: Array.isArray(b.authors) ? b.authors.map((a) => a.name).join(", ") : "",
+                publisher: detectPubFromBarcodeLocal(code),
+                category: "Sách",
+                coverPrice: 0,
+                coverUrl: b.cover?.large || b.cover?.medium || "",
+              };
+            }
+          }
+        } catch {}
+
+        return {
+          found: false,
+          viaWorker: false,
+          barcode: code,
+          publisher: detectPubFromBarcodeLocal(code),
+          message: workerBase
+            ? "Không tìm thấy thông tin mã này."
+            : "Chưa dán link Cloudflare Worker trong Cài đặt nên không tra được mã 893 / truyện Việt.",
+        };
+      }
+
+      // Tải ảnh bìa từ URL (qua /img proxy của Worker) -> nén thành dataURL lưu offline vào IndexedDB
+      async function fetchCoverAsDataUrl(coverUrl) {
+        if (!coverUrl) return "";
+        const workerBase = (state.barcodeWorkerUrl || "").trim().replace(/\/+$/, "");
+        const fetchUrl = workerBase
+          ? `${workerBase}/img?url=${encodeURIComponent(coverUrl)}`
+          : coverUrl;
+        try {
+          const res = await fetch(fetchUrl);
+          if (!res.ok) return coverUrl;
+          const blob = await res.blob();
+          const file = new File([blob], "cover.jpg", { type: blob.type || "image/jpeg" });
+          return await compressImageFile(file, 360, 540, 0.76);
+        } catch {
+          return coverUrl;
+        }
+      }
+
+      async function stopBarcodeCamera() {
+        const sc = activeScanner;
+        activeScanner = null;
+        if (sc) {
+          try {
+            if (sc.isScanning) await sc.stop();
+          } catch {}
+          try {
+            sc.clear();
+          } catch {}
+        }
+      }
+
+      async function closeBarcodeScanner() {
+        await stopBarcodeCamera();
+        document.getElementById("scanBackdrop").classList.remove("open");
+        scanBusy = false;
+      }
+
+      async function handleScannedCode(rawCode) {
+        const clean = String(rawCode || "").replace(/[^\dX]/gi, "").trim();
+        if (clean.length < 8 || scanBusy) return;
+        scanBusy = true;
+        const statusEl = document.getElementById("scanStatusText");
+        if (statusEl) statusEl.textContent = `Đã đọc mã ${clean} — đang tra thông tin...`;
+        await stopBarcodeCamera();
+
+        const info = await lookupBarcode(clean);
+        document.getElementById("scanBackdrop").classList.remove("open");
+        scanBusy = false;
+        openBarcodeResultModal(info);
+      }
+
+      async function openBarcodeScanner() {
+        const backdrop = document.getElementById("scanBackdrop");
+        const statusEl = document.getElementById("scanStatusText");
+        const manualIn = document.getElementById("scanManualInput");
+        const reticleEl = document.getElementById("scanReticle");
+        backdrop.classList.add("open");
+        manualIn.value = "";
+        scanBusy = false;
+        reticleEl.style.display = "flex";
+        statusEl.textContent = "Đang bật camera sau...";
+
+        try {
+          const Html5Qrcode = await loadHtml5QrcodeLib();
+          if (!backdrop.classList.contains("open")) return;
+          const readerEl = document.getElementById("barcodeReaderBox");
+          readerEl.innerHTML = "";
+          const formats = window.Html5QrcodeSupportedFormats
+            ? [
+                window.Html5QrcodeSupportedFormats.EAN_13,
+                window.Html5QrcodeSupportedFormats.EAN_8,
+                window.Html5QrcodeSupportedFormats.UPC_A,
+                window.Html5QrcodeSupportedFormats.CODE_128,
+              ]
+            : undefined;
+          const scanner = new Html5Qrcode("barcodeReaderBox", formats ? { formatsToSupport: formats, verbose: false } : false);
+          activeScanner = scanner;
+
+          await scanner.start(
+            { facingMode: "environment" },
+            { fps: 12, qrbox: { width: 250, height: 110 }, disableFlip: false },
+            (decodedText) => {
+              handleScannedCode(decodedText);
+            },
+            () => {}
+          );
+          statusEl.textContent = state.barcodeWorkerUrl
+            ? "Sẵn sàng (nguồn VN + quốc tế) · Đưa mã vạch vào khung..."
+            : "Sẵn sàng (chưa gắn Worker VN) · Đưa mã vạch vào khung...";
+        } catch (err) {
+          reticleEl.style.display = "none";
+          statusEl.textContent =
+            "Không mở được camera trực tiếp — hãy bấm 'Quét từ ảnh chụp' hoặc gõ 13 số dưới mã vạch.";
+        }
+      }
+
+      function openBarcodeResultModal(info) {
+        const last = { ...DEFAULT_STATE.lastEntry, ...(state.lastEntry || {}) };
+        const matchedExisting = info.seriesTitle
+          ? state.series.find((s) => {
+              const a = normVN(s.title);
+              const b = normVN(info.seriesTitle);
+              return a === b || (a.length >= 4 && b.length >= 4 && (a.includes(b) || b.includes(a)));
+            })
+          : null;
+
+        let currentCoverData = "";
+        let coverPreviewUrl = info.coverUrl || "";
+        const workerBase = (state.barcodeWorkerUrl || "").trim().replace(/\/+$/, "");
+        if (coverPreviewUrl && workerBase && /^https?:\/\//i.test(coverPreviewUrl)) {
+          coverPreviewUrl = `${workerBase}/img?url=${encodeURIComponent(coverPreviewUrl)}`;
+        }
+
+        const defPub = info.publisher || last.publisher || "Kim Đồng";
+        const defCat = info.category || last.category || "Manga";
+        const defSec = info.editionHint || last.sectionName || "Bản thường";
+        const defCoverPrice = info.coverPrice || last.coverPrice || 35000;
+        const defCk = last.discount ?? 15;
+        const defPaid = Math.round(defCoverPrice * (1 - defCk / 100));
+
+        const statusBanner = info.found
+          ? `<div class="boxset-hint" style="border-left-color:var(--forest);">
+               Tìm thấy từ <strong>${esc(info.source)}</strong> · Mã <span class="mono">${esc(info.barcode)}</span>
+             </div>`
+          : `<div class="missing-strip">
+               <strong>Không tự tìm thấy mã <span class="mono">${esc(info.barcode)}</span></strong><br/>
+               <span class="small-muted">${esc(info.message || "Bạn có thể điền nhanh tên truyện bên dưới.")}</span>
+               ${
+                 !workerBase
+                   ? `<div style="margin-top:6px;"><button type="button" class="btn btn-sm" id="resSetupWorkerBtn">Dán link Cloudflare Worker để tra truyện VN</button></div>`
+                   : ""
+               }
+             </div>`;
+
+        const existingMatchHtml = matchedExisting
+          ? `<div class="quick-box" style="border-color:var(--forest); background:var(--forest-soft);">
+               <div style="font-size:12.5px; font-weight:600; color:var(--forest);">
+                 Trùng với bộ đang có: "${esc(matchedExisting.title)}"
+               </div>
+               <div class="field" style="margin-top:7px;">
+                 <label>Thêm thẳng Tập ${esc(info.volumeNumber || 1)} vào mục:</label>
+                 <select id="bcExistingSecSel">
+                   ${(matchedExisting.sections || [])
+                     .map((sec) => `<option value="${sec.id}">${esc(sec.name)} (${(sec.volumes || []).length} tập)</option>`)
+                     .join("")}
+                   <option value="__new__">+ Tạo mục mới ("${esc(defSec)}")</option>
+                 </select>
+               </div>
+             </div>`
+          : "";
+
+        const html = `
+          <form id="barcodeResultForm" class="form-grid">
+            ${statusBanner}
+            ${existingMatchHtml}
+
+            <div style="display:flex; gap:12px; align-items:flex-start;">
+              <div class="cover-preview" id="bcCoverBox" style="width:70px; height:105px;">
+                ${coverPreviewUrl ? `<img src="${esc(coverPreviewUrl)}" alt="" referrerpolicy="no-referrer" />` : "Chưa có"}
+              </div>
+              <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:7px;">
+                <div class="field">
+                  <label>Tên bộ truyện / sách *</label>
+                  <input name="seriesTitle" required value="${esc(info.seriesTitle || "")}" placeholder="Nhập tên bộ..." />
+                </div>
+                <div class="field">
+                  <label>Tác giả</label>
+                  <input name="author" value="${esc(info.author || "")}" placeholder="Tác giả..." />
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              <label class="btn btn-sm" style="margin:0;">
+                Chọn / Chụp ảnh khác
+                <input type="file" id="bcCoverFileIn" accept="image/*" style="display:none;" />
+              </label>
+              <button type="button" class="btn btn-sm btn-danger" id="bcClearCoverBtn" style="${coverPreviewUrl ? "" : "display:none;"}">Bỏ ảnh</button>
+            </div>
+
+            <div class="form-row-2">
+              <div class="field">
+                <label>Số tập</label>
+                <input name="volNum" type="number" step="0.5" value="${esc(info.volumeNumber || 1)}" />
+              </div>
+              <div class="field">
+                <label>Mục (Bản thường / ĐB...)</label>
+                <input name="secName" value="${esc(defSec)}" />
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="field">
+                <label>Nhà xuất bản</label>
+                <select name="publisher">
+                  ${["Trẻ", "Kim Đồng", "IPM", "Nhã Nam", "Khác"]
+                    .map((p) => `<option value="${p}" ${defPub === p ? "selected" : ""}>${p}</option>`)
+                    .join("")}
+                </select>
+              </div>
+              <div class="field">
+                <label>Danh mục</label>
+                <select name="category">
+                  ${["Manga", "Light Novel", "Sách", "Artbook"]
+                    .map((c) => `<option value="${c}" ${defCat === c ? "selected" : ""}>${c}</option>`)
+                    .join("")}
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="form-row-2">
+                <div>
+                  <label>Giá bìa (VNĐ)</label>
+                  <input name="coverPrice" id="bcCoverPriceIn" type="number" min="0" value="${defCoverPrice}" />
+                </div>
+                <div>
+                  <label>Thực chi (VNĐ)</label>
+                  <input name="paidPrice" id="bcPaidPriceIn" type="number" min="0" value="${defPaid}" />
+                </div>
+              </div>
+              <div class="ck-row" id="bcCkRow">
+                ${CK_PRESETS.map((pct) => `<button type="button" class="ck-btn mono" data-bcck="${pct}">-${pct}%</button>`).join("")}
+              </div>
+            </div>
+
+            <label class="check-inline">
+              <input type="checkbox" id="bcLegacyChk" />
+              <span>Mua từ trước (không tính vào hạn mức tháng này)</span>
+            </label>
+
+            <div class="modal-actions" style="justify-content:space-between; flex-wrap:wrap;">
+              <button type="button" class="btn btn-sm" id="bcScanNextBtn">Lưu & Quét tiếp</button>
+              <div style="display:flex; gap:6px;">
+                <button type="button" class="btn btn-sm" id="bcRescanBtn">Quét lại</button>
+                <button type="submit" class="btn btn-sm btn-primary">${
+                  matchedExisting ? "+ Thêm vào bộ này" : "Lưu vào Tủ"
+                }</button>
+              </div>
+            </div>
+          </form>`;
+
+        openModal(info.found ? "Kết quả quét mã vạch" : "Nhập thủ công từ mã vạch", html, (body) => {
+          const form = body.querySelector("#barcodeResultForm");
+          const coverBox = body.querySelector("#bcCoverBox");
+          const clearBtn = body.querySelector("#bcClearCoverBtn");
+          const cpIn = body.querySelector("#bcCoverPriceIn");
+          const ppIn = body.querySelector("#bcPaidPriceIn");
+          const ckRow = body.querySelector("#bcCkRow");
+
+          // Tự tải ảnh bìa từ nguồn online về nén sẵn offline ở chế độ nền
+          if (info.coverUrl) {
+            fetchCoverAsDataUrl(info.coverUrl).then((dataUrl) => {
+              if (dataUrl && !currentCoverData) {
+                currentCoverData = dataUrl;
+                coverBox.innerHTML = `<img src="${esc(dataUrl)}" alt="" referrerpolicy="no-referrer" />`;
+                clearBtn.style.display = "";
+              }
+            });
+          }
+
+          const setupBtn = body.querySelector("#resSetupWorkerBtn");
+          if (setupBtn) setupBtn.addEventListener("click", openSettingsModal);
+
+          const syncCkActive = () => {
+            const cp = Math.max(0, Number(cpIn.value) || 0);
+            const pp = Math.max(0, Number(ppIn.value) || 0);
+            ckRow.querySelectorAll(".ck-btn").forEach((b) => {
+              const p = Number(b.dataset.bcck);
+              b.classList.toggle("active", cp > 0 && pp === Math.round(cp * (1 - p / 100)));
+            });
+          };
+          ckRow.querySelectorAll(".ck-btn").forEach((b) => {
+            b.addEventListener("click", () => {
+              const p = Number(b.dataset.bcck);
+              const cp = Math.max(0, Number(cpIn.value) || 0);
+              ppIn.value = Math.round(cp * (1 - p / 100));
+              syncCkActive();
+            });
+          });
+          cpIn.addEventListener("input", syncCkActive);
+          ppIn.addEventListener("input", syncCkActive);
+          syncCkActive();
+
+          clearBtn.addEventListener("click", () => {
+            currentCoverData = "__cleared__";
+            coverBox.innerHTML = "Chưa có";
+            clearBtn.style.display = "none";
+          });
+
+          body.querySelector("#bcCoverFileIn").addEventListener("change", async (e) => {
+            const f = e.target.files?.[0];
+            e.target.value = "";
+            if (!f) return;
+            const cropped = await openImageCropper(f, { ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.76, title: "Cắt ảnh bìa" });
+            if (cropped) {
+              currentCoverData = cropped;
+              coverBox.innerHTML = `<img src="${esc(cropped)}" alt="" />`;
+              clearBtn.style.display = "";
+            }
+          });
+
+          body.querySelector("#bcRescanBtn").addEventListener("click", () => {
+            closeModal();
+            openBarcodeScanner();
+          });
+
+          const saveScanned = async (scanAnother) => {
+            if (!form.reportValidity()) return;
+            const fd = new FormData(form);
+            const title = fd.get("seriesTitle").trim();
+            if (!title) return;
+            const author = (fd.get("author") || "").trim();
+            const publisher = fd.get("publisher");
+            const category = fd.get("category");
+            const secName = (fd.get("secName") || "Bản thường").trim();
+            const volNum = Number(fd.get("volNum")) || 1;
+            const coverPrice = Math.max(0, Number(fd.get("coverPrice")) || 0);
+            const paidPrice = Math.max(0, Number(fd.get("paidPrice")) || 0);
+            const isLegacy = Boolean(body.querySelector("#bcLegacyChk")?.checked);
+
+            let finalImg = "";
+            if (currentCoverData === "__cleared__") {
+              finalImg = "";
+            } else if (currentCoverData) {
+              finalImg = currentCoverData;
+            } else if (info.coverUrl) {
+              finalImg = await fetchCoverAsDataUrl(info.coverUrl);
+            }
+
+            pushUndo(`quét mã "${title} T.${volNum}"`);
+
+            let targetSeries = matchedExisting;
+            if (targetSeries) {
+              if (author && !targetSeries.author) targetSeries.author = author;
+              if (finalImg && !targetSeries.cover) targetSeries.cover = finalImg;
+              const existingSecSel = body.querySelector("#bcExistingSecSel");
+              const pickedSecId = existingSecSel ? existingSecSel.value : "__new__";
+              targetSeries.sections = targetSeries.sections || [];
+              let sec =
+                pickedSecId !== "__new__"
+                  ? targetSeries.sections.find((x) => x.id === pickedSecId)
+                  : targetSeries.sections.find((x) => normVN(x.name) === normVN(secName));
+              if (!sec) {
+                sec = { id: uid(), name: secName, image: "", note: "", volumes: [] };
+                targetSeries.sections.push(sec);
+              }
+              sec.volumes = sec.volumes || [];
+              sec.volumes.push({
+                id: uid(),
+                number: volNum,
+                coverPrice,
+                paidPrice,
+                date: todayISO(),
+                isLegacy,
+                image: finalImg,
+                readState: "Chưa đọc",
+                lentTo: "",
+                note: info.barcode ? `Mã: ${info.barcode}` : "",
+                groupId: "",
+                groupLabel: "",
+              });
+            } else {
+              targetSeries = {
+                id: uid(),
+                title,
+                author,
+                publisher,
+                category,
+                status: "Đang theo",
+                aliases: "",
+                note: "",
+                cover: finalImg,
+                createdAt: todayISO(),
+                sections: [
+                  {
+                    id: uid(),
+                    name: secName,
+                    image: "",
+                    note: "",
+                    volumes: [
+                      {
+                        id: uid(),
+                        number: volNum,
+                        coverPrice,
+                        paidPrice,
+                        date: todayISO(),
+                        isLegacy,
+                        image: finalImg,
+                        readState: "Chưa đọc",
+                        lentTo: "",
+                        note: info.barcode ? `Mã: ${info.barcode}` : "",
+                        groupId: "",
+                        groupLabel: "",
+                      },
+                    ],
+                  },
+                ],
+              };
+              state.series.unshift(targetSeries);
+            }
+
+            saveState();
+            renderBooks();
+            renderNews();
+            renderSpending();
+            spawnCelebration(undefined, undefined, 16);
+
+            if (scanAnother) {
+              closeModal();
+              showToast(`Đã lưu "${title}" (Tập ${volNum}) — quét cuốn tiếp!`, { undoable: true });
+              setTimeout(() => openBarcodeScanner(), 220);
+            } else {
+              openSeriesDetail(targetSeries.id);
+              showToast(`Đã lưu "${title}" (Tập ${volNum}).`, { undoable: true });
+            }
+          };
+
+          form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            saveScanned(false);
+          });
+
+          body.querySelector("#bcScanNextBtn").addEventListener("click", () => saveScanned(true));
         });
       }
 
@@ -7071,6 +7856,17 @@
 
             <div class="divider"></div>
             <div class="field">
+              <label>Link tra cứu mã vạch truyện VN (Cloudflare Worker)</label>
+              <input id="setBarcodeWorkerUrl" value="${esc(state.barcodeWorkerUrl || "")}" placeholder="https://tusach-barcode.ten-ban.workers.dev" />
+              <div class="small-muted" style="margin-top:4px;">Dán link Cloudflare Worker vào đây để quét mã vạch 893 / 978 tự hiện tên, tác giả, giá bìa & ảnh bìa bản Việt (Tiki, Kim Đồng, Fahasa).</div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-sm btn-primary" id="saveWorkerUrlBtn">Lưu link quét mã</button>
+              <button class="btn btn-sm" id="testWorkerUrlBtn">Kiểm tra kết nối</button>
+            </div>
+
+            <div class="divider"></div>
+            <div class="field">
               <label>Nguồn tin tự động (JSON URL)</label>
               <input id="setNewsUrl" value="${esc(state.newsUrl || "./news.json")}" />
               <div class="small-muted" style="margin-top:4px;">Mặc định là <code>./news.json</code> khi chạy trên GitHub Pages.</div>
@@ -7095,6 +7891,7 @@
             <div class="panel-title">Thử nhanh & Dọn dẹp</div>
             <div style="display:flex; flex-wrap:wrap; gap:8px;">
               <button class="btn btn-sm" id="loadSampleBtn">Nạp 3 bộ mẫu test</button>
+              ${undoStack.length ? `<button class="btn btn-sm" id="settingsUndoBtn">Hoàn tác bước gần nhất (${undoStack.length})</button>` : ""}
               <button class="btn btn-sm btn-danger" id="wipeAllBtn">Xoá toàn bộ dữ liệu</button>
             </div>
           </div>`;
@@ -7120,7 +7917,41 @@
             const imgCount = Object.keys(state.images || {}).length;
             healthEl.textContent = `Kho lưu: ${storageEngine} · Đang dùng ${mb} MB (${imgCount} ảnh riêng biệt)`;
           }
-          body.querySelector("#saveNewsUrlBtn").addEventListener("click", () => {
+          body.querySelector("#saveWorkerUrlBtn").addEventListener("click", () => {
+            const val = body.querySelector("#setBarcodeWorkerUrl").value.trim().replace(/\/+$/, "");
+            state.barcodeWorkerUrl = val;
+            saveState();
+            showToast(val ? "Đã lưu link Cloudflare Worker quét mã." : "Đã xoá link Worker.");
+          });
+
+          body.querySelector("#testWorkerUrlBtn").addEventListener("click", async () => {
+            const val = body.querySelector("#setBarcodeWorkerUrl").value.trim().replace(/\/+$/, "");
+            if (!val) {
+              showToast("Hãy dán link Cloudflare Worker trước.");
+              return;
+            }
+            showToast("Đang kiểm tra Worker...");
+            try {
+              const res = await fetch(`${val}/ping`, { cache: "no-store" });
+              const data = await res.json();
+              if (res.ok && data?.ok) {
+                state.barcodeWorkerUrl = val;
+                saveState();
+                showToast("Kết nối Worker ngon lành! Đã tự lưu.");
+              } else {
+                showToast("Worker phản hồi lạ — kiểm tra lại code đã dán.");
+              }
+            } catch {
+              showToast("Không kết nối được link này — kiểm tra lại URL https://...");
+            }
+          });
+
+          const setUndoBtn = body.querySelector("#settingsUndoBtn");
+          if (setUndoBtn) {
+            setUndoBtn.addEventListener("click", () => performUndo());
+          }
+
+                    body.querySelector("#saveNewsUrlBtn").addEventListener("click", () => {
             state.newsUrl = body.querySelector("#setNewsUrl").value.trim() || "./news.json";
             saveState();
             fetchNews(true);
@@ -7388,7 +8219,49 @@
       document.getElementById("undoBtn").addEventListener("click", performUndo);
       document.getElementById("markLegacyBtn").addEventListener("click", openMarkLegacyModal);
             document.getElementById("settingsBtn").addEventListener("click", openSettingsModal);
-      document.getElementById("addSeriesBtn").addEventListener("click", () => openSeriesForm());
+      document.getElementById("scanBarcodeBtn").addEventListener("click", openBarcodeScanner);
+      document.getElementById("scanCloseBtn").addEventListener("click", closeBarcodeScanner);
+      document.getElementById("scanBackdrop").addEventListener("click", (e) => {
+        if (e.target.id === "scanBackdrop") closeBarcodeScanner();
+      });
+      document.getElementById("scanOpenSettingsBtn").addEventListener("click", async () => {
+        await closeBarcodeScanner();
+        openSettingsModal();
+      });
+      document.getElementById("scanManualGoBtn").addEventListener("click", () => {
+        const val = document.getElementById("scanManualInput").value.trim();
+        if (!val) {
+          showToast("Nhập mã vạch (VD: 893... hoặc 978...) trước nhé.");
+          return;
+        }
+        handleScannedCode(val);
+      });
+      document.getElementById("scanManualInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          document.getElementById("scanManualGoBtn").click();
+        }
+      });
+      document.getElementById("scanFileInput").addEventListener("change", async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = "";
+        if (!file) return;
+        const statusEl = document.getElementById("scanStatusText");
+        statusEl.textContent = "Đang đọc mã vạch từ ảnh...";
+        try {
+          await stopBarcodeCamera();
+          const Html5Qrcode = await loadHtml5QrcodeLib();
+          const fileScanner = new Html5Qrcode("barcodeReaderBox");
+          const decoded = await fileScanner.scanFile(file, false);
+          try { fileScanner.clear(); } catch {}
+          handleScannedCode(decoded);
+        } catch {
+          statusEl.textContent = "Không đọc được mã vạch trong ảnh — thử chụp rõ hơn hoặc gõ 13 số.";
+          showToast("Không nhận diện được mã vạch trong ảnh.");
+        }
+      });
+
+            document.getElementById("addSeriesBtn").addEventListener("click", () => openSeriesForm());
       document.getElementById("addGiftGroupBtn").addEventListener("click", () => openGiftGroupForm());
       document.getElementById("manualPinBtn").addEventListener("click", openManualPinForm);
       document.getElementById("refreshNewsBtn").addEventListener("click", () => fetchNews(true));
