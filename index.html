@@ -182,7 +182,7 @@
 
     /* Main Content */
     .main {
-      padding: 14px 16px 24px;
+      padding: 10px 16px 24px;
       flex: 1;
     }
 
@@ -494,7 +494,7 @@
 
     .row-thumb {
       width: 38px;
-      height: 54px;
+      height: 58px;
       border: 1px solid var(--line);
       background: var(--surface-2);
       overflow: hidden;
@@ -2894,6 +2894,102 @@
       font-size: 11.5px;
       color: var(--muted);
     }
+
+    /* ============================
+       6. MÈO BÉO TẬP THỂ DỤC (CHUBBY GYM CAT TRACK)
+       ============================ */
+    .cat-track-wrap {
+      padding: 8px 16px 0;
+    }
+
+    .cat-track-wrap.hidden {
+      display: none;
+    }
+
+    .cat-track-bar {
+      position: relative;
+      width: 100%;
+      height: 54px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      overflow: hidden;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
+      transition: border-color 0.2s ease, background-color 0.25s ease;
+    }
+
+    .cat-track-bar:active {
+      border-color: var(--line-strong);
+    }
+
+    .cat-track-bar canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .cat-hud {
+      position: absolute;
+      top: 5px;
+      right: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      pointer-events: none;
+    }
+
+    .cat-status-pill {
+      font-size: 9.5px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      opacity: 0.86;
+      transition: color 0.2s ease;
+    }
+
+    .cat-status-pill.is-run {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .cat-status-pill.is-tired {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .cat-stamina-wrap {
+      width: 34px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.28s ease;
+    }
+
+    .cat-stamina-wrap.show {
+      opacity: 1;
+    }
+
+    .cat-stamina-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--forest);
+      transition: background-color 0.2s ease;
+    }
+
+    .cat-stamina-fill.mid {
+      background: var(--amber);
+    }
+
+    .cat-stamina-fill.low {
+      background: var(--danger);
+    }
+
   </style>
 </head>
 <body>
@@ -2920,6 +3016,17 @@
         </button>
       </div>
     </header>
+
+    <!-- Chubby Gym Cat Track -->
+    <div class="cat-track-wrap" id="catTrackWrap">
+      <div class="cat-track-bar" id="catTrackBar" role="button" aria-label="Mèo béo tập thể dục — chạm chậm để đi bộ, chạm nhanh để chạy">
+        <canvas id="catCanvas"></canvas>
+        <div class="cat-hud">
+          <div class="cat-stamina-wrap" id="catStaminaWrap"><div class="cat-stamina-fill" id="catStaminaFill"></div></div>
+          <span class="cat-status-pill mono" id="catStatusPill">Chạm để chạy</span>
+        </div>
+      </div>
+    </div>
 
     <main class="main">
       <!-- TAB 1: TỦ SÁCH -->
@@ -3193,6 +3300,8 @@
       const DEFAULT_STATE = {
         theme: "light",
         fxLevel: "rich", // "rich" | "minimal"
+        catEnabled: true,
+        catCoat: "ginger", // "ginger" | "tabby" | "cream"
         soundEnabled: true,
         soundPack: "marble", // "marble" | "tactile" | "console" | "watch"
         soundMap: {
@@ -3884,6 +3993,9 @@
         applyTheme();
         applyFxLevel();
         applySoundUI();
+        applyCatVisibility();
+        applyCatVisibility();
+        applySoundUI();
         renderAll();
         closeModal();
         if (undoStack.length > 0) flashUndoBtnFor5s();
@@ -3972,7 +4084,7 @@
       const BACK_CLICK_SEL =
         "#backToSeriesBtn, #backFromSecFormBtn, #backSecBtn, #backBulkBtn, #lbDoneBtn, #backGiftGroupBtn";
       const SILENT_FALLBACK_SEL =
-        "#themeBtn, #soundBtn, #undoBtn, #modalCloseBtn, .status-cycle, .tab-btn, .shelf-book-group, .sound-pack-btn, .sound-map-play, [data-sndval], [data-spack], [data-snd-test]";
+        "#themeBtn, #soundBtn, #undoBtn, #modalCloseBtn, .status-cycle, .tab-btn, .shelf-book-group, .sound-pack-btn, .sound-map-play, .cat-track-bar, [data-sndval], [data-spack], [data-snd-test]";
 
       document.addEventListener("click", (e) => {
         // Nếu nút vừa bấm đã tự phát tiếng chuyên biệt (mở sách, rút kệ, lưu, xoá, đóng, chuyển tab...) -> bỏ qua không phát chồng!
@@ -4408,6 +4520,32 @@
           else if (sectionKey === "camera") this.shutter();
         },
 
+        catTap(isFast = false) {
+          if (!isSoundOn()) return;
+          markSfx();
+          playModalResonance({
+            f1: isFast ? 480 : 340,
+            f2: isFast ? 290 : 210,
+            bodyDur: isFast ? 0.02 : 0.026,
+            gain: isFast ? 0.075 : 0.065,
+            wave: "sine",
+            noiseDur: 0.01,
+            seed: isFast ? 0x7702 : 0x7701,
+            modes: [{ freq: isFast ? 1850 : 1280, q: 5.0, amp: 0.45 }],
+          });
+        },
+        catWake() {
+          if (!isSoundOn()) return;
+          markSfx();
+          playCleanChime(587.33, 0.08, 0.055, 0, 1.5);
+          playCleanChime(783.99, 0.1, 0.05, 0.045, 1.5);
+        },
+        catTired() {
+          if (!isSoundOn()) return;
+          markSfx();
+          playPaperBrush(780, 0.14, 0.055, 0, 0x7705);
+          playModalResonance({ f1: 310, f2: 180, bodyDur: 0.09, gain: 0.06, wave: "sine", delay: 0.02 });
+        },
         demoPack() {
           this.filter();
           setTimeout(() => this.openBook(), 130);
@@ -10100,6 +10238,19 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
             </div>
 
             <div class="field">
+              <label>Mèo béo tập thể dục (thanh đầu trang)</label>
+              <div class="scope-switch" id="catEnableSwitch" style="margin-bottom:6px;">
+                <button type="button" class="${state.catEnabled !== false ? "active" : ""}" data-caten="on">Hiện mèo béo</button>
+                <button type="button" class="${state.catEnabled === false ? "active" : ""}" data-caten="off">Ẩn tạm</button>
+              </div>
+              <div class="scope-switch-3" id="catCoatSwitch" style="margin-bottom:0;">
+                <button type="button" class="${(state.catCoat || "ginger") === "ginger" ? "active" : ""}" data-coat="ginger">Mèo Cam</button>
+                <button type="button" class="${state.catCoat === "tabby" ? "active" : ""}" data-coat="tabby">Mèo Mướp</button>
+                <button type="button" class="${state.catCoat === "cream" ? "active" : ""}" data-coat="cream">Mèo Trắng</button>
+              </div>
+            </div>
+
+            <div class="field">
               <label>Âm thanh ứng dụng (chạm vào từng gói để nghe thử ngay)</label>
               <div class="scope-switch" id="soundSwitch" style="margin-bottom:6px;">
                 <button type="button" class="${isSoundOn() ? "active" : ""}" data-sndval="on">Đang bật âm thanh</button>
@@ -10199,6 +10350,36 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
               fxSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
               if (state.fxLevel === "rich") spawnCelebrationFromEl(btn, 12);
               showToast(state.fxLevel === "rich" ? "Đã bật hiệu ứng phong phú." : "Đã chuyển sang chế độ gọn nhẹ.");
+            });
+          }
+
+          const catEnSw = body.querySelector("#catEnableSwitch");
+          if (catEnSw) {
+            catEnSw.addEventListener("click", (e) => {
+              const btn = e.target.closest("button[data-caten]");
+              if (!btn) return;
+              state.catEnabled = btn.dataset.caten === "on";
+              saveState();
+              applyCatVisibility();
+              catEnSw.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+              showToast(state.catEnabled ? "Boss mèo đã ra sân tập!" : "Đã tạm ẩn mèo béo.");
+            });
+          }
+          const catCoatSw = body.querySelector("#catCoatSwitch");
+          if (catCoatSw) {
+            catCoatSw.addEventListener("click", (e) => {
+              const btn = e.target.closest("button[data-coat]");
+              if (!btn) return;
+              state.catCoat = btn.dataset.coat;
+              state.catEnabled = true;
+              saveState();
+              applyCatVisibility();
+              catCoatSw.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+              if (catEnSw) {
+                catEnSw.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.caten === "on"));
+              }
+              SFX.catWake();
+              showToast(`Đã đổi màu lông: ${btn.textContent}`);
             });
           }
 
@@ -10716,6 +10897,993 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
         renderNews();
         renderSpending();
       }
+
+
+      // ============================
+      // MÈO BÉO TẬP THỂ DỤC (60FPS RETINA CANVAS ENGINE)
+      // - Ấn chậm: đi bộ mượt mà (gait phase khớp vận tốc thật, không trượt chân)
+      // - Ấn nhanh: tăng tốc chạy nước rút + vệt bụi + băng đô phấp phới
+      // - Ấn nhanh lâu quá: cạn thể lực -> nằm thở dốc, thè lưỡi, đổ mồ hôi hồi sức
+      // - Dừng không ấn ~5 giây: tự random Ngồi nghỉ (vẫy đuôi/liếm chân) hoặc Cuộn tròn ngủ (z Z z)
+      // ============================
+      const CAT_COATS = {
+        ginger: {
+          body: "#F0A04B",
+          shade: "#DC822D",
+          stripe: "#B95D18",
+          belly: "#FFF3DC",
+          earIn: "#F7B7AE",
+          cheek: "#F27E72",
+          band: "#C43E2E",
+          stroke: "#4A2A15",
+        },
+        tabby: {
+          body: "#A6A39E",
+          shade: "#87837D",
+          stripe: "#5A5752",
+          belly: "#F2EFE9",
+          earIn: "#E8AEB0",
+          cheek: "#EC8C84",
+          band: "#2F6B5B",
+          stroke: "#2C2A28",
+        },
+        cream: {
+          body: "#F7EFE2",
+          shade: "#E7DAC6",
+          stripe: "#D4B895",
+          belly: "#FFFFFF",
+          earIn: "#F5B8B4",
+          cheek: "#F48E86",
+          band: "#D15338",
+          stroke: "#52463A",
+        },
+      };
+
+      const catWrap = document.getElementById("catTrackWrap");
+      const catBar = document.getElementById("catTrackBar");
+      const catCanvas = document.getElementById("catCanvas");
+      const catStatusPill = document.getElementById("catStatusPill");
+      const catStaminaWrap = document.getElementById("catStaminaWrap");
+      const catStaminaFill = document.getElementById("catStaminaFill");
+
+      const cat = {
+        w: 340,
+        h: 58,
+        dpr: 1,
+        x: 90,
+        dir: 1,            // 1 = right, -1 = left
+        facing: 1,         // smoothly lerped toward dir for silky turn
+        speed: 28,         // current px/s
+        targetSpeed: 28,   // desired px/s
+        gait: 0,           // advances strictly with distance moved -> zero foot slip!
+        state: "walk",     // "walk" | "run" | "tired" | "sit" | "sleep"
+        stamina: 100,      // 0..100
+        tiredTimer: 0,
+        idleTimer: 0,      // seconds since last tap
+        lastTapAt: 0,
+        tapHistory: [],    // recent tap timestamps (ms)
+        hasTappedOnce: false,
+
+        // Smooth animation blend weights (0..1)
+        runMix: 0,
+        sitMix: 0,
+        sleepMix: 0,
+        tiredMix: 0,
+        hopY: 0,
+        hopV: 0,
+        wobble: 0,
+
+        // Expressive micro-timers
+        clock: 0,
+        blinkTimer: 2.2,
+        blinkDur: 0,
+        lickTimer: 3.4,
+        lickDur: 0,
+        dustCD: 0,
+        sweatCD: 0,
+        zzzCD: 0,
+        lastSfxStep: 0,
+
+        particles: [],     // dust puffs, sweat drops, zzz, hearts/sparks
+      };
+
+      function applyCatVisibility() {
+        if (!catWrap) return;
+        const on = state.catEnabled !== false;
+        catWrap.classList.toggle("hidden", !on);
+        if (on) resizeCatCanvas();
+      }
+
+      function resizeCatCanvas() {
+        if (!catCanvas || !catBar) return;
+        const rect = catBar.getBoundingClientRect();
+        if (rect.width < 40) return;
+        cat.w = Math.round(rect.width);
+        cat.h = Math.round(rect.height);
+        cat.dpr = Math.min(window.devicePixelRatio || 1, 3);
+        catCanvas.width = Math.round(cat.w * cat.dpr);
+        catCanvas.height = Math.round(cat.h * cat.dpr);
+        const margin = 34;
+        cat.x = Math.max(margin, Math.min(cat.w - margin, cat.x));
+      }
+
+      function spawnCatParticle(kind, x, y, extra = {}) {
+        if (cat.particles.length > 26) cat.particles.shift();
+        cat.particles.push({
+          kind,
+          x,
+          y,
+          vx: extra.vx || 0,
+          vy: extra.vy || 0,
+          age: 0,
+          life: extra.life || 0.7,
+          size: extra.size || 4,
+          text: extra.text || "",
+        });
+      }
+
+      function setCatHud(text, cls = "") {
+        if (!catStatusPill) return;
+        if (catStatusPill.textContent !== text) catStatusPill.textContent = text;
+        catStatusPill.className = "cat-status-pill mono" + (cls ? " " + cls : "");
+      }
+
+      function handleCatTap(clientX) {
+        if (state.catEnabled === false) return;
+        ensureAudioCtx();
+        const now = performance.now();
+        const prevTap = cat.lastTapAt;
+        cat.lastTapAt = now;
+        cat.hasTappedOnce = true;
+
+        // Giữ cửa sổ các lần chạm trong 1.8 giây gần nhất để đo tốc độ ấn cực mượt
+        cat.tapHistory.push(now);
+        while (cat.tapHistory.length && now - cat.tapHistory[0] > 1800) {
+          cat.tapHistory.shift();
+        }
+
+        // Nếu đang mệt thở dốc: không ép chạy ngay được, chỉ giật mình đổ thêm giọt mồ hôi dễ thương!
+        if (cat.state === "tired") {
+          cat.wobble = 1.0;
+          spawnCatParticle("sweat", cat.x + cat.facing * 12, cat.h - 32, {
+            vx: cat.facing * 24,
+            vy: -36,
+            life: 0.65,
+            size: 3.4,
+          });
+          if (now - cat.lastSfxStep > 240) {
+            cat.lastSfxStep = now;
+            SFX.catTired();
+          }
+          return;
+        }
+
+        const wasResting = cat.state === "sit" || cat.state === "sleep";
+        cat.idleTimer = 0;
+
+        // Nếu đang ngủ / ngồi nghỉ -> giật mình bật dậy siêu dễ thương & quay về phía ngón tay chạm
+        if (wasResting) {
+          cat.hopV = -82;
+          if (typeof clientX === "number" && catBar) {
+            const rect = catBar.getBoundingClientRect();
+            const tapX = clientX - rect.left;
+            if (Math.abs(tapX - cat.x) > 16) {
+              cat.dir = tapX >= cat.x ? 1 : -1;
+            }
+          }
+          spawnCatParticle("spark", cat.x + cat.facing * 10, cat.h - 36, {
+            vx: cat.facing * 10,
+            vy: -26,
+            life: 0.6,
+            text: "!",
+          });
+          SFX.catWake();
+          cat.lastSfxStep = now;
+        }
+
+        // Tính nhịp ấn: khoảng cách 2 lần chạm gần nhất + số lần chạm trong 1.8s
+        const gap = prevTap ? now - prevTap : 999;
+        const recentCount = cat.tapHistory.length;
+        const isFast = (gap < 360 && recentCount >= 2) || recentCount >= 4;
+
+        if (isFast) {
+          cat.state = "run";
+          // Ấn càng nhanh chạy càng tít (88 -> 168 px/s)
+          const cadenceBoost = Math.min(1, Math.max(0, (recentCount - 2) / 6));
+          cat.targetSpeed = 92 + cadenceBoost * 78;
+          // Mỗi cú chạm nhanh trong khi đang chạy làm mất nhẹ stamina (chạy nhanh liên tục ~5–6s sẽ mệt!)
+          cat.stamina = Math.max(0, cat.stamina - 4.2);
+          spawnCatParticle("dust", cat.x - cat.facing * 14, cat.h - 9, {
+            vx: -cat.facing * (28 + cadenceBoost * 24),
+            vy: -14,
+            life: 0.45,
+            size: 4.5,
+          });
+          if (!wasResting && now - cat.lastSfxStep > 135) {
+            cat.lastSfxStep = now;
+            SFX.catTap(true);
+          }
+        } else {
+          cat.state = "walk";
+          cat.targetSpeed = 48;
+          if (!wasResting && now - cat.lastSfxStep > 160) {
+            cat.lastSfxStep = now;
+            SFX.catTap(false);
+          }
+        }
+      }
+
+      if (catBar) {
+        catBar.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          handleCatTap(e.clientX);
+        });
+      }
+
+      function updateCatPhysics(dt) {
+        cat.clock += dt;
+
+        // Blink timer
+        if (cat.blinkDur > 0) {
+          cat.blinkDur = Math.max(0, cat.blinkDur - dt);
+        } else {
+          cat.blinkTimer -= dt;
+          if (cat.blinkTimer <= 0) {
+            cat.blinkDur = 0.14;
+            cat.blinkTimer = 2.4 + Math.random() * 2.8;
+          }
+        }
+
+        // Sit paw-lick timer
+        if (cat.state === "sit") {
+          if (cat.lickDur > 0) {
+            cat.lickDur = Math.max(0, cat.lickDur - dt);
+          } else {
+            cat.lickTimer -= dt;
+            if (cat.lickTimer <= 0) {
+              cat.lickDur = 1.35;
+              cat.lickTimer = 3.2 + Math.random() * 3.0;
+            }
+          }
+        } else {
+          cat.lickDur = 0;
+        }
+
+        // Hop physics
+        if (cat.hopY < 0 || cat.hopV !== 0) {
+          cat.hopY += cat.hopV * dt;
+          cat.hopV += 580 * dt;
+          if (cat.hopY >= 0) {
+            cat.hopY = 0;
+            cat.hopV = 0;
+          }
+        }
+
+        cat.wobble = Math.max(0, cat.wobble - dt * 3.6);
+
+        const now = performance.now();
+        // Dọn lịch sử chạm quá 1.8s
+        while (cat.tapHistory.length && now - cat.tapHistory[0] > 1800) {
+          cat.tapHistory.shift();
+        }
+
+        // Quản lý trạng thái & thể lực
+        if (cat.state === "tired") {
+          cat.targetSpeed = 0;
+          cat.tiredTimer -= dt;
+          cat.stamina = Math.min(100, cat.stamina + dt * 11.5);
+          cat.sweatCD -= dt;
+          if (cat.sweatCD <= 0) {
+            cat.sweatCD = 0.58;
+            spawnCatParticle("sweat", cat.x + cat.facing * 11, cat.h - 29, {
+              vx: cat.facing * 16,
+              vy: -30,
+              life: 0.72,
+              size: 3.0,
+            });
+          }
+          if (cat.tiredTimer <= 0 && cat.stamina >= 48) {
+            // Hồi sức xong: nếu vẫn không bấm nữa thì nghỉ, ngược lại đi bộ nhẹ lại
+            cat.state = "walk";
+            cat.targetSpeed = 24;
+            cat.idleTimer = 2.8;
+          }
+        } else if (cat.state === "run") {
+          cat.idleTimer += dt;
+          // Chạy nhanh liên tục đốt thể lực (hết sau ~5–6s chạy hăng)
+          const drainRate = 11.5 + Math.max(0, (cat.speed - 90) * 0.14);
+          cat.stamina = Math.max(0, cat.stamina - drainRate * dt);
+
+          // Bụi chạy mượt sau chân
+          cat.dustCD -= dt;
+          if (cat.dustCD <= 0 && cat.speed > 75) {
+            cat.dustCD = Math.max(0.11, 0.24 - (cat.speed - 80) * 0.0012);
+            spawnCatParticle("dust", cat.x - cat.facing * 15, cat.h - 8, {
+              vx: -cat.facing * (22 + Math.random() * 14),
+              vy: -8 - Math.random() * 10,
+              life: 0.42,
+              size: 3.4 + Math.random() * 2.2,
+            });
+          }
+
+          // Nếu cạn thể lực -> MỆT!
+          if (cat.stamina <= 0) {
+            cat.state = "tired";
+            cat.tiredTimer = 4.6;
+            cat.targetSpeed = 0;
+            cat.idleTimer = 0;
+            SFX.catTired();
+            spawnCatParticle("sweat", cat.x + cat.facing * 12, cat.h - 32, {
+              vx: cat.facing * 22,
+              vy: -38,
+              life: 0.75,
+              size: 3.4,
+            });
+          } else if (cat.idleTimer > 1.05) {
+            // Không bấm nhanh nữa -> hạ nhịp mượt về đi bộ
+            cat.state = "walk";
+            cat.targetSpeed = 36;
+          }
+        } else if (cat.state === "walk") {
+          cat.idleTimer += dt;
+          cat.stamina = Math.min(100, cat.stamina + dt * 10);
+
+          // Giảm tốc êm dần sau 2.2s không ấn để chuẩn bị nghỉ ở mốc 5s
+          if (cat.idleTimer > 2.2) {
+            const cool = Math.max(0, 1 - (cat.idleTimer - 2.2) / 2.6);
+            cat.targetSpeed = 16 + cool * 22;
+          }
+
+          // Đủ 5 giây không chạm -> Random 50/50 Ngồi nghỉ hoặc Ngủ!
+          if (cat.idleTimer >= 5.0) {
+            cat.state = Math.random() < 0.5 ? "sleep" : "sit";
+            cat.targetSpeed = 0;
+            cat.zzzCD = 0.45;
+          }
+        } else {
+          // sit hoặc sleep
+          cat.targetSpeed = 0;
+          cat.stamina = Math.min(100, cat.stamina + dt * 18);
+          if (cat.state === "sleep") {
+            cat.zzzCD -= dt;
+            if (cat.zzzCD <= 0) {
+              cat.zzzCD = 1.15;
+              const letters = ["z", "Z", "z"];
+              const ch = letters[Math.floor(cat.clock) % letters.length];
+              spawnCatParticle("zzz", cat.x + cat.facing * 11, cat.h - 27, {
+                vx: cat.facing * 6,
+                vy: -16,
+                life: 1.55,
+                text: ch,
+              });
+            }
+          }
+        }
+
+        // Nội suy vận tốc & hướng quay mượt như bơ
+        const accel = cat.targetSpeed > cat.speed ? 8.5 : 5.2;
+        cat.speed += (cat.targetSpeed - cat.speed) * Math.min(1, dt * accel);
+        if (Math.abs(cat.speed) < 0.4 && cat.targetSpeed === 0) cat.speed = 0;
+
+        cat.facing += (cat.dir - cat.facing) * Math.min(1, dt * 11.5);
+
+        // Di chuyển theo hướng + quay đầu mượt ở 2 mép sân tập
+        const margin = 32;
+        cat.x += cat.dir * cat.speed * dt;
+        if (cat.x > cat.w - margin) {
+          cat.x = cat.w - margin;
+          cat.dir = -1;
+        } else if (cat.x < margin) {
+          cat.x = margin;
+          cat.dir = 1;
+        }
+
+        // Gait phase gắn chặt với quãng đường đi thực tế (không trượt chân ở bất kỳ tốc độ nào!)
+        cat.gait += cat.speed * dt * 0.24;
+
+        // Smooth pose blends
+        const lerp = (cur, tgt, rate) => cur + (tgt - cur) * Math.min(1, dt * rate);
+        cat.runMix = lerp(cat.runMix, cat.state === "run" ? Math.min(1, (cat.speed - 52) / 75) : 0, 7);
+        cat.sitMix = lerp(cat.sitMix, cat.state === "sit" ? 1 : 0, 6.5);
+        cat.sleepMix = lerp(cat.sleepMix, cat.state === "sleep" ? 1 : 0, 5.2);
+        cat.tiredMix = lerp(cat.tiredMix, cat.state === "tired" ? 1 : 0, 7.5);
+
+        // Update particles
+        for (let i = cat.particles.length - 1; i >= 0; i--) {
+          const p = cat.particles[i];
+          p.age += dt;
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          if (p.kind === "sweat") p.vy += 120 * dt;
+          if (p.kind === "dust") {
+            p.vx *= 0.94;
+            p.vy *= 0.94;
+          }
+          if (p.age >= p.life) cat.particles.splice(i, 1);
+        }
+
+        // Update HUD status + stamina bar
+        if (cat.state === "tired") {
+          setCatHud("Hộc... mệt quá!", "is-tired");
+        } else if (cat.state === "run") {
+          setCatHud(cat.speed > 130 ? "Chạy hết tốc!" : "Đang chạy!", "is-run");
+        } else if (cat.state === "sleep") {
+          setCatHud("Đang ngủ khò...");
+        } else if (cat.state === "sit") {
+          setCatHud("Ngồi nghỉ");
+        } else {
+          setCatHud(cat.hasTappedOnce ? "Đi bộ" : "Chạm để tập");
+        }
+
+        if (catStaminaWrap && catStaminaFill) {
+          const showBar = cat.state === "run" || cat.state === "tired" || cat.stamina < 96;
+          catStaminaWrap.classList.toggle("show", showBar);
+          const pct = Math.max(0, Math.min(100, Math.round(cat.stamina)));
+          catStaminaFill.style.width = pct + "%";
+          catStaminaFill.classList.toggle("low", cat.state === "tired" || pct < 28);
+          catStaminaFill.classList.toggle("mid", cat.state !== "tired" && pct >= 28 && pct < 62);
+        }
+      }
+
+      function drawCatScene() {
+        if (!catCanvas) return;
+        const ctx = catCanvas.getContext("2d");
+        const w = cat.w;
+        const h = cat.h;
+        const isDark = state.theme === "dark";
+        const pal = CAT_COATS[state.catCoat] || CAT_COATS.ginger;
+
+        ctx.save();
+        ctx.setTransform(cat.dpr, 0, 0, cat.dpr, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+
+        const groundY = h - 9;
+
+        // 1. Đường chạy tối giản hợp tone Tủ Sách
+        ctx.strokeStyle = isDark ? "rgba(237, 234, 227, 0.13)" : "rgba(28, 27, 25, 0.12)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(10, groundY + 1.5);
+        ctx.lineTo(w - 10, groundY + 1.5);
+        ctx.stroke();
+
+        // Vạch chia cự ly nhỏ xíu kiểu sân chạy bộ mini
+        ctx.fillStyle = isDark ? "rgba(237, 234, 227, 0.16)" : "rgba(28, 27, 25, 0.14)";
+        for (let tx = 20; tx < w - 16; tx += 28) {
+          ctx.fillRect(tx, groundY + 2, 1, 3);
+        }
+
+        // Bóng chạm đất co giãn theo nhịp nhảy/chạy
+        const restMix = Math.max(cat.sitMix, cat.sleepMix, cat.tiredMix);
+        const shadowW = 19 + cat.sleepMix * 3 - Math.abs(cat.hopY) * 0.25;
+        ctx.fillStyle = isDark ? "rgba(0, 0, 0, 0.45)" : "rgba(28, 24, 20, 0.12)";
+        ctx.beginPath();
+        ctx.ellipse(cat.x, groundY + 1.5, Math.max(8, shadowW), 3.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Vẽ bụi phía sau mèo
+        cat.particles.forEach((p) => {
+          if (p.kind !== "dust") return;
+          const a = Math.max(0, 1 - p.age / p.life);
+          ctx.fillStyle = isDark ? `rgba(220, 210, 195, ${(a * 0.28).toFixed(2)})` : `rgba(150, 136, 118, ${(a * 0.34).toFixed(2)})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * (0.7 + (1 - a) * 0.7), 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // 3. Vẽ Mèo Béo Cute!
+        const movingFactor = Math.min(1, cat.speed / 30) * (1 - restMix);
+        const bobWalk = Math.abs(Math.sin(cat.gait)) * 2.2 * movingFactor;
+        const bobRun = Math.abs(Math.sin(cat.gait)) * 3.4 * cat.runMix;
+        const breath =
+          cat.sleepMix > 0.2
+            ? Math.sin(cat.clock * 2.4) * 1.1 * cat.sleepMix
+            : cat.tiredMix > 0.2
+            ? Math.sin(cat.clock * 11.5) * 1.35 * cat.tiredMix
+            : Math.sin(cat.clock * 3.0) * 0.45;
+        const wobbleX = cat.wobble > 0 ? Math.sin(cat.clock * 46) * cat.wobble * 2.2 : 0;
+
+        // Vẽ tốc độ (vệt gió) khi chạy nhanh
+        if (cat.runMix > 0.45) {
+          ctx.strokeStyle = isDark ? `rgba(237, 234, 227, ${(cat.runMix * 0.22).toFixed(2)})` : `rgba(158, 71, 42, ${(cat.runMix * 0.22).toFixed(2)})`;
+          ctx.lineWidth = 1.2;
+          ctx.lineCap = "round";
+          const sx = cat.x - cat.facing * 24;
+          for (let k = 0; k < 2; k++) {
+            const ly = groundY - 12 - k * 8 + Math.sin(cat.clock * 20 + k) * 1.5;
+            ctx.beginPath();
+            ctx.moveTo(sx, ly);
+            ctx.lineTo(sx - cat.facing * (9 + cat.runMix * 8), ly);
+            ctx.stroke();
+          }
+        }
+
+        ctx.save();
+        // Tâm toạ độ ngay dưới chân mèo
+        ctx.translate(cat.x + wobbleX, groundY + cat.hopY);
+        // Quay mặt mượt (tránh scaleX = 0 gây dẹt biến mất)
+        const sxScale = Math.abs(cat.facing) < 0.08 ? (cat.facing >= 0 ? 0.08 : -0.08) : cat.facing;
+        ctx.scale(sxScale, 1);
+
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+
+        // ---- POSE A: NGỦ CUỘN TRÒN (SLEEPING CROISSANT) ----
+        if (cat.sleepMix > 0.65) {
+          const sl = cat.sleepMix;
+          const br = Math.sin(cat.clock * 2.3) * 1.1;
+
+          // Đuôi quấn ôm thân
+          ctx.strokeStyle = pal.stroke;
+          ctx.lineWidth = 6.2;
+          ctx.beginPath();
+          ctx.moveTo(-13, -5);
+          ctx.quadraticCurveTo(-20, -1, -7, -1.5);
+          ctx.stroke();
+          ctx.strokeStyle = pal.body;
+          ctx.lineWidth = 3.6;
+          ctx.stroke();
+
+          // Cục thân tròn xoe phập phồng
+          ctx.fillStyle = pal.body;
+          ctx.strokeStyle = pal.stroke;
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.ellipse(-2, -10.5 - br * 0.35, 17.5 + br * 0.4, 11.2 + br * 0.65, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // Vằn lưng khi ngủ
+          ctx.strokeStyle = pal.stripe;
+          ctx.lineWidth = 2.0;
+          [-8, -3, 2].forEach((tx) => {
+            ctx.beginPath();
+            ctx.moveTo(tx, -20.5 - br * 0.6);
+            ctx.quadraticCurveTo(tx - 1, -16.5, tx + 1, -14);
+            ctx.stroke();
+          });
+
+          // Đầu gối nhẹ lên chân trước
+          ctx.fillStyle = pal.body;
+          ctx.strokeStyle = pal.stroke;
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.ellipse(10.5, -9.2, 10.5, 8.8, 0.12, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // Tai nhỏ gọn
+          ctx.fillStyle = pal.body;
+          ctx.beginPath();
+          ctx.moveTo(4, -16);
+          ctx.lineTo(2, -23);
+          ctx.lineTo(9, -17.5);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(12, -17);
+          ctx.lineTo(15.5, -23.5);
+          ctx.lineTo(18.5, -15.5);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+
+          // Băng đô thể dục vẫn đeo lúc ngủ!
+          ctx.strokeStyle = pal.band;
+          ctx.lineWidth = 2.6;
+          ctx.beginPath();
+          ctx.moveTo(3.5, -14.2);
+          ctx.quadraticCurveTo(11, -16.2, 18.2, -13.2);
+          ctx.stroke();
+
+          // Mắt nhắm tít ︶ ︶ + má hồng
+          ctx.fillStyle = pal.cheek;
+          ctx.globalAlpha = 0.55;
+          ctx.beginPath();
+          ctx.ellipse(15.5, -7.2, 2.5, 1.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+
+          ctx.strokeStyle = pal.stroke;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.arc(13.2, -9.5, 2.2, 0.15 * Math.PI, 0.85 * Math.PI);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(18.2, -8.8, 1.9, 0.15 * Math.PI, 0.85 * Math.PI);
+          ctx.stroke();
+
+          // 2 chân trước gác dưới cằm
+          ctx.fillStyle = pal.belly;
+          ctx.strokeStyle = pal.stroke;
+          ctx.lineWidth = 1.3;
+          ctx.beginPath();
+          ctx.ellipse(14.5, -2.5, 4.2, 2.3, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.restore();
+          drawForegroundParticles(ctx, isDark);
+          ctx.restore();
+          return;
+        }
+
+        // ---- POSE B: ĐI BỘ / CHẠY / MỆT / NGỒI NGHỈ (INTERPOLATED SMOOTHLY!) ----
+        const bodyY = -13.0 - bobWalk - bobRun + cat.tiredMix * 3.8 + cat.sitMix * 1.2 - breath * 0.4;
+        const bodyTilt = cat.runMix * 0.11 - cat.sitMix * 0.28 + cat.tiredMix * 0.06;
+        const bodyRx = 16.2 + cat.runMix * 2.2 - cat.sitMix * 2.6 + cat.tiredMix * 1.8 + breath * 0.35;
+        const bodyRy = 11.4 - cat.runMix * 1.0 + cat.sitMix * 2.0 - cat.tiredMix * 1.6 + breath * 0.55;
+
+        // 1. Đuôi (vẽ sau thân)
+        const tailWag =
+          cat.state === "tired"
+            ? Math.sin(cat.clock * 2.2) * 2
+            : cat.state === "sit"
+            ? Math.sin(cat.clock * 3.8) * 5.5
+            : Math.sin(cat.clock * (4.5 + cat.runMix * 6)) * (4 + cat.runMix * 3);
+        const tailBaseX = -bodyRx + 3;
+        const tailBaseY = bodyY + 1 + cat.sitMix * 5;
+        const tailTipX = tailBaseX - (9 + cat.runMix * 6) + cat.sitMix * 5;
+        const tailTipY = tailBaseY - (10 - cat.runMix * 6 - cat.tiredMix * 8 + cat.sitMix * 3) + tailWag * 0.5;
+        const tailCtrlX = tailBaseX - 11;
+        const tailCtrlY = tailBaseY - 4 + tailWag;
+
+        ctx.strokeStyle = pal.stroke;
+        ctx.lineWidth = 6.4;
+        ctx.beginPath();
+        ctx.moveTo(tailBaseX, tailBaseY);
+        ctx.quadraticCurveTo(tailCtrlX, tailCtrlY, tailTipX, tailTipY);
+        ctx.stroke();
+        ctx.strokeStyle = pal.body;
+        ctx.lineWidth = 3.8;
+        ctx.stroke();
+
+        // 2. Chân xa (back-far & front-far)
+        const legAmp = (4.8 + cat.runMix * 4.6) * movingFactor;
+        const legLift = (2.8 + cat.runMix * 3.2) * movingFactor;
+        const phaseBL = cat.gait + Math.PI;
+        const phaseFR = cat.gait + (cat.runMix > 0.35 ? 0.45 : Math.PI * 0.5);
+        const phaseBR = cat.gait + (cat.runMix > 0.35 ? Math.PI + 0.45 : Math.PI * 1.5);
+        const phaseFL = cat.gait;
+
+        const drawLeg = (hipX, hipY, phase, isFar) => {
+          const swing = Math.sin(phase) * legAmp;
+          const lift = Math.max(0, -Math.cos(phase)) * legLift;
+          const footX = hipX + swing * (1 - restMix);
+          const footY = Math.min(groundY - groundY - 2, -2.6 - lift * (1 - restMix));
+          const legTopY = hipY;
+
+          ctx.strokeStyle = pal.stroke;
+          ctx.lineWidth = 6.2;
+          ctx.beginPath();
+          ctx.moveTo(hipX, legTopY);
+          ctx.lineTo(footX, footY);
+          ctx.stroke();
+
+          ctx.strokeStyle = isFar ? pal.shade : pal.body;
+          ctx.lineWidth = 3.6;
+          ctx.stroke();
+
+          // Tất kem nhỏ xíu ở bàn chân
+          ctx.fillStyle = pal.belly;
+          ctx.strokeStyle = pal.stroke;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.ellipse(footX + 1.2, footY + 0.4, 3.1, 2.1, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        };
+
+        if (cat.sitMix < 0.7 && cat.tiredMix < 0.75) {
+          drawLeg(-8, bodyY + 6, phaseBR, true);
+          drawLeg(8.5, bodyY + 6, phaseFR, true);
+        }
+
+        // 3. Thân tròn béo ú
+        ctx.save();
+        ctx.translate(0, bodyY);
+        ctx.rotate(bodyTilt);
+
+        ctx.fillStyle = pal.body;
+        ctx.strokeStyle = pal.stroke;
+        ctx.lineWidth = 1.65;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, bodyRx, bodyRy, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Bụng kem mũm mĩm (có độ nảy nhẹ khi chạy!)
+        const bellyJiggle = Math.sin(cat.gait * 2) * cat.runMix * 1.1;
+        ctx.fillStyle = pal.belly;
+        ctx.beginPath();
+        ctx.ellipse(1.5, bodyRy * 0.42 + bellyJiggle * 0.4, bodyRx * 0.62, bodyRy * 0.45, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 3 sọc vằn lưng cute
+        ctx.strokeStyle = pal.stripe;
+        ctx.lineWidth = 2.0;
+        [-6, -1.5, 3].forEach((sx) => {
+          ctx.beginPath();
+          ctx.moveTo(sx, -bodyRy + 1.4);
+          ctx.quadraticCurveTo(sx - 1.2, -bodyRy + 5.0, sx + 0.5, -bodyRy + 7.2);
+          ctx.stroke();
+        });
+        ctx.restore();
+
+        // 4. Chân gần (hoặc chân ngồi / chân nằm bẹp khi mệt)
+        if (cat.tiredMix >= 0.75) {
+          // Nằm bẹp duỗi 2 chân trước thở dốc
+          ctx.fillStyle = pal.belly;
+          ctx.strokeStyle = pal.stroke;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.ellipse(14, -2.8, 5.2, 2.4, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.ellipse(-14, -2.8, 4.8, 2.4, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        } else if (cat.sitMix >= 0.7) {
+          // Chân ngồi gọn + thi thoảng giơ chân lên liếm cute!
+          const isLicking = cat.lickDur > 0;
+          ctx.fillStyle = pal.belly;
+          ctx.strokeStyle = pal.stroke;
+          ctx.lineWidth = 1.3;
+          ctx.beginPath();
+          ctx.ellipse(5, -2.6, 3.6, 2.4, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          if (isLicking) {
+            const lOff = Math.sin(cat.clock * 14) * 1.8;
+            ctx.beginPath();
+            ctx.ellipse(13.2, bodyY - 7.5 + lOff, 3.2, 2.3, -0.45, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          } else {
+            ctx.beginPath();
+            ctx.ellipse(10.5, -2.6, 3.4, 2.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
+        } else {
+          drawLeg(-10, bodyY + 6, phaseBL, false);
+          drawLeg(6.5, bodyY + 6, phaseFL, false);
+        }
+
+        // 5. Đầu tròn to mũm mĩm
+        const headX = 12.5 + cat.runMix * 3.0 - cat.sitMix * 5.2 + cat.tiredMix * 3.2;
+        const headY = bodyY - 7.5 + cat.runMix * 1.4 - cat.sitMix * 5.2 + cat.tiredMix * 5.6 + Math.sin(cat.gait) * 0.7 * movingFactor;
+        const headTilt = cat.runMix * 0.12 + cat.tiredMix * 0.16;
+
+        ctx.save();
+        ctx.translate(headX, headY);
+        ctx.rotate(headTilt);
+
+        // Tai sau
+        ctx.fillStyle = pal.shade;
+        ctx.strokeStyle = pal.stroke;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(1, -8);
+        ctx.lineTo(5.5, -16 + cat.runMix * 2);
+        ctx.lineTo(8.5, -7);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Đầu tròn bầu
+        ctx.fillStyle = pal.body;
+        ctx.strokeStyle = pal.stroke;
+        ctx.lineWidth = 1.65;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 11.2, 9.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Tai trước (hơi cụp nhẹ khi chạy nước rút)
+        ctx.fillStyle = pal.body;
+        ctx.beginPath();
+        ctx.moveTo(-7.5, -6);
+        ctx.lineTo(-9.5 - cat.runMix * 1.5, -15.5 + cat.runMix * 2.5);
+        ctx.lineTo(-1.5, -9);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Lòng tai hồng
+        ctx.fillStyle = pal.earIn;
+        ctx.beginPath();
+        ctx.moveTo(-6.5, -7.2);
+        ctx.lineTo(-8.0 - cat.runMix, -13.0 + cat.runMix * 2);
+        ctx.lineTo(-3.2, -8.8);
+        ctx.closePath();
+        ctx.fill();
+
+        // Băng đô tập thể dục đỏ + 2 dải dây phấp phới sau gáy!
+        const flap = Math.sin(cat.clock * (8 + cat.runMix * 18)) * (1.2 + cat.runMix * 3.0);
+        ctx.strokeStyle = pal.band;
+        ctx.lineWidth = 2.1;
+        ctx.beginPath();
+        ctx.moveTo(-9.5, -4.5);
+        ctx.quadraticCurveTo(-13.5, -5.5 + flap * 0.5, -16.5 - cat.runMix * 4, -3.5 + flap);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-9.5, -3.5);
+        ctx.quadraticCurveTo(-13, -2.5 - flap * 0.4, -15.5 - cat.runMix * 3, -0.5 - flap * 0.7);
+        ctx.stroke();
+
+        ctx.strokeStyle = pal.band;
+        ctx.lineWidth = 2.7;
+        ctx.beginPath();
+        ctx.moveTo(-9.6, -4.4);
+        ctx.quadraticCurveTo(1, -6.8, 10.2, -3.6);
+        ctx.stroke();
+
+        // Má hồng (đậm hơn khi chạy/mệt)
+        ctx.fillStyle = pal.cheek;
+        ctx.globalAlpha = 0.48 + cat.runMix * 0.25 + cat.tiredMix * 0.3;
+        ctx.beginPath();
+        ctx.ellipse(2.0, 2.8, 2.5, 1.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(9.8, 2.8, 2.0, 1.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // Biểu cảm MẮT & MIỆNG
+        ctx.strokeStyle = pal.stroke;
+        ctx.fillStyle = pal.stroke;
+
+        if (cat.tiredMix > 0.5) {
+          // Mắt mệt xỉu (︵ ︵) + lưỡi hồng thè ra thở hổn hển
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(1.5, -1.2);
+          ctx.lineTo(5.0, 0.2);
+          ctx.moveTo(1.5, 0.8);
+          ctx.lineTo(5.0, -0.6);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(8.0, -0.6);
+          ctx.lineTo(10.6, 0.6);
+          ctx.stroke();
+
+          // Lưỡi hồng thò ra thụt vào theo nhịp thở
+          const pant = Math.abs(Math.sin(cat.clock * 11.5));
+          ctx.fillStyle = "#F06E7A";
+          ctx.strokeStyle = pal.stroke;
+          ctx.lineWidth = 1.0;
+          ctx.beginPath();
+          ctx.ellipse(6.8, 4.4 + pant * 1.4, 2.1, 2.0 + pant * 1.2, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        } else if (cat.runMix > 0.55) {
+          // Mắt chạy quyết tâm (> <) siêu cute
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.moveTo(2.0, -1.6);
+          ctx.lineTo(4.8, 0.0);
+          ctx.lineTo(2.0, 1.6);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(10.2, -1.4);
+          ctx.lineTo(8.0, 0.0);
+          ctx.lineTo(10.2, 1.4);
+          ctx.stroke();
+
+          // Miệng cười hăng hái :D
+          ctx.fillStyle = "#F07A7E";
+          ctx.beginPath();
+          ctx.arc(6.6, 3.0, 2.0, 0, Math.PI);
+          ctx.fill();
+          ctx.stroke();
+        } else if (cat.blinkDur > 0) {
+          // Nháy mắt ◡ ◡
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.arc(3.5, 0.2, 1.9, 0.15 * Math.PI, 0.85 * Math.PI);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(9.0, 0.2, 1.6, 0.15 * Math.PI, 0.85 * Math.PI);
+          ctx.stroke();
+        } else {
+          // Mắt tròn long lanh đi bộ / ngồi nghỉ
+          ctx.beginPath();
+          ctx.arc(3.6, -0.2, 1.9, 0, Math.PI * 2);
+          ctx.arc(9.0, -0.2, 1.7, 0, Math.PI * 2);
+          ctx.fill();
+          // Chấm sáng mắt
+          ctx.fillStyle = "#FFFFFF";
+          ctx.beginPath();
+          ctx.arc(4.2, -0.8, 0.65, 0, Math.PI * 2);
+          ctx.arc(9.5, -0.8, 0.55, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Mũi hồng + miệng :3 (khi không mệt & không mở miệng chạy)
+        if (cat.tiredMix <= 0.5 && cat.runMix <= 0.55) {
+          ctx.fillStyle = "#EE827F";
+          ctx.beginPath();
+          ctx.arc(6.6, 1.8, 1.15, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = pal.stroke;
+          ctx.lineWidth = 1.15;
+          ctx.beginPath();
+          ctx.arc(5.5, 3.1, 1.2, 0, Math.PI * 0.9);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(7.7, 3.1, 1.2, Math.PI * 0.1, Math.PI);
+          ctx.stroke();
+        }
+
+        // Râu mèo siêu mảnh
+        ctx.strokeStyle = pal.stroke;
+        ctx.lineWidth = 0.95;
+        ctx.globalAlpha = 0.65;
+        ctx.beginPath();
+        ctx.moveTo(-2, 2.2);
+        ctx.lineTo(-6.5, 1.5);
+        ctx.moveTo(-2, 3.8);
+        ctx.lineTo(-6.2, 4.4);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        ctx.restore(); // end head
+        ctx.restore(); // end cat transform
+
+        drawForegroundParticles(ctx, isDark);
+        ctx.restore();
+      }
+
+      function drawForegroundParticles(ctx, isDark) {
+        cat.particles.forEach((p) => {
+          if (p.kind === "dust") return;
+          const a = Math.max(0, 1 - p.age / p.life);
+          ctx.save();
+          ctx.globalAlpha = a;
+          if (p.kind === "sweat") {
+            ctx.fillStyle = "#5CC8FF";
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y - p.size * 1.3);
+            ctx.quadraticCurveTo(p.x + p.size, p.y, p.x, p.y + p.size);
+            ctx.quadraticCurveTo(p.x - p.size, p.y, p.x, p.y - p.size * 1.3);
+            ctx.fill();
+          } else if (p.kind === "zzz") {
+            ctx.fillStyle = isDark ? "#EDEAE3" : "#5A554E";
+            const sz = 8 + (1 - a) * 4.5;
+            ctx.font = `700 ${sz.toFixed(1)}px "IBM Plex Mono", monospace`;
+            ctx.fillText(p.text || "z", p.x, p.y);
+          } else if (p.kind === "spark") {
+            ctx.fillStyle = "#E06346";
+            ctx.font = `700 11px "Be Vietnam Pro", sans-serif`;
+            ctx.fillText(p.text || "!", p.x, p.y);
+          }
+          ctx.restore();
+        });
+      }
+
+      let lastCatFrame = 0;
+      function catLoop(ts) {
+        requestAnimationFrame(catLoop);
+        if (document.hidden || state.catEnabled === false) {
+          lastCatFrame = ts;
+          return;
+        }
+        const dt = lastCatFrame ? Math.min(0.05, (ts - lastCatFrame) / 1000) : 0.016;
+        lastCatFrame = ts;
+        updateCatPhysics(dt);
+        drawCatScene();
+      }
+
+      window.addEventListener("resize", resizeCatCanvas, { passive: true });
+      resizeCatCanvas();
+      requestAnimationFrame(catLoop);
 
       async function initApp() {
         const ok = await loadStateAsync();
