@@ -1094,6 +1094,73 @@
       object-fit: cover;
     }
 
+    .cover-search-bar {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .cover-search-bar input {
+      flex: 1;
+      height: 32px;
+      padding: 0 9px;
+      font-size: 16px;
+    }
+
+    .cover-results {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 7px;
+      margin-top: 8px;
+      max-height: 230px;
+      overflow-y: auto;
+      padding: 2px;
+    }
+
+    .cover-opt {
+      position: relative;
+      aspect-ratio: 2 / 3;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      overflow: hidden;
+      padding: 0;
+      display: block;
+      width: 100%;
+    }
+
+    .cover-opt.selected {
+      border: 2px solid var(--accent);
+    }
+
+    .cover-opt img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .cover-opt-src {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(20, 19, 18, 0.78);
+      color: #F6F5F1;
+      font-size: 9px;
+      padding: 2px 3px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cover-status {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
     .toast {
       position: fixed;
       left: 50%;
@@ -1529,6 +1596,109 @@
       }
 
       // ============================
+      // TỰ ĐỘNG TÌM ẢNH BÌA (AniList + Jikan MAL + Google Books + OpenLibrary)
+      // ============================
+      async function searchCoversOnline(query, category = "Manga") {
+        const q = (query || "").trim();
+        if (!q) return [];
+
+        const fetchAniList = async () => {
+          const gql = `query ($search: String) {
+            Page(page: 1, perPage: 6) {
+              media(search: $search, type: MANGA, sort: SEARCH_MATCH) {
+                title { romaji english native }
+                coverImage { large extraLarge }
+              }
+            }
+          }`;
+          const res = await fetch("https://graphql.anilist.co", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ query: gql, variables: { search: q } }),
+          });
+          if (!res.ok) return [];
+          const json = await res.json();
+          const list = json?.data?.Page?.media || [];
+          return list
+            .map((m) => ({
+              url: m?.coverImage?.large || m?.coverImage?.extraLarge || "",
+              title: m?.title?.english || m?.title?.romaji || m?.title?.native || "",
+              source: "AniList",
+            }))
+            .filter((x) => x.url);
+        };
+
+        const fetchJikan = async () => {
+          const res = await fetch(`https://api.jikan.moe/v4/manga?q=${encodeURIComponent(q)}&limit=6&sfw=true`);
+          if (!res.ok) return [];
+          const json = await res.json();
+          const list = json?.data || [];
+          return list
+            .map((m) => ({
+              url: m?.images?.jpg?.large_image_url || m?.images?.jpg?.image_url || "",
+              title: m?.title || "",
+              source: "MAL",
+            }))
+            .filter((x) => x.url);
+        };
+
+        const fetchGoogleBooks = async () => {
+          const res = await fetch(
+            `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8&printType=books`
+          );
+          if (!res.ok) return [];
+          const json = await res.json();
+          const list = json?.items || [];
+          return list
+            .map((b) => {
+              let raw = b?.volumeInfo?.imageLinks?.thumbnail || b?.volumeInfo?.imageLinks?.smallThumbnail || "";
+              if (!raw) return null;
+              raw = raw.replace(/^http:\/\//i, "https://").replace(/&edge=curl/gi, "");
+              return {
+                url: raw,
+                title: b?.volumeInfo?.title || "",
+                source: "Google",
+              };
+            })
+            .filter(Boolean);
+        };
+
+        const fetchOpenLibrary = async () => {
+          const res = await fetch(
+            `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=6&fields=title,cover_i`
+          );
+          if (!res.ok) return [];
+          const json = await res.json();
+          const list = json?.docs || [];
+          return list
+            .filter((d) => d.cover_i)
+            .map((d) => ({
+              url: `https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg`,
+              title: d.title || "",
+              source: "OpenLib",
+            }));
+        };
+
+        const tasks =
+          category === "Sách"
+            ? [fetchGoogleBooks(), fetchOpenLibrary(), fetchAniList()]
+            : [fetchAniList(), fetchJikan(), fetchGoogleBooks()];
+
+        const settled = await Promise.allSettled(tasks);
+        const merged = [];
+        const seen = new Set();
+        for (const r of settled) {
+          if (r.status !== "fulfilled") continue;
+          for (const item of r.value) {
+            if (!item.url || seen.has(item.url)) continue;
+            seen.add(item.url);
+            merged.push(item);
+          }
+        }
+        return merged.slice(0, 12);
+      }
+
+            // ============================
       // TAB 1: TỦ SÁCH
       // ============================
       function renderBooks() {
@@ -1581,7 +1751,7 @@
               const vols = s.volumes || [];
               const spent = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
               const coverHtml = s.cover
-                ? `<img src="${s.cover}" alt="${esc(s.title)}" loading="lazy" />`
+                ? `<img src="${esc(s.cover)}" alt="${esc(s.title)}" loading="lazy" referrerpolicy="no-referrer" />`
                 : `<div class="typo-cover" style="border-left-color:${pubColorVar(s.publisher)}">
                      <div class="typo-pub mono">${esc(s.publisher)}</div>
                      <div class="typo-title">${esc(s.title)}</div>
@@ -1611,7 +1781,7 @@
               return `
                 <div class="book-row" data-id="${s.id}">
                   <div class="row-thumb" style="border-left:2px solid ${pubColorVar(s.publisher)}">
-                    ${s.cover ? `<img src="${s.cover}" alt="" />` : `<span class="mono">${esc(s.publisher.slice(0, 3))}</span>`}
+                    ${s.cover ? `<img src="${esc(s.cover)}" alt="" referrerpolicy="no-referrer" />` : `<span class="mono">${esc(s.publisher.slice(0, 3))}</span>`}
                   </div>
                   <div style="min-width:0;">
                     <div style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(s.title)}</div>
@@ -1634,12 +1804,16 @@
       function openSeriesForm(existingId = null) {
         const s = existingId ? state.series.find((x) => x.id === existingId) : null;
         let currentCover = s?.cover || "";
+        let customCoverQueryEdited = false;
 
         const html = `
           <form id="seriesForm" class="form-grid">
             <div class="field">
               <label>Tên bộ truyện / Đầu sách *</label>
-              <input name="title" required value="${esc(s?.title || "")}" placeholder="VD: Dungeon Meshi, Chainsaw Man, Rừng Na Uy..." />
+              <div style="display:flex; gap:6px;">
+                <input name="title" id="seriesTitleInput" required value="${esc(s?.title || "")}" placeholder="VD: Dungeon Meshi, Chainsaw Man, Rừng Na Uy..." style="flex:1;" />
+                <button type="button" class="btn btn-sm btn-accent" id="quickFetchCoverBtn" style="height:38px;">Tìm bìa</button>
+              </div>
             </div>
             <div class="form-row-2">
               <div class="field">
@@ -1652,7 +1826,7 @@
               </div>
               <div class="field">
                 <label>Danh mục</label>
-                <select name="category">
+                <select name="category" id="seriesCatSelect">
                   ${["Manga", "Light Novel", "Sách", "Artbook"]
                     .map((c) => `<option value="${c}" ${s?.category === c ? "selected" : ""}>${c}</option>`)
                     .join("")}
@@ -1668,19 +1842,26 @@
               </select>
             </div>
             <div class="field">
-              <label>Ảnh bìa (chọn từ ảnh iPhone — tự nén nhẹ)</label>
+              <label>Ảnh bìa (tự tìm online, dán link hoặc chọn từ máy)</label>
               <div class="cover-preview-wrap">
                 <div class="cover-preview" id="coverPreviewBox">
-                  ${currentCover ? `<img src="${currentCover}" alt="" />` : "Bìa chữ"}
+                  ${currentCover ? `<img src="${esc(currentCover)}" alt="" referrerpolicy="no-referrer" />` : "Bìa chữ"}
                 </div>
-                <div style="display:flex; flex-direction:column; gap:6px;">
-                  <label class="btn btn-sm" style="margin:0; width:fit-content;">
-                    Chọn ảnh bìa
+                <div style="display:flex; flex-wrap:wrap; gap:6px; flex:1;">
+                  <label class="btn btn-sm" style="margin:0;">
+                    Ảnh từ máy
                     <input type="file" id="coverFileInput" accept="image/*" style="display:none;" />
                   </label>
-                  ${currentCover ? `<button type="button" class="btn btn-sm" id="clearCoverBtn">Dùng bìa chữ</button>` : ""}
+                  <button type="button" class="btn btn-sm" id="pasteCoverUrlBtn">Dán link ảnh</button>
+                  <button type="button" class="btn btn-sm" id="clearCoverBtn" style="${currentCover ? "" : "display:none;"}">Dùng bìa chữ</button>
                 </div>
               </div>
+              <div class="cover-search-bar">
+                <input type="text" id="coverSearchInput" value="${esc(s?.title || "")}" placeholder="Từ khoá tìm bìa (gõ tên Anh/Nhật nếu cần)..." />
+                <button type="button" class="btn btn-sm" id="searchCoverBtn" style="height:32px;">Tìm lại</button>
+              </div>
+              <div class="cover-status" id="coverSearchStatus">Nhập tên truyện rồi bấm "Tìm bìa" để tự kéo ảnh bìa.</div>
+              <div class="cover-results" id="coverResultsGrid" style="display:none;"></div>
             </div>
             <div class="field">
               <label>Ghi chú</label>
@@ -1693,24 +1874,116 @@
           </form>`;
 
         openModal(s ? "Sửa đầu sách" : "Thêm đầu sách mới", html, (body) => {
-          body.querySelector("#cancelSeriesBtn").addEventListener("click", closeModal);
+          const titleInput = body.querySelector("#seriesTitleInput");
+          const catSelect = body.querySelector("#seriesCatSelect");
+          const coverSearchInput = body.querySelector("#coverSearchInput");
+          const coverStatus = body.querySelector("#coverSearchStatus");
+          const coverGrid = body.querySelector("#coverResultsGrid");
+          const previewBox = body.querySelector("#coverPreviewBox");
           const clearBtn = body.querySelector("#clearCoverBtn");
-          if (clearBtn) {
-            clearBtn.addEventListener("click", () => {
-              currentCover = "";
-              body.querySelector("#coverPreviewBox").innerHTML = "Bìa chữ";
-            });
-          }
+
+          const setPreview = (url) => {
+            currentCover = url || "";
+            previewBox.innerHTML = currentCover
+              ? `<img src="${esc(currentCover)}" alt="" referrerpolicy="no-referrer" />`
+              : "Bìa chữ";
+            clearBtn.style.display = currentCover ? "" : "none";
+          };
+
+          titleInput.addEventListener("input", () => {
+            if (!customCoverQueryEdited) {
+              coverSearchInput.value = titleInput.value;
+            }
+          });
+          coverSearchInput.addEventListener("input", () => {
+            customCoverQueryEdited = true;
+          });
+
+          const runCoverSearch = async () => {
+            const q = (coverSearchInput.value || titleInput.value || "").trim();
+            if (!q) {
+              showToast("Nhập tên truyện hoặc sách trước đã.");
+              titleInput.focus();
+              return;
+            }
+            coverSearchInput.value = q;
+            coverStatus.textContent = `Đang kéo ảnh bìa cho "${q}"...`;
+            coverGrid.style.display = "none";
+            coverGrid.innerHTML = "";
+            try {
+              const results = await searchCoversOnline(q, catSelect.value);
+              if (!results.length) {
+                coverStatus.textContent = "Không tìm thấy bìa khớp. Thử gõ tên tiếng Anh/Nhật hoặc dán link ảnh.";
+                return;
+              }
+              coverStatus.textContent = `Tìm thấy ${results.length} bìa — chạm vào ảnh để chọn:`;
+              coverGrid.style.display = "grid";
+              coverGrid.innerHTML = results
+                .map(
+                  (r, idx) => `
+                  <button type="button" class="cover-opt ${currentCover === r.url ? "selected" : ""}" data-cover-idx="${idx}" title="${esc(r.title)}">
+                    <img src="${esc(r.url)}" alt="${esc(r.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.cover-opt').style.display='none'" />
+                    <span class="cover-opt-src mono">${esc(r.source)}</span>
+                  </button>`
+                )
+                .join("");
+
+              // Auto-pick first cover if user doesn't have one yet
+              if (!currentCover && results[0]?.url) {
+                setPreview(results[0].url);
+                const firstBtn = coverGrid.querySelector('[data-cover-idx="0"]');
+                if (firstBtn) firstBtn.classList.add("selected");
+              }
+
+              coverGrid.querySelectorAll("[data-cover-idx]").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                  const chosen = results[Number(btn.dataset.coverIdx)];
+                  if (!chosen) return;
+                  setPreview(chosen.url);
+                  coverGrid.querySelectorAll(".cover-opt").forEach((b) => b.classList.remove("selected"));
+                  btn.classList.add("selected");
+                });
+              });
+            } catch {
+              coverStatus.textContent = "Lỗi mạng khi tìm bìa. Thử lại hoặc chọn ảnh từ máy.";
+            }
+          };
+
+          body.querySelector("#quickFetchCoverBtn").addEventListener("click", runCoverSearch);
+          body.querySelector("#searchCoverBtn").addEventListener("click", runCoverSearch);
+          coverSearchInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              runCoverSearch();
+            }
+          });
+
+          body.querySelector("#pasteCoverUrlBtn").addEventListener("click", () => {
+            const url = prompt("Dán đường link ảnh bìa (https://...):", currentCover.startsWith("http") ? currentCover : "");
+            if (url === null) return;
+            const cleaned = url.trim();
+            if (cleaned && /^https?:\/\//i.test(cleaned)) {
+              setPreview(cleaned);
+              showToast("Đã gắn ảnh bìa từ link.");
+            } else if (cleaned) {
+              showToast("Link ảnh phải bắt đầu bằng https://");
+            }
+          });
+
+          body.querySelector("#cancelSeriesBtn").addEventListener("click", closeModal);
+          clearBtn.addEventListener("click", () => setPreview(""));
+
           body.querySelector("#coverFileInput").addEventListener("change", async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
             try {
-              currentCover = await compressCoverFile(file);
-              body.querySelector("#coverPreviewBox").innerHTML = `<img src="${currentCover}" alt="" />`;
+              const compressed = await compressCoverFile(file);
+              setPreview(compressed);
             } catch {
               showToast("Không đọc được ảnh này.");
             }
           });
+
           body.querySelector("#seriesForm").addEventListener("submit", (e) => {
             e.preventDefault();
             const fd = new FormData(e.target);
@@ -1779,7 +2052,7 @@
         const html = `
           <div style="display:flex; gap:12px; align-items:flex-start;">
             <div class="cover-preview" style="width:68px; height:102px; border-left:3px solid ${pubColorVar(s.publisher)}">
-              ${s.cover ? `<img src="${s.cover}" alt="" />` : `<span class="mono" style="text-align:center; padding:4px;">${esc(s.publisher)}</span>`}
+              ${s.cover ? `<img src="${esc(s.cover)}" alt="" referrerpolicy="no-referrer" />` : `<span class="mono" style="text-align:center; padding:4px;">${esc(s.publisher)}</span>`}
             </div>
             <div style="flex:1; min-width:0;">
               <div style="font-size:15px; font-weight:700; line-height:1.3;">${esc(s.title)}</div>
@@ -2762,8 +3035,9 @@
             </div>
 
             <div class="divider"></div>
-            <div class="panel-title">Thử nhanh & Dọn dẹp</div>
+            <div class="panel-title">Tiện ích ảnh bìa & Dọn dẹp</div>
             <div style="display:flex; flex-wrap:wrap; gap:8px;">
+              <button class="btn btn-sm btn-accent" id="bulkFetchCoversBtn">Tự kéo bìa cho sách đang trống</button>
               <button class="btn btn-sm" id="loadSampleBtn">Nạp 3 bộ mẫu test</button>
               <button class="btn btn-sm btn-danger" id="wipeAllBtn">Xoá toàn bộ dữ liệu</button>
             </div>
@@ -2794,6 +3068,32 @@
           });
           body.querySelector("#importJsonBtn").addEventListener("click", () => {
             document.getElementById("importFileInput").click();
+          });
+          body.querySelector("#bulkFetchCoversBtn").addEventListener("click", async () => {
+            const targets = state.series.filter((s) => !s.cover);
+            if (!targets.length) {
+              showToast("Tất cả đầu sách đều đã có bìa.");
+              return;
+            }
+            const btn = body.querySelector("#bulkFetchCoversBtn");
+            btn.disabled = true;
+            let found = 0;
+            for (let i = 0; i < targets.length; i++) {
+              btn.textContent = `Đang tìm bìa (${i + 1}/${targets.length})...`;
+              try {
+                const res = await searchCoversOnline(targets[i].title, targets[i].category);
+                if (res[0]?.url) {
+                  targets[i].cover = res[0].url;
+                  found++;
+                }
+              } catch {}
+              await new Promise((r) => setTimeout(r, 450));
+            }
+            saveState();
+            renderBooks();
+            btn.disabled = false;
+            btn.textContent = "Tự kéo bìa cho sách đang trống";
+            showToast(`Đã tự kéo xong ${found}/${targets.length} ảnh bìa.`);
           });
           body.querySelector("#loadSampleBtn").addEventListener("click", () => {
             if (state.series.length && !confirm("Thêm 3 bộ mẫu vào tủ hiện tại?")) return;
