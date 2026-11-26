@@ -2498,144 +2498,342 @@
     }
 
     /* ============================
-       4. CHẾ ĐỘ XEM KỆ GÁY SÁCH GỖ (BOOKSHELF VIEW)
+       4. CHẾ ĐỘ XEM KỆ MANGA HIỆN ĐẠI (TANKOBON SPINE SHELF)
        ============================ */
     .shelf-wrap {
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      padding-top: 6px;
+      gap: 22px;
+      padding-top: 4px;
     }
 
     .shelf-unit {
       position: relative;
     }
 
+    .shelf-bay-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2px 4px;
+      font-size: 10.5px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     .shelf-row {
       display: flex;
       align-items: flex-end;
-      gap: 4px;
-      padding: 12px 10px 0;
-      min-height: 176px;
+      gap: 7px;
+      padding: 14px 10px 0;
+      min-height: 186px;
       overflow-x: auto;
       scrollbar-width: none;
-      background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.03) 100%);
+      background: linear-gradient(180deg, transparent 52%, rgba(0, 0, 0, 0.045) 100%);
+      border-radius: 3px 3px 0 0;
     }
 
     [data-theme="dark"] .shelf-row {
-      background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.24) 100%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.01) 0%, rgba(0, 0, 0, 0.34) 100%);
     }
 
     .shelf-row::-webkit-scrollbar {
       display: none;
     }
 
+    /* Thanh kệ tối giản hiện đại (Architectural matte shelf slab) */
     .shelf-plank {
-      height: 14px;
+      height: 10px;
       border-radius: 2px;
-      background: linear-gradient(180deg, #C7A376 0%, #A98253 45%, #84613B 100%);
-      border-top: 1px solid rgba(255, 240, 215, 0.45);
-      box-shadow: 0 7px 14px rgba(40, 26, 12, 0.22), 0 2px 3px rgba(40, 26, 12, 0.25);
+      background: linear-gradient(180deg, #E3DDD2 0%, #CFC7B9 55%, #B8AFA0 100%);
+      border-top: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow: 0 8px 18px rgba(24, 20, 16, 0.14), 0 2px 3px rgba(24, 20, 16, 0.14);
       position: relative;
     }
 
     [data-theme="dark"] .shelf-plank {
-      background: linear-gradient(180deg, #5A4531 0%, #443324 50%, #2D2117 100%);
-      border-top: 1px solid rgba(255, 224, 184, 0.14);
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.58), 0 2px 4px rgba(0, 0, 0, 0.5);
+      background: linear-gradient(180deg, #322E2A 0%, #24211E 55%, #181614 100%);
+      border-top: 1px solid rgba(255, 245, 232, 0.12);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.62), 0 2px 4px rgba(0, 0, 0, 0.55);
     }
 
-    .shelf-spine {
+    /* Cụm 1 bộ sách trên kệ: 1 gáy chính sắc nét + các lớp tập xếp phía sau */
+    .shelf-book-group {
       position: relative;
       flex: 0 0 auto;
-      border-radius: 2px 2px 0 0;
-      border: 1px solid rgba(0, 0, 0, 0.25);
-      border-bottom: none;
+      display: inline-flex;
+      align-items: flex-end;
+      cursor: pointer;
+      transform-origin: bottom center;
+      padding: 0;
+      background: none;
+      border: none;
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .shelf-book-group:hover,
+    .shelf-book-group.pulled {
+      transform: translateY(-11px);
+      z-index: 6;
+    }
+
+    .shelf-spine-main {
+      position: relative;
+      width: 40px;
+      border-radius: 2.5px 2px 0 0;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      padding: 7px 3px 6px;
-      color: #FAF7F2;
-      cursor: pointer;
-      transform-origin: bottom center;
+      padding: 0 0 6px;
+      color: var(--sp-ink, #F7F4EE);
+      background: var(--sp-bg, #2B2825);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: none;
       box-shadow:
-        inset 3px 0 4px rgba(255, 255, 255, 0.18),
-        inset -3px 0 5px rgba(0, 0, 0, 0.28),
-        2px 0 5px rgba(0, 0, 0, 0.18);
-      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.24s ease;
+        inset 4px 0 6px rgba(255, 255, 255, 0.12),
+        inset -4px 0 7px rgba(0, 0, 0, 0.32),
+        0 -1px 0 rgba(255, 255, 255, 0.12),
+        2px 0 6px rgba(0, 0, 0, 0.28);
+      z-index: 3;
     }
 
-    .shelf-spine:hover,
-    .shelf-spine.pulled {
-      transform: translateY(-12px) scale(1.03);
+    /* Viền vàng tinh tế phía trên cho bộ có bản ĐB / Boxset / Limited */
+    .shelf-spine-main.sp-gold {
+      border-top: 2px solid #E5C16C;
       box-shadow:
-        inset 3px 0 5px rgba(255, 255, 255, 0.26),
-        inset -3px 0 6px rgba(0, 0, 0, 0.3),
-        0 10px 18px rgba(0, 0, 0, 0.34);
-      z-index: 5;
+        inset 4px 0 6px rgba(255, 240, 200, 0.16),
+        inset -4px 0 7px rgba(0, 0, 0, 0.34),
+        0 0 10px rgba(229, 193, 108, 0.2),
+        2px 0 6px rgba(0, 0, 0, 0.28);
     }
 
-    /* Các đường gân chia từng tập trên gáy bộ nhiều tập */
-    .spine-vol-lines {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0.22;
-      background-image: repeating-linear-gradient(
-        90deg,
-        transparent 0px,
-        transparent 11px,
-        rgba(0, 0, 0, 0.5) 11px,
-        rgba(0, 0, 0, 0.5) 12px
-      );
-    }
-
-    .spine-holo-band {
-      position: absolute;
-      top: 16px;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #F6E08E, #9BF6E3, #F5A3D0, #F6E08E);
-      opacity: 0.9;
-      pointer-events: none;
-    }
-
-    .spine-pub-dot {
-      font-size: 8px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      opacity: 0.85;
+    /* Các lát tập xếp phía sau (tạo cảm giác độ dày thật theo số tập) */
+    .shelf-stack-slices {
+      display: inline-flex;
+      align-items: flex-end;
+      height: 100%;
       z-index: 1;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
     }
 
-    .spine-title {
+    .shelf-slice {
+      width: 5px;
+      border-radius: 0 1.5px 0 0;
+      background: var(--sp-slice, #23201D);
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      border-right: 1px solid rgba(0, 0, 0, 0.45);
+      box-shadow: inset 1px 0 2px rgba(255, 255, 255, 0.12);
+    }
+
+    /* Phần đầu gáy: Dải màu NXB gọn gàng tách biệt hoàn toàn với chữ */
+    .sp-top-cap {
+      width: 100%;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: rgba(0, 0, 0, 0.28);
+      border-bottom: 1.5px solid var(--sp-accent, #9E472A);
+      color: rgba(255, 252, 246, 0.9);
+      flex-shrink: 0;
+    }
+
+    .sp-gold-dot {
+      color: #F2D07D;
+      font-size: 8px;
+      line-height: 1;
+    }
+
+    /* Ô ảnh bìa thu nhỏ kiểu gáy truyện Nhật (Tankobon spine inset) */
+    .sp-thumb-win {
+      width: 28px;
+      height: 34px;
+      margin-top: 5px;
+      border-radius: 1.5px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.38);
+      flex-shrink: 0;
+      background: rgba(0, 0, 0, 0.22);
+    }
+
+    .sp-thumb-win img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Tên bộ dọc sắc nét, dễ đọc, có khoảng thở */
+    .sp-title-vert {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 2px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sp-title-vert span {
       writing-mode: vertical-rl;
       text-orientation: mixed;
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 10.5px;
+      font-weight: 600;
       line-height: 1.15;
-      max-height: 112px;
+      max-height: 82px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      z-index: 1;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.52);
-      letter-spacing: 0.02em;
+      letter-spacing: 0.015em;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
     }
 
-    .spine-count {
-      font-size: 9px;
-      font-weight: 600;
-      padding: 1px 4px;
-      border-radius: 1px;
-      background: rgba(0, 0, 0, 0.34);
+    .sp-title-vert.no-thumb span {
+      max-height: 112px;
+    }
+
+    /* Số tập đóng khung gọn ở chân gáy giống truyện thật */
+    .sp-vol-box {
+      font-size: 9.5px;
+      font-weight: 700;
+      min-width: 24px;
+      height: 16px;
+      padding: 0 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 1.5px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       color: #FFFDF8;
-      z-index: 1;
+      flex-shrink: 0;
+    }
+
+    /* Sound pack selector pills in Settings */
+    .sound-pack-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .sound-pack-btn {
+      padding: 8px 9px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .sound-pack-btn.active {
+      background: var(--ink);
+      color: var(--bg);
+      border-color: var(--ink);
+    }
+
+    .sound-pack-btn .sp-name {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .sound-pack-btn .sp-desc {
+      font-size: 10px;
+      opacity: 0.72;
+    }
+
+    .sound-map-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+    }
+
+    .sound-map-row {
+      display: grid;
+      grid-template-columns: 1fr auto 32px;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .sound-map-lbl {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sound-map-sel {
+      height: 28px;
+      padding: 0 6px !important;
+      font-size: 11.5px !important;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      width: auto !important;
+      min-width: 112px;
+    }
+
+    .sound-map-play {
+      height: 28px;
+      width: 32px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sound-map-play:active {
+      background: var(--ink);
+      color: var(--bg);
+    }
+
+    /* Batch shelf scan checklist */
+    .qc-batch-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      max-height: 46dvh;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .qc-batch-row {
+      display: grid;
+      grid-template-columns: 20px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 9px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .qc-batch-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--accent);
     }
 
     /* ============================
@@ -2996,6 +3194,17 @@
         theme: "light",
         fxLevel: "rich", // "rich" | "minimal"
         soundEnabled: true,
+        soundPack: "marble", // "marble" | "tactile" | "console" | "watch"
+        soundMap: {
+          tabs: "auto",
+          book: "auto",
+          shelf: "paper",
+          filter: "auto",
+          save: "auto",
+          close: "auto",
+          del: "auto",
+          camera: "watch",
+        },
         bookView: "grid",
         volView: "cards", // "cards" | "compact"
         budgetLimit: 1000000,
@@ -3229,6 +3438,7 @@
           pinned: Array.isArray(rawObj?.pinned) ? rawObj.pinned : [],
           images: rawObj?.images && typeof rawObj.images === "object" ? { ...rawObj.images } : {},
           lastEntry: { ...DEFAULT_STATE.lastEntry, ...(rawObj?.lastEntry || {}) },
+          soundMap: { ...DEFAULT_STATE.soundMap, ...(rawObj?.soundMap || {}) },
         };
 
         const edNameMap = {
@@ -3734,15 +3944,8 @@
           activePressedEl = target;
           target.classList.add("is-pressed");
 
-          // Mở khoá & phát tiếng chạm nhẹ nhàng trên iPhone (trừ các nút đã có âm thanh riêng)
+          // Chỉ mở khoá AudioContext im lặng trên iOS (KHÔNG phát tiếng ở pointerdown để lúc cuộn trang không bị kêu bừa!)
           ensureAudioCtx();
-          if (target.matches(".chip, .preset-chip, .ck-btn, .missing-chip, .seg button, .scope-switch button, .scope-switch-3 button")) {
-            SFX.chip();
-          } else if (target.matches(".tab-btn")) {
-            SFX.tab();
-          } else if (!target.matches("#themeBtn, #soundBtn, #undoBtn, .status-cycle")) {
-            SFX.tap();
-          }
 
           // Hiệu ứng gợn sóng nhẹ cho các nút bấm
           if (target.matches(RIPPLE_SELECTOR)) {
@@ -3763,13 +3966,79 @@
 
       document.addEventListener("pointerup", releasePressedEl, { passive: true });
 
+      // Phát tiếng trên sự kiện CLICK thật (đảm bảo cuộn trang 100% im lặng + không chồng 2 tiếng!)
+      const FILTER_CLICK_SEL =
+        ".chip, .preset-chip, .ck-btn, .missing-chip, .seg button, .scope-switch button, .scope-switch-3 button";
+      const BACK_CLICK_SEL =
+        "#backToSeriesBtn, #backFromSecFormBtn, #backSecBtn, #backBulkBtn, #lbDoneBtn, #backGiftGroupBtn";
+      const SILENT_FALLBACK_SEL =
+        "#themeBtn, #soundBtn, #undoBtn, #modalCloseBtn, .status-cycle, .tab-btn, .shelf-book-group, .sound-pack-btn, .sound-map-play, [data-sndval], [data-spack], [data-snd-test]";
+
+      document.addEventListener("click", (e) => {
+        // Nếu nút vừa bấm đã tự phát tiếng chuyên biệt (mở sách, rút kệ, lưu, xoá, đóng, chuyển tab...) -> bỏ qua không phát chồng!
+        if (performance.now() - lastSfxAt < 110) return;
+        const target = e.target.closest(PRESS_SELECTOR);
+        if (!target || target.disabled) return;
+        if (target.matches(SILENT_FALLBACK_SEL)) return;
+
+        if (target.matches(BACK_CLICK_SEL)) {
+          SFX.close();
+        } else if (target.matches(FILTER_CLICK_SEL)) {
+          SFX.filter();
+        } else if (target.matches(".btn, .icon-btn")) {
+          SFX.tap();
+        }
+      });
+
       // ============================
-      // HỆ THỐNG ÂM THANH GỖ ĐẦM & GỖ GÃY (THOCK + WOOD CRACK — WEB AUDIO OFFLINE)
+      // HỆ THỐNG ÂM THANH CỐ ĐỊNH TỪNG MỤC (100% KHÔNG RANDOM · KHÔNG CHỒNG TIẾNG)
+      // - Bộ đệm nhiễu cố định bằng PRNG có seed -> bấm 100 lần kêu chuẩn y hệt nhau
+      // - Mỗi mục (4 Tab, Mở sách, Rút kệ, Lọc chip, Lưu, Đóng, Xoá, Chụp bìa) có âm thanh riêng
+      // - Tuỳ chỉnh độc lập từng mục trong Cài đặt
       // ============================
       let audioCtx = null;
+      let lastSfxAt = 0;
+      const detBufferCache = new Map();
+
+      const SOUND_VOICES = [
+        { id: "auto", label: "Theo gói chung" },
+        { id: "marble", label: "Bi đá / Creamy" },
+        { id: "tactile", label: "Phím cơ Tactile" },
+        { id: "console", label: "Switch Snap" },
+        { id: "watch", label: "Đồng hồ / Leica" },
+        { id: "paper", label: "Lật giấy / Gỗ" },
+        { id: "off", label: "Tắt mục này" },
+      ];
+
+      const SOUND_SECTIONS = [
+        { key: "tabs", label: "4 Tab chính (Tủ·Quà·Tin·Chi)" },
+        { key: "book", label: "Mở sách / Mục / Tập" },
+        { key: "shelf", label: "Rút sách trên Kệ" },
+        { key: "filter", label: "Lọc chip / Lưới·Kệ / %CK" },
+        { key: "save", label: "Lưu & Thêm tập (+T.x)" },
+        { key: "close", label: "Đóng bảng / Quay lại" },
+        { key: "del", label: "Xoá & Hoàn tác" },
+        { key: "camera", label: "Chụp bìa & Hoá đơn" },
+      ];
+
+      function markSfx() {
+        lastSfxAt = performance.now();
+      }
 
       function isSoundOn() {
         return state.soundEnabled !== false;
+      }
+
+      function getSoundPack() {
+        const p = state.soundPack || "marble";
+        return ["marble", "tactile", "console", "watch"].includes(p) ? p : "marble";
+      }
+
+      function getSectionVoice(sectionKey) {
+        const raw = state.soundMap && state.soundMap[sectionKey] ? state.soundMap[sectionKey] : "auto";
+        if (raw === "off") return "off";
+        if (raw === "auto") return getSoundPack();
+        return ["marble", "tactile", "console", "watch", "paper"].includes(raw) ? raw : getSoundPack();
       }
 
       function ensureAudioCtx() {
@@ -3787,238 +4056,362 @@
         }
       }
 
-      // Tiếng thock gỗ đặc trầm (gõ phím cơ trầm / gõ lên mặt kệ gỗ)
-      function playWoodThock(freqStart = 165, freqEnd = 52, duration = 0.055, gainPeak = 0.16, delay = 0, clickFreq = 680) {
+      // Tạo buffer nhiễu CỐ ĐỊNH (seeded PRNG + chuẩn hoá biên độ) -> không bao giờ bị biến thiên random giữa các lần bấm!
+      function getDetNoiseBuffer(ctx, duration, decayPow = 2.6, shape = "decay", seed = 0x54555341) {
+        const samples = Math.max(16, Math.floor(ctx.sampleRate * duration));
+        const key = `${ctx.sampleRate}_${samples}_${decayPow}_${shape}_${seed}`;
+        if (detBufferCache.has(key)) return detBufferCache.get(key);
+
+        const buf = ctx.createBuffer(1, samples, ctx.sampleRate);
+        const ch = buf.getChannelData(0);
+        let a = seed >>> 0;
+        let sumSq = 0;
+        for (let i = 0; i < samples; i++) {
+          // Mulberry32 deterministic PRNG
+          a = (a + 0x6d2b79f5) >>> 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          const rnd = (((t ^ (t >>> 14)) >>> 0) / 4294967296) * 2 - 1;
+          const p = i / samples;
+          const env = shape === "arch" ? Math.sin(p * Math.PI) : Math.pow(1 - p, decayPow);
+          const v = rnd * env;
+          ch[i] = v;
+          sumSq += v * v;
+        }
+        // Chuẩn hoá năng lượng RMS để âm lượng luôn đều tăm tắp
+        const rms = Math.sqrt(sumSq / samples) || 1;
+        const norm = Math.min(2.2, 0.32 / rms);
+        for (let i = 0; i < samples; i++) ch[i] = Math.max(-1, Math.min(1, ch[i] * norm));
+
+        detBufferCache.set(key, buf);
+        return buf;
+      }
+
+      function playModalResonance(opts) {
+        const ctx = ensureAudioCtx();
+        if (!ctx) return;
+        try {
+          const now = ctx.currentTime + (opts.delay || 0);
+          const bodyDur = opts.bodyDur || 0.032;
+          const gain = opts.gain || 0.15;
+
+          if (opts.f1) {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = opts.wave || "sine";
+            osc.frequency.setValueAtTime(opts.f1, now);
+            if (opts.f2 && opts.f2 !== opts.f1) {
+              osc.frequency.exponentialRampToValueAtTime(Math.max(85, opts.f2), now + bodyDur);
+            }
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.linearRampToValueAtTime(gain, now + 0.002);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + bodyDur);
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + bodyDur + 0.012);
+          }
+
+          const modes = opts.modes || [];
+          if (modes.length) {
+            const nDur = opts.noiseDur || 0.016;
+            const buf = getDetNoiseBuffer(ctx, nDur, opts.decayPow || 2.6, opts.shape || "decay", opts.seed || 0x54555341);
+            modes.forEach((m) => {
+              const src = ctx.createBufferSource();
+              src.buffer = buf;
+              const bp = ctx.createBiquadFilter();
+              bp.type = "bandpass";
+              bp.frequency.value = m.freq;
+              bp.Q.value = m.q || 4.8;
+              const mg = ctx.createGain();
+              const pk = gain * (m.amp || 0.85);
+              mg.gain.setValueAtTime(0.0001, now);
+              mg.gain.linearRampToValueAtTime(pk, now + 0.0012);
+              mg.gain.exponentialRampToValueAtTime(0.0001, now + nDur);
+              src.connect(bp);
+              bp.connect(mg);
+              mg.connect(ctx.destination);
+              src.start(now);
+            });
+          }
+        } catch {}
+      }
+
+      function playCleanChime(freq, duration = 0.13, gain = 0.085, delay = 0, overtoneRatio = 2.0) {
         const ctx = ensureAudioCtx();
         if (!ctx) return;
         try {
           const now = ctx.currentTime + delay;
-          // 1. Thân gỗ trầm (bass body drop)
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = "sine";
-          osc.frequency.setValueAtTime(freqStart, now);
-          osc.frequency.exponentialRampToValueAtTime(Math.max(36, freqEnd), now + duration);
-          gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(gainPeak, now + 0.003);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now);
-          osc.stop(now + duration + 0.015);
+          const o1 = ctx.createOscillator();
+          const o2 = ctx.createOscillator();
+          const g1 = ctx.createGain();
+          const g2 = ctx.createGain();
+          o1.type = "sine";
+          o2.type = "triangle";
+          o1.frequency.setValueAtTime(freq, now);
+          o2.frequency.setValueAtTime(freq * overtoneRatio, now);
+          g1.gain.setValueAtTime(0.0001, now);
+          g1.gain.linearRampToValueAtTime(gain, now + 0.004);
+          g1.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+          g2.gain.setValueAtTime(0.0001, now);
+          g2.gain.linearRampToValueAtTime(gain * 0.2, now + 0.002);
+          g2.gain.exponentialRampToValueAtTime(0.0001, now + Math.min(0.032, duration * 0.4));
+          o1.connect(g1);
+          o2.connect(g2);
+          g1.connect(ctx.destination);
+          g2.connect(ctx.destination);
+          o1.start(now);
+          o2.start(now);
+          o1.stop(now + duration + 0.015);
+          o2.stop(now + 0.045);
+        } catch {}
+      }
 
-          // 2. Xung va chạm bề mặt gỗ (short muffled transient)
-          const nDur = 0.014;
-          const samples = Math.max(1, Math.floor(ctx.sampleRate * nDur));
-          const buf = ctx.createBuffer(1, samples, ctx.sampleRate);
-          const ch = buf.getChannelData(0);
-          for (let i = 0; i < samples; i++) {
-            const env = Math.pow(1 - i / samples, 2.2);
-            ch[i] = (Math.random() * 2 - 1) * env;
-          }
+      function playPaperBrush(cutoff = 1250, duration = 0.052, gain = 0.048, delay = 0, seed = 0x11223344) {
+        const ctx = ensureAudioCtx();
+        if (!ctx) return;
+        try {
+          const buf = getDetNoiseBuffer(ctx, duration, 1.0, "arch", seed);
           const src = ctx.createBufferSource();
           src.buffer = buf;
           const bp = ctx.createBiquadFilter();
           bp.type = "bandpass";
-          bp.frequency.value = clickFreq;
-          bp.Q.value = 1.9;
-          const nGain = ctx.createGain();
-          nGain.gain.setValueAtTime(gainPeak * 0.58, now);
-          nGain.gain.exponentialRampToValueAtTime(0.0001, now + nDur);
+          bp.frequency.value = cutoff;
+          bp.Q.value = 1.05;
+          const g = ctx.createGain();
+          const now = ctx.currentTime + delay;
+          g.gain.setValueAtTime(0.0001, now);
+          g.gain.linearRampToValueAtTime(gain, now + duration * 0.28);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
           src.connect(bp);
-          bp.connect(nGain);
-          nGain.connect(ctx.destination);
+          bp.connect(g);
+          g.connect(ctx.destination);
           src.start(now);
         } catch {}
       }
 
-      // Tiếng gỗ khô gãy rắc nhỏ (multi-micro-transient wood snap/crack)
-      function playWoodCrack(gainPeak = 0.14, baseFreq = 1280, delay = 0, snaps = 2) {
-        const ctx = ensureAudioCtx();
-        if (!ctx) return;
-        try {
-          for (let s = 0; s < snaps; s++) {
-            const offset = delay + s * (0.008 + s * 0.004);
-            const now = ctx.currentTime + offset;
-            const dur = 0.011 + s * 0.004;
-            const samples = Math.max(1, Math.floor(ctx.sampleRate * dur));
-            const buf = ctx.createBuffer(1, samples, ctx.sampleRate);
-            const ch = buf.getChannelData(0);
-            for (let i = 0; i < samples; i++) {
-              const t = i / samples;
-              ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.8);
-            }
-            const src = ctx.createBufferSource();
-            src.buffer = buf;
-
-            const bp = ctx.createBiquadFilter();
-            bp.type = "bandpass";
-            bp.frequency.value = baseFreq * (s === 0 ? 1.12 : 0.86);
-            bp.Q.value = 2.6;
-
-            const g = ctx.createGain();
-            const pk = gainPeak * (s === 0 ? 0.72 : 1.0);
-            g.gain.setValueAtTime(0.0001, now);
-            g.gain.linearRampToValueAtTime(pk, now + 0.0015);
-            g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-
-            src.connect(bp);
-            bp.connect(g);
-            g.connect(ctx.destination);
-            src.start(now);
-          }
-
-          // Thân gỗ rỗng nhẹ đi kèm vết gãy
-          const nowB = ctx.currentTime + delay;
-          const osc = ctx.createOscillator();
-          const bGain = ctx.createGain();
-          osc.type = "triangle";
-          osc.frequency.setValueAtTime(255, nowB);
-          osc.frequency.exponentialRampToValueAtTime(92, nowB + 0.028);
-          bGain.gain.setValueAtTime(0.0001, nowB);
-          bGain.gain.linearRampToValueAtTime(gainPeak * 0.45, nowB + 0.002);
-          bGain.gain.exponentialRampToValueAtTime(0.0001, nowB + 0.03);
-          osc.connect(bGain);
-          bGain.connect(ctx.destination);
-          osc.start(nowB);
-          osc.stop(nowB + 0.04);
-        } catch {}
-      }
-
-      // Tiếng mộc cầm gỗ trầm ấm (rosewood marimba — không bị chói điện tử)
-      function playWoodMarimba(freq = 261.6, duration = 0.14, gainPeak = 0.095, delay = 0) {
-        const ctx = ensureAudioCtx();
-        if (!ctx) return;
-        try {
-          const now = ctx.currentTime + delay;
-          const osc1 = ctx.createOscillator();
-          const osc2 = ctx.createOscillator();
-          const g1 = ctx.createGain();
-          const g2 = ctx.createGain();
-          osc1.type = "sine";
-          osc2.type = "sine";
-          osc1.frequency.setValueAtTime(freq, now);
-          osc2.frequency.setValueAtTime(freq * 3.98, now); // Họa âm đặc trưng thanh gỗ mộc cầm
-
-          g1.gain.setValueAtTime(0.0001, now);
-          g1.gain.linearRampToValueAtTime(gainPeak, now + 0.004);
-          g1.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
-          g2.gain.setValueAtTime(0.0001, now);
-          g2.gain.linearRampToValueAtTime(gainPeak * 0.24, now + 0.002);
-          g2.gain.exponentialRampToValueAtTime(0.0001, now + 0.026);
-
-          osc1.connect(g1);
-          osc2.connect(g2);
-          g1.connect(ctx.destination);
-          g2.connect(ctx.destination);
-          osc1.start(now);
-          osc2.start(now);
-          osc1.stop(now + duration + 0.02);
-          osc2.stop(now + 0.04);
-        } catch {}
-      }
-
-      // Tiếng lướt giấy bìa dày (lọc trầm cho ấm)
-      function playPaperSlide(duration = 0.06, gainPeak = 0.045, cutoff = 950, delay = 0) {
-        const ctx = ensureAudioCtx();
-        if (!ctx) return;
-        try {
-          const samples = Math.max(1, Math.floor(ctx.sampleRate * duration));
-          const buf = ctx.createBuffer(1, samples, ctx.sampleRate);
-          const ch = buf.getChannelData(0);
-          for (let i = 0; i < samples; i++) {
-            const t = i / samples;
-            ch[i] = (Math.random() * 2 - 1) * Math.sin(t * Math.PI);
-          }
-          const src = ctx.createBufferSource();
-          src.buffer = buf;
-          const filter = ctx.createBiquadFilter();
-          filter.type = "bandpass";
-          filter.frequency.value = cutoff;
-          filter.Q.value = 0.9;
-          const gain = ctx.createGain();
-          const now = ctx.currentTime + delay;
-          gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(gainPeak, now + duration * 0.25);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-          src.connect(filter);
-          filter.connect(gain);
-          gain.connect(ctx.destination);
-          src.start(now);
-        } catch {}
+      // Bộ phát chất liệu âm chuẩn cho từng giọng (pitchScale giúp mỗi mục có sắc thái riêng rõ rệt)
+      function playVoiceStrike(voice, pitchScale = 1.0, delay = 0, gainScale = 1.0) {
+        if (voice === "off") return;
+        const ps = pitchScale;
+        const gs = gainScale;
+        if (voice === "marble") {
+          playModalResonance({
+            delay, f1: 310 * ps, f2: 165 * ps, bodyDur: 0.032, gain: 0.15 * gs, wave: "sine",
+            noiseDur: 0.017, decayPow: 2.8, seed: 0x202601,
+            modes: [{ freq: 1180 * ps, q: 5.5, amp: 0.92 }, { freq: 2380 * ps, q: 6.2, amp: 0.48 }],
+          });
+        } else if (voice === "tactile") {
+          playModalResonance({
+            delay, f1: 500 * ps, f2: 330 * ps, bodyDur: 0.011, gain: 0.075 * gs, wave: "triangle",
+            noiseDur: 0.008, seed: 0x202602, modes: [{ freq: 2450 * ps, q: 3.8, amp: 0.75 }],
+          });
+          playModalResonance({
+            delay: delay + 0.012, f1: 365 * ps, f2: 185 * ps, bodyDur: 0.032, gain: 0.15 * gs, wave: "triangle",
+            noiseDur: 0.015, seed: 0x202603, modes: [{ freq: 1560 * ps, q: 4.2, amp: 0.88 }],
+          });
+        } else if (voice === "console") {
+          playModalResonance({
+            delay, f1: 510 * ps, f2: 375 * ps, bodyDur: 0.024, gain: 0.12 * gs, wave: "sine",
+            noiseDur: 0.01, seed: 0x202604, modes: [{ freq: 2150 * ps, q: 5.0, amp: 0.55 }],
+          });
+        } else if (voice === "watch") {
+          playModalResonance({
+            delay, f1: 280 * ps, f2: 175 * ps, bodyDur: 0.015, gain: 0.12 * gs, wave: "sine",
+            noiseDur: 0.007, decayPow: 3.4, seed: 0x202605,
+            modes: [{ freq: 2850 * ps, q: 6.2, amp: 1.0 }, { freq: 4350 * ps, q: 6.5, amp: 0.5 }],
+          });
+        } else {
+          // "paper" — lật giấy + gõ bìa gỗ đặc ấm
+          playPaperBrush(1050 * ps, 0.048, 0.046 * gs, delay, 0x202606);
+          playModalResonance({
+            delay: delay + 0.014, f1: 245 * ps, f2: 135 * ps, bodyDur: 0.036, gain: 0.14 * gs, wave: "sine",
+            noiseDur: 0.015, decayPow: 2.5, seed: 0x202607, modes: [{ freq: 920 * ps, q: 3.2, amp: 0.72 }],
+          });
+        }
       }
 
       const SFX = {
+        // 1. Nút bấm hành động chung
         tap() {
-          // Thock gỗ đặc đầm tay
-          playWoodThock(158, 52, 0.052, 0.15, 0, 620);
+          const v = getSectionVoice("book");
+          if (v === "off") return;
+          markSfx();
+          playVoiceStrike(v, 1.0, 0, 0.92);
+        },
+
+        // 2. Thanh lọc chip / NXB / Chế độ Lưới-Dòng-Kệ / %CK (tiếng tách gọn cao hơn nút thường)
+        filter() {
+          const v = getSectionVoice("filter");
+          if (v === "off") return;
+          markSfx();
+          playVoiceStrike(v, 1.26, 0, 0.86);
         },
         chip() {
-          // Gỗ khô gãy rắc siêu gọn
-          playWoodCrack(0.13, 1280, 0, 2);
+          this.filter();
         },
-        tab() {
-          // Lướt giấy bìa dày + bụp gỗ nhẹ
-          playPaperSlide(0.055, 0.042, 880, 0);
-          playWoodThock(132, 48, 0.048, 0.12, 0.018, 540);
+
+        // 3. 4 Tab chính dưới đáy: MỖI TAB 1 ĐẶC TRƯNG & CAO ĐỘ RIÊNG BIỆT!
+        tab(tabName = "books") {
+          const v = getSectionVoice("tabs");
+          if (v === "off") return;
+          markSfx();
+          if (tabName === "books") {
+            // Tủ sách: trầm ấm chắc tay (bìa sách)
+            playPaperBrush(920, 0.045, 0.036, 0, 0x3101);
+            playVoiceStrike(v, 0.9, 0.01, 1.0);
+          } else if (tabName === "merch") {
+            // Quà & Đồ: sáng trong nhẹ (hộp quà)
+            playVoiceStrike(v, 1.15, 0, 0.92);
+            playCleanChime(523.25, 0.085, 0.055, 0.016, 2.0);
+          } else if (tabName === "news") {
+            // Tin NXB: tiếng giở tờ báo sắc gọn
+            playPaperBrush(1680, 0.055, 0.052, 0, 0x3103);
+            playVoiceStrike(v, 1.28, 0.018, 0.85);
+          } else if (tabName === "spending") {
+            // Chi tiêu: tiếng phím tính tiền sắc rõ
+            playVoiceStrike(v, 1.38, 0, 0.9);
+            playVoiceStrike(v, 1.62, 0.042, 0.65);
+          } else {
+            playVoiceStrike(v, 1.0, 0, 0.9);
+          }
         },
-        shelfPull() {
-          // Rút cuốn sách khỏi kệ gỗ (ma sát giấy + khấc gỗ rắc nhẹ)
-          playPaperSlide(0.075, 0.05, 760, 0);
-          playWoodCrack(0.11, 1050, 0.032, 2);
+
+        // 4. Mở thẻ sách / Mở mục / Mở tập (2 nhịp lật mở đi lên)
+        openBook() {
+          const v = getSectionVoice("book");
+          if (v === "off") return;
+          markSfx();
+          playVoiceStrike(v, 0.92, 0, 0.9);
+          playVoiceStrike(v, 1.2, 0.042, 0.85);
         },
+
+        // Mở bảng/modal chung (chỉ kêu nếu trước đó chưa có tiếng chuyên biệt như openBook / shelfPull / shutter)
         open() {
-          // Kéo ngăn gỗ nhẹ
-          playWoodThock(126, 62, 0.055, 0.12, 0, 520);
-          playWoodCrack(0.075, 1120, 0.016, 1);
+          if (performance.now() - lastSfxAt < 320) return;
+          const v = getSectionVoice("book");
+          if (v === "off") return;
+          markSfx();
+          playVoiceStrike(v, 0.95, 0, 0.85);
+          playVoiceStrike(v, 1.18, 0.045, 0.8);
         },
+
+        // 5. Rút sách khỏi Kệ gỗ (tiếng trượt ma sát + khấc rút riêng biệt cho chế độ Kệ)
+        shelfPull() {
+          const v = getSectionVoice("shelf");
+          if (v === "off") return;
+          markSfx();
+          playPaperBrush(980, 0.072, 0.052, 0, 0x4101);
+          playVoiceStrike(v, 0.94, 0.028, 0.92);
+          playVoiceStrike(v, 1.22, 0.064, 0.82);
+        },
+
+        // 6. Đóng bảng / Huỷ / Quay lại (1 nhịp trầm gọn gập xuống)
         close() {
-          // Gập sách bìa cứng lại (bụp trầm)
-          playWoodThock(138, 46, 0.062, 0.14, 0, 440);
+          const v = getSectionVoice("close");
+          if (v === "off") return;
+          markSfx();
+          playVoiceStrike(v, 0.78, 0, 0.9);
         },
+
+        // 7. Thêm nhanh 1 tập / Gắn ảnh / Bật tiếng
         pop() {
-          // Gài sách khớp vào kệ (thock + rắc giòn)
-          playWoodThock(185, 64, 0.05, 0.14, 0, 760);
-          playWoodCrack(0.12, 1380, 0.022, 2);
+          const v = getSectionVoice("save");
+          if (v === "off") return;
+          markSfx();
+          playVoiceStrike(v, 1.12, 0, 0.95);
+          playCleanChime(587.33, 0.095, 0.065, 0.02, 2.0);
         },
+
+        // Đổi trạng thái Quà (3 bậc rõ ràng: Đã có / Đang ship / Đang săn)
         status(idx = 0) {
-          // 3 bậc gỗ trầm ấm (không chói)
-          const notes = [196, 246.94, 293.66];
-          playWoodCrack(0.09, 1180, 0, 1);
-          playWoodMarimba(notes[idx % notes.length], 0.12, 0.09, 0.008);
+          const v = getSectionVoice("filter");
+          if (v === "off") return;
+          markSfx();
+          const freqs = [392.0, 493.88, 587.33];
+          playVoiceStrike(v, 1.05 + (idx % 3) * 0.14, 0, 0.82);
+          playCleanChime(freqs[idx % freqs.length], 0.11, 0.075, 0.014, 2.0);
         },
+
+        // 8. Lưu thành công / Nhập nhiều bộ / AI đọc xong
         success() {
-          // Đặt sách lên kệ ("cộp") + 2 nốt mộc cầm gỗ trầm cực ấm
-          playWoodThock(150, 48, 0.065, 0.17, 0, 580);
-          playWoodMarimba(261.63, 0.15, 0.095, 0.045);
-          playWoodMarimba(329.63, 0.21, 0.105, 0.125);
+          const v = getSectionVoice("save");
+          if (v === "off") return;
+          markSfx();
+          playVoiceStrike(v, 0.96, 0, 0.95);
+          playVoiceStrike(v, 1.26, 0.055, 0.88);
+          playCleanChime(523.25, 0.12, 0.07, 0.045, 2.0);
+          playCleanChime(659.25, 0.18, 0.085, 0.11, 2.0);
         },
+
+        // 9. Xoá (2 nhịp rơi trầm dứt khoát)
         del() {
-          // Gỗ khô gãy đôi giòn rụm + tiếng rơi đầm
-          playWoodCrack(0.17, 1520, 0, 3);
-          playWoodThock(122, 42, 0.075, 0.15, 0.038, 460);
+          const v = getSectionVoice("del");
+          if (v === "off") return;
+          markSfx();
+          playVoiceStrike(v, 0.95, 0, 1.0);
+          playVoiceStrike(v, 0.68, 0.056, 1.05);
         },
+
+        // Hoàn tác (2 nhịp kéo ngược đi lên)
         undo() {
-          // Lẫy gỗ quay ngược
-          playWoodThock(140, 58, 0.042, 0.12, 0, 600);
-          playWoodCrack(0.12, 1360, 0.045, 2);
+          const v = getSectionVoice("del");
+          if (v === "off") return;
+          markSfx();
+          playVoiceStrike(v, 0.76, 0, 0.9);
+          playVoiceStrike(v, 1.18, 0.05, 0.95);
         },
+
+        // 10. Chụp bìa AI / Xuất Hoá đơn hiệu sách (Màn trập máy ảnh cơ)
         shutter() {
-          // Màn trập cơ học đầm khô
-          playWoodCrack(0.16, 1680, 0, 2);
-          playWoodThock(175, 56, 0.04, 0.14, 0.012, 820);
-          playWoodCrack(0.1, 1220, 0.046, 1);
+          const v = getSectionVoice("camera");
+          if (v === "off") return;
+          markSfx();
+          playVoiceStrike(v, 1.18, 0, 1.0);
+          playVoiceStrike(v, 0.92, 0.052, 0.82);
         },
+
+        // Công tắc đèn Đèn bàn / Giấy ấm
         lamp(toDark) {
-          // Công tắc đèn gỗ cứng "cạch"
-          playWoodCrack(0.15, toDark ? 980 : 1420, 0, 2);
-          playWoodThock(toDark ? 128 : 172, 48, 0.055, 0.16, 0.01, toDark ? 480 : 720);
+          const v = getSectionVoice("filter");
+          if (v === "off") return;
+          markSfx();
+          playVoiceStrike(v, toDark ? 0.84 : 1.24, 0, 1.0);
         },
+
+        // Báo lỗi
         error() {
-          // Gõ đúp trầm lên gỗ rỗng
-          playWoodThock(125, 54, 0.058, 0.15, 0, 420);
-          playWoodThock(108, 44, 0.072, 0.15, 0.088, 360);
+          markSfx();
+          playModalResonance({
+            f1: 230, f2: 145, bodyDur: 0.038, gain: 0.15, wave: "triangle",
+            noiseDur: 0.015, seed: 0x9901, modes: [{ freq: 720, q: 3.8, amp: 0.7 }],
+          });
+          playModalResonance({
+            delay: 0.095, f1: 195, f2: 120, bodyDur: 0.048, gain: 0.15, wave: "triangle",
+            noiseDur: 0.018, seed: 0x9902, modes: [{ freq: 600, q: 3.8, amp: 0.7 }],
+          });
+        },
+
+        // Nghe thử từng mục cụ thể trong Cài đặt
+        previewSection(sectionKey) {
+          if (sectionKey === "tabs") {
+            this.tab("books");
+            setTimeout(() => this.tab("merch"), 170);
+            setTimeout(() => this.tab("news"), 340);
+            setTimeout(() => this.tab("spending"), 510);
+          } else if (sectionKey === "book") this.openBook();
+          else if (sectionKey === "shelf") this.shelfPull();
+          else if (sectionKey === "filter") this.filter();
+          else if (sectionKey === "save") this.success();
+          else if (sectionKey === "close") this.close();
+          else if (sectionKey === "del") this.del();
+          else if (sectionKey === "camera") this.shutter();
+        },
+
+        demoPack() {
+          this.filter();
+          setTimeout(() => this.openBook(), 130);
+          setTimeout(() => this.success(), 290);
         },
       };
 
@@ -4120,18 +4513,37 @@
         return (s.sections || []).some((sec) => isSpecialSection(sec));
       }
 
-      function rgbToSpineBg(rgb, seedStr = "") {
-        const [r, g, b] = rgb || [96, 82, 68];
-        // Giữ độ đậm dễ đọc chữ trắng trên gáy sách
+      function rgbToSpinePalette(rgb) {
+        let [r, g, b] = rgb || [78, 70, 64];
+        // Tăng độ trong màu nhẹ & giữ tông trầm sang kiểu gáy truyện in matte (tránh bùn xỉn)
+        const maxC = Math.max(r, g, b);
+        const minC = Math.min(r, g, b);
+        if (maxC > minC) {
+          const mid = (maxC + minC) / 2;
+          r = Math.min(255, Math.max(0, Math.round(mid + (r - mid) * 1.28)));
+          g = Math.min(255, Math.max(0, Math.round(mid + (g - mid) * 1.28)));
+          b = Math.min(255, Math.max(0, Math.round(mid + (b - mid) * 1.28)));
+        }
         const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        const scale = lum > 0.55 ? 0.55 / lum : lum < 0.18 ? 1.35 : 0.88;
-        const dr = Math.min(185, Math.max(36, Math.round(r * scale)));
-        const dg = Math.min(185, Math.max(36, Math.round(g * scale)));
-        const db = Math.min(185, Math.max(36, Math.round(b * scale)));
-        const darkR = Math.max(20, Math.round(dr * 0.72));
-        const darkG = Math.max(20, Math.round(dg * 0.72));
-        const darkB = Math.max(20, Math.round(db * 0.72));
-        return `linear-gradient(180deg, rgb(${dr},${dg},${db}) 0%, rgb(${darkR},${darkG},${darkB}) 100%)`;
+        const targetLum = 0.27;
+        const factor = lum > 0.05 ? Math.min(1.45, Math.max(0.36, targetLum / lum)) : 1.1;
+        const dr = Math.min(165, Math.max(28, Math.round(r * factor)));
+        const dg = Math.min(165, Math.max(28, Math.round(g * factor)));
+        const db = Math.min(165, Math.max(28, Math.round(b * factor)));
+        const botR = Math.max(18, Math.round(dr * 0.7));
+        const botG = Math.max(18, Math.round(dg * 0.7));
+        const botB = Math.max(18, Math.round(db * 0.7));
+        const slR = Math.max(16, Math.round(dr * 0.62));
+        const slG = Math.max(16, Math.round(dg * 0.62));
+        const slB = Math.max(16, Math.round(db * 0.62));
+        const accR = Math.min(245, Math.round(dr * 1.55 + 32));
+        const accG = Math.min(245, Math.round(dg * 1.55 + 32));
+        const accB = Math.min(245, Math.round(db * 1.55 + 32));
+        return {
+          bg: `linear-gradient(180deg, rgb(${dr},${dg},${db}) 0%, rgb(${botR},${botG},${botB}) 100%)`,
+          slice: `rgb(${slR},${slG},${slB})`,
+          accent: `rgb(${accR},${accG},${accB})`,
+        };
       }
 
       // Hiệu ứng nghiêng bìa 3D + Hologram theo ngón tay (hoạt động mượt trên iPhone & chuột)
@@ -4867,56 +5279,72 @@
             })
             .join("")}</div>`;
         } else if (state.bookView === "shelf") {
-          // Chia thành các tầng kệ gỗ (~6–7 bộ/tầng trên điện thoại, gọn gàng như kệ thật)
-          const perShelf = window.innerWidth >= 720 ? 11 : 7;
+          const perShelf = window.innerWidth >= 720 ? 10 : 6;
           const rows = [];
           for (let i = 0; i < list.length; i += perShelf) {
             rows.push(list.slice(i, i + perShelf));
           }
           container.innerHTML = `<div class="shelf-wrap">${rows
-            .map(
-              (rowItems, rIdx) => `
+            .map((rowItems, rIdx) => {
+              const rowVolTotal = rowItems.reduce((a, s) => a + getAllSeriesVolumes(s).length, 0);
+              return `
                 <div class="shelf-unit">
+                  <div class="shelf-bay-meta mono">
+                    <span>Kệ ${rIdx + 1}</span>
+                    <span>${rowItems.length} bộ · ${rowVolTotal} tập</span>
+                  </div>
                   <div class="shelf-row">
                     ${rowItems
                       .map((s, idx) => {
                         const vols = getAllSeriesVolumes(s);
                         const vCount = vols.length;
                         const holo = isSpecialSeries(s);
-                        // Độ dày gáy tỷ lệ theo số tập (34px -> 74px)
-                        const widthPx = Math.min(74, Math.max(34, 30 + Math.round(Math.sqrt(Math.max(1, vCount)) * 9.5)));
-                        // Chiều cao thay đổi tự nhiên theo loại sách + biến thiên nhẹ cố định theo tên
+                        const coverSrc = resolveImg(s.cover);
+                        // Số lát sách xếp phía sau thể hiện độ dày thật của bộ (1-4: 0 lát, 5-14: 1 lát, 15-29: 2 lát, 30+: 3 lát)
+                        const sliceCount = vCount >= 30 ? 3 : vCount >= 15 ? 2 : vCount >= 5 ? 1 : 0;
                         const baseH =
-                          s.category === "Artbook" ? 166 : s.category === "Sách" ? 156 : s.category === "Light Novel" ? 150 : 142;
-                        const jitter = ((s.title || "").length * 7 + idx * 5) % 13 - 6;
+                          s.category === "Artbook" ? 172 : s.category === "Sách" ? 162 : s.category === "Light Novel" ? 156 : 150;
+                        const jitter = ((s.title || "").length * 5 + idx * 3) % 9 - 4;
                         const heightPx = baseH + jitter;
                         const pubShort =
                           s.publisher === "Kim Đồng" ? "KĐ" : s.publisher === "Nhã Nam" ? "NN" : s.publisher.slice(0, 3);
-                        const bgInit = rgbToSpineBg(pubFallbackRGB(s.publisher), s.title);
+                        const pal = rgbToSpinePalette(pubFallbackRGB(s.publisher));
+                        const slicesHtml = sliceCount
+                          ? `<span class="shelf-stack-slices">${Array.from(
+                              { length: sliceCount },
+                              (_, k) => `<span class="shelf-slice" style="height:${heightPx - 3 - k * 2}px; opacity:${(0.88 - k * 0.14).toFixed(2)};"></span>`
+                            ).join("")}</span>`
+                          : "";
                         return `
-                          <button type="button" class="shelf-spine fx-card-in" style="--stagger:${rIdx * perShelf + idx}; width:${widthPx}px; height:${heightPx}px; background:${bgInit};" data-shelf-id="${s.id}" title="${esc(s.title)} (${vCount} tập)">
-                            ${vCount >= 3 ? `<span class="spine-vol-lines"></span>` : ""}
-                            ${holo ? `<span class="spine-holo-band"></span>` : ""}
-                            <span class="spine-pub-dot mono">${esc(pubShort)}</span>
-                            <span class="spine-title">${esc(s.title)}</span>
-                            <span class="spine-count mono">${vCount}</span>
+                          <button type="button" class="shelf-book-group fx-card-in" style="--stagger:${rIdx * perShelf + idx}; --sp-bg:${pal.bg}; --sp-slice:${pal.slice}; --sp-accent:${pal.accent};" data-shelf-id="${s.id}" title="${esc(s.title)} (${vCount} tập)">
+                            <span class="shelf-spine-main ${holo ? "sp-gold" : ""}" style="height:${heightPx}px;">
+                              <span class="sp-top-cap mono">${esc(pubShort)}${holo ? '<span class="sp-gold-dot">✦</span>' : ""}</span>
+                              ${coverSrc ? `<span class="sp-thumb-win"><img src="${esc(coverSrc)}" alt="" loading="lazy" /></span>` : ""}
+                              <span class="sp-title-vert ${coverSrc ? "" : "no-thumb"}"><span>${esc(s.title)}</span></span>
+                              <span class="sp-vol-box mono">${vCount}</span>
+                            </span>
+                            ${slicesHtml}
                           </button>`;
                       })
                       .join("")}
                   </div>
                   <div class="shelf-plank"></div>
-                </div>`
-            )
+                </div>`;
+            })
             .join("")}</div>`;
 
-          // Hút màu chủ đạo từ bìa để nhuộm từng gáy sách cho giống kệ thật
+          // Nhuộm màu gáy từ ảnh bìa thật (giữ màu trong trẻo, không xỉn)
           container.querySelectorAll("[data-shelf-id]").forEach((el) => {
             const s = list.find((x) => x.id === el.dataset.shelfId);
             if (!s) return;
             const cSrc = resolveImg(s.cover);
             if (cSrc) {
               extractDominantColor(cSrc, s.publisher).then((rgb) => {
-                if (el.isConnected) el.style.background = rgbToSpineBg(rgb, s.title);
+                if (!el.isConnected) return;
+                const pal = rgbToSpinePalette(rgb);
+                el.style.setProperty("--sp-bg", pal.bg);
+                el.style.setProperty("--sp-slice", pal.slice);
+                el.style.setProperty("--sp-accent", pal.accent);
               });
             }
             el.addEventListener("click", () => {
@@ -4954,7 +5382,7 @@
         }
 
         container.querySelectorAll("[data-id]").forEach((el) => {
-          el.addEventListener("click", () => openSeriesDetail(el.dataset.id));
+          el.addEventListener("click", () => { SFX.openBook(); openSeriesDetail(el.dataset.id); });
         });
       }
 
@@ -5738,7 +6166,7 @@
             });
           });
           body.querySelectorAll("[data-open-sec]").forEach((el) => {
-            el.addEventListener("click", () => openSectionDetail(seriesId, el.dataset.openSec));
+            el.addEventListener("click", () => { SFX.openBook(); openSectionDetail(seriesId, el.dataset.openSec); });
           });
         }, () => { if (typeof detachGyro === "function") detachGyro(); });
       }
@@ -6093,7 +6521,7 @@
           body.querySelector("#addOneVolBtn").addEventListener("click", () => openVolumeForm(seriesId, sectionId));
           body.querySelector("#addBulkVolBtn").addEventListener("click", () => openBulkVolumeForm(seriesId, sectionId));
           body.querySelectorAll("[data-vol-id]").forEach((btn) => {
-            btn.addEventListener("click", () => openVolumeForm(seriesId, sectionId, btn.dataset.volId));
+            btn.addEventListener("click", () => { SFX.openBook(); openVolumeForm(seriesId, sectionId, btn.dataset.volId); });
           });
         });
       }
@@ -6643,20 +7071,20 @@
 
 
       // ============================
-      // TẠO BÌA NHANH BẰNG AI VISION (CHỤP BÌA TRƯỚC / BÌA SAU -> TỰ ĐIỀN TÊN, TÁC GIẢ, NXB & GIÁ)
+      // TẠO BÌA NHANH SIÊU TỐC (TẮT THINKING BUDGET -> ~1.5-3s + QUÉT CẢ KỆ NHIỀU CUỐN 1 LẦN!)
       // ============================
       const GEMINI_FALLBACK_MODELS = [
+        "gemini-2.5-flash-lite",
+        "gemini-flash-lite-latest",
+        "gemini-2.5-flash",
         "gemini-flash-latest",
         "gemini-3.0-flash",
         "gemini-3-flash-preview",
-        "gemini-2.5-flash",
-        "gemini-2.5-flash-lite",
       ];
       let discoveredGeminiModelsCache = { keyHash: "", models: [], at: 0 };
 
       function rankGeminiModelName(name) {
         const low = name.toLowerCase();
-        // Loại bỏ các model không phải sinh text+ảnh nhanh hoặc đã ngừng hỗ trợ
         if (
           /embedding|aqa|imagen|veo|tts|audio|robotics|computer-use|deep-research|lyria|gemma|learnlm|vision-001|gemini-1\.|gemini-2\.0-flash(?:-001|-exp)?$/i.test(
             low
@@ -6666,21 +7094,20 @@
         }
         if (!low.startsWith("gemini-")) return -1;
         let score = 100;
-        // Ưu tiên dòng flash (nhanh, hỗ trợ ảnh tốt, hạn mức miễn phí rộng)
-        if (low.includes("flash")) score += 500;
-        else if (low.includes("pro")) score += 200;
-        if (low.includes("flash-latest")) score += 220;
-        // Trích số phiên bản (VD: 3.8, 3.0, 2.5) -> bản mới nhất đứng đầu
+        // Ưu tiên tốc độ cực cao cho đọc bìa: flash-lite & flash đứng đầu (tránh pro/thinking chậm 20-30s)
+        if (low.includes("flash-lite")) score += 680;
+        else if (low.includes("flash")) score += 520;
+        else if (low.includes("pro")) score += 120;
+
+        if (low.includes("latest")) score += 90;
         const verMatch = low.match(/gemini-(\d+)(?:\.(\d+))?/);
         if (verMatch) {
           const maj = Number(verMatch[1]) || 0;
           const min = Number(verMatch[2]) || 0;
-          score += maj * 100 + min * 10;
+          score += maj * 60 + min * 8;
         }
-        // Ưu tiên bản ổn định hơn preview/exp và full flash hơn lite
-        if (low.includes("lite")) score -= 35;
-        if (low.includes("preview") || low.includes("exp")) score -= 20;
-        if (low.includes("thinking")) score -= 40;
+        if (low.includes("preview") || low.includes("exp")) score -= 25;
+        if (low.includes("thinking")) score -= 200;
         return score;
       }
 
@@ -6692,9 +7119,17 @@
           !forceRefresh &&
           discoveredGeminiModelsCache.keyHash === kHash &&
           discoveredGeminiModelsCache.models.length &&
-          now - discoveredGeminiModelsCache.at < 1000 * 60 * 30
+          now - discoveredGeminiModelsCache.at < 1000 * 60 * 45
         ) {
           return discoveredGeminiModelsCache.models;
+        }
+
+        // Nếu đã có model chạy ngon được lưu trong máy & không ép làm mới -> dùng ngay khỏi tốn thêm 1 request GET /models!
+        const savedModel = String(state.geminiModel || "").trim();
+        if (!forceRefresh && savedModel && rankGeminiModelName(savedModel) > 0) {
+          const fastList = [savedModel, ...GEMINI_FALLBACK_MODELS.filter((m) => m !== savedModel)].slice(0, 5);
+          discoveredGeminiModelsCache = { keyHash: kHash, models: fastList, at: now };
+          return fastList;
         }
 
         const found = [];
@@ -6727,25 +7162,16 @@
           if (/API Key không hợp lệ/i.test(err?.message || "")) throw err;
         }
 
-        // Gộp thêm model từng chạy ngon (nếu có) và danh sách dự phòng hiện đại
         const ordered = [];
-        const savedModel = String(state.geminiModel || "").trim();
-        if (savedModel && rankGeminiModelName(savedModel) > 0 && (found.length === 0 || found.includes(savedModel))) {
-          ordered.push(savedModel);
-        }
-        found.forEach((m) => {
-          if (!ordered.includes(m)) ordered.push(m);
-        });
-        GEMINI_FALLBACK_MODELS.forEach((m) => {
-          if (!ordered.includes(m)) ordered.push(m);
-        });
+        found.forEach((m) => { if (!ordered.includes(m)) ordered.push(m); });
+        GEMINI_FALLBACK_MODELS.forEach((m) => { if (!ordered.includes(m)) ordered.push(m); });
 
-        const finalList = ordered.slice(0, 6);
+        const finalList = ordered.slice(0, 5);
         discoveredGeminiModelsCache = { keyHash: kHash, models: finalList, at: now };
         return finalList;
       }
 
-      function extractJsonObjectFromText(rawText) {
+      function extractJsonFromText(rawText) {
         const cleaned = String(rawText || "")
           .replace(/^```(?:json)?\s*/i, "")
           .replace(/\s*```$/i, "")
@@ -6753,15 +7179,25 @@
         try {
           return JSON.parse(cleaned);
         } catch {}
-        const start = cleaned.indexOf("{");
-        const end = cleaned.lastIndexOf("}");
+        const firstBrace = cleaned.indexOf("{");
+        const firstBracket = cleaned.indexOf("[");
+        let start = -1;
+        let end = -1;
+        if (firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
+          start = firstBracket;
+          end = cleaned.lastIndexOf("]");
+        } else if (firstBrace !== -1) {
+          start = firstBrace;
+          end = cleaned.lastIndexOf("}");
+        }
         if (start !== -1 && end > start) {
           return JSON.parse(cleaned.slice(start, end + 1));
         }
-        throw new Error("AI trả về định dạng không phải JSON.");
+        throw new Error("AI trả về sai định dạng JSON.");
       }
 
-      async function prepareImageForAI(file, maxDim = 1080, quality = 0.82) {
+      // Nén ảnh gọn 720px @ 0.72 (~45KB) -> upload chớp nhoáng trên 4G/Wi-Fi, vẫn đủ nét đọc chữ giá bìa
+      async function prepareImageForAI(file, maxDim = 720, quality = 0.72) {
         const dataUrl = await compressImageFile(file, maxDim, maxDim, quality);
         const commaIdx = dataUrl.indexOf(",");
         return {
@@ -6771,95 +7207,121 @@
         };
       }
 
-      async function callGeminiReadCovers(apiKey, imagesList) {
+      // Gọi Gemini với thinkingBudget=0 (tắt suy luận dài dòng) -> giảm từ 30s xuống ~1.5-3s!
+      async function callGeminiFastJson(apiKey, parts, maxTokens = 280) {
         const key = String(apiKey || "").trim();
         if (!key) throw new Error("Chưa nhập Gemini API Key.");
-        if (!imagesList || !imagesList.length) throw new Error("Chưa có ảnh bìa nào để đọc.");
-
-        const promptText = `Bạn là trợ lý nhận diện sách & manga phát hành tại Việt Nam.
-Hãy nhìn kỹ các ảnh bìa sách/truyện tranh đính kèm (có thể gồm bìa trước và/hoặc bìa sau) rồi trích xuất thông tin chính xác thành JSON duy nhất (KHÔNG bọc markdown, KHÔNG giải thích thêm):
-{
-  "seriesTitle": "Tên bộ truyện hoặc tên sách (bỏ số tập, bỏ các cụm như 'Tặng kèm...', 'Bản đặc biệt', ưu tiên tên tiếng Việt in nổi bật trên bìa)",
-  "volumeNumber": 1,
-  "author": "Tên tác giả (chỉ ghi tên, bỏ chữ 'Tác giả:', để rỗng nếu không thấy trên ảnh)",
-  "publisher": "CHỈ chọn đúng 1 trong 5 chuỗi: Kim Đồng | Trẻ | IPM | Nhã Nam | Khác",
-  "category": "CHỈ chọn đúng 1 trong 4 chuỗi: Manga | Light Novel | Sách | Artbook",
-  "coverPrice": 0,
-  "editionHint": "CHỈ chọn đúng 1 trong 5 chuỗi: Bản thường | Limited | Boxset | Tái bản | Bìa cứng",
-  "aliases": "Tên tiếng Anh / Nhật / tên gốc in phụ trên bìa nếu có (cách nhau dấu phẩy, để rỗng nếu không có)",
-  "note": "Ghi chú ngắn nếu thấy trên bìa (VD: quà kèm, giới hạn tuổi, tái bản...; để rỗng nếu không có)"
-}
-Quy tắc bắt buộc:
-- Nhận diện NXB cực kỹ qua logo (Kim Đồng hình sách/chữ KĐ hoặc đầu mã 8935244/978-604-2/52x; NXB Trẻ logo ngôi nhà chữ T hoặc 8934974/978-604-1; IPM logo tròn vàng chữ IPM hoặc 8935250/8935325; Nhã Nam logo con chim/chữ nhã nam hoặc 8935235/8935337).
-- coverPrice phải là số nguyên VNĐ đúng theo chữ 'Giá:' trên bìa (VD: 'Giá: 45.000đ' -> 45000, 'Giá: 205.000đ' -> 205000). Nếu không thấy giá trên ảnh, trả về 0.
-- volumeNumber là số (có thể số thập phân như 1.5), nếu là sách lẻ/oneshot không có số tập thì trả về 1.`;
-
-        const parts = [{ text: promptText }];
-        imagesList.forEach((imgObj) => {
-          parts.push({
-            inline_data: {
-              mime_type: imgObj.mimeType || "image/jpeg",
-              data: imgObj.base64,
-            },
-          });
-        });
-
-        const modelsToTry = await discoverActiveGeminiModels(key, false);
+        const t0 = performance.now();
+        let modelsToTry = await discoverActiveGeminiModels(key, false);
         let firstMeaningfulErr = "";
         let lastErr = "Không kết nối được Gemini API.";
+        let triedFreshDiscovery = false;
 
-        for (const model of modelsToTry) {
-          try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
-            const res = await fetch(url, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [{ parts }],
-                generationConfig: {
-                  temperature: 0.1,
-                  responseMimeType: "application/json",
-                },
-              }),
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) {
-              const msg = data?.error?.message || `HTTP ${res.status}`;
-              lastErr = `[${model}] ${msg}`;
-              if (/API_KEY_INVALID|API key not valid|invalid api key/i.test(msg)) {
-                throw new Error("API Key không hợp lệ — kiểm tra lại Key đã dán trong Cài đặt.");
-              }
-              if (res.status === 429 && !firstMeaningfulErr) {
-                firstMeaningfulErr = "API Key đang hết lượt tạm thời (429) — đợi ~1 phút thử lại hoặc kiểm tra quota AI Studio.";
-              } else if (!firstMeaningfulErr && !/no longer available|not found|not supported/i.test(msg)) {
-                firstMeaningfulErr = lastErr;
-              }
-              continue;
-            }
+        for (let i = 0; i < modelsToTry.length; i++) {
+          const model = modelsToTry[i];
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
 
-            const respParts = data?.candidates?.[0]?.content?.parts || [];
-            // Bỏ qua các thought parts của Gemini 2.5 / 3.x thinking models
-            const textParts = respParts.filter((p) => !p.thought && typeof p.text === "string");
-            const rawText = (textParts.length ? textParts : respParts)
-              .map((p) => p.text || "")
-              .join("\n")
-              .trim();
-            if (!rawText) {
-              lastErr = `[${model}] AI không trả về dữ liệu.`;
-              continue;
+          // Tắt thinking cho 2.5/3.x để phản hồi siêu tốc; nếu model từ chối field thinkingConfig -> thử lại không có field đó
+          const genCfgs = [];
+          const baseCfg = {
+            temperature: 0.1,
+            maxOutputTokens: maxTokens,
+            responseMimeType: "application/json",
+          };
+          if (/gemini-(?:2\.5|3)/i.test(model)) {
+            genCfgs.push({ ...baseCfg, thinkingConfig: { thinkingBudget: 0 } });
+          }
+          genCfgs.push(baseCfg);
+
+          for (const gCfg of genCfgs) {
+            try {
+              const res = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [{ parts }],
+                  generationConfig: gCfg,
+                }),
+              });
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok) {
+                const msg = data?.error?.message || `HTTP ${res.status}`;
+                lastErr = `[${model}] ${msg}`;
+                if (/API_KEY_INVALID|API key not valid|invalid api key/i.test(msg)) {
+                  throw new Error("API Key không hợp lệ — kiểm tra lại Key trong Cài đặt.");
+                }
+                // Nếu chỉ lỗi tham số thinkingConfig -> thử lại gCfg tiếp theo của cùng model
+                if (res.status === 400 && /thinking|unknown name/i.test(msg) && gCfg.thinkingConfig) {
+                  continue;
+                }
+                if (res.status === 429 && !firstMeaningfulErr) {
+                  firstMeaningfulErr = "API Key chạm giới hạn lượt/phút (429) — đợi ~30 giây thử lại.";
+                } else if (!firstMeaningfulErr && !/no longer available|not found|not supported/i.test(msg)) {
+                  firstMeaningfulErr = lastErr;
+                }
+                // Nếu model cũ đã lưu bị gỡ -> tự quét lại danh sách model sống
+                if (!triedFreshDiscovery && i === 0 && /no longer available|not found/i.test(msg)) {
+                  triedFreshDiscovery = true;
+                  state.geminiModel = "";
+                  modelsToTry = await discoverActiveGeminiModels(key, true);
+                  i = -1;
+                }
+                break;
+              }
+
+              const respParts = data?.candidates?.[0]?.content?.parts || [];
+              const textParts = respParts.filter((p) => !p.thought && typeof p.text === "string");
+              const rawText = (textParts.length ? textParts : respParts)
+                .map((p) => p.text || "")
+                .join("\n")
+                .trim();
+              if (!rawText) {
+                lastErr = `[${model}] AI không trả về dữ liệu.`;
+                break;
+              }
+              const parsed = extractJsonFromText(rawText);
+              if (state.geminiModel !== model) {
+                state.geminiModel = model;
+                saveState();
+              }
+              const elapsedSec = ((performance.now() - t0) / 1000).toFixed(1);
+              return { data: parsed, model, elapsedSec };
+            } catch (err) {
+              lastErr = err?.message || String(err);
+              if (/API Key không hợp lệ/i.test(lastErr)) throw err;
+              break;
             }
-            const parsed = extractJsonObjectFromText(rawText);
-            if (state.geminiModel !== model) {
-              state.geminiModel = model;
-              saveState();
-            }
-            return { ...parsed, _model: model };
-          } catch (err) {
-            lastErr = err?.message || String(err);
-            if (/API Key không hợp lệ/i.test(lastErr)) throw err;
           }
         }
         throw new Error(firstMeaningfulErr || lastErr);
+      }
+
+      async function callGeminiReadCovers(apiKey, imagesList) {
+        if (!imagesList || !imagesList.length) throw new Error("Chưa có ảnh bìa nào để đọc.");
+        const promptText = `Đọc bìa manga/sách Việt Nam trong ảnh, trả về JSON gọn (không markdown):
+{"seriesTitle":"Tên bộ (bỏ số tập/quà)","volumeNumber":1,"author":"Tác giả hoặc rỗng","publisher":"Kim Đồng|Trẻ|IPM|Nhã Nam|Khác","category":"Manga|Light Novel|Sách|Artbook","coverPrice":0,"editionHint":"Bản thường|Limited|Boxset|Tái bản|Bìa cứng","aliases":"Tên gốc/Anh nếu có","note":""}
+Chú ý: nhận diện NXB qua logo/mã (KĐ=8935244/52x, Trẻ=8934974, IPM=8935250, Nhã Nam=8935235); coverPrice là số nguyên VNĐ đúng theo chữ Giá trên bìa (0 nếu không thấy).`;
+
+        const parts = [{ text: promptText }];
+        imagesList.forEach((imgObj) => {
+          parts.push({ inline_data: { mime_type: imgObj.mimeType || "image/jpeg", data: imgObj.base64 } });
+        });
+        const res = await callGeminiFastJson(apiKey, parts, 260);
+        return { ...(res.data || {}), _model: res.model, _elapsedSec: res.elapsedSec };
+      }
+
+      async function callGeminiReadShelfBatch(apiKey, imgObj) {
+        const promptText = `Nhìn ảnh kệ sách hoặc nhiều cuốn manga/sách Việt Nam này. Liệt kê TẤT CẢ các bộ truyện/sách nhìn thấy, gộp các tập cùng bộ thành 1 mục, trả về JSON:
+{"items":[{"seriesTitle":"Tên bộ","fromVol":1,"toVol":10,"publisher":"Kim Đồng|Trẻ|IPM|Nhã Nam|Khác","category":"Manga|Light Novel|Sách|Artbook","coverPrice":35000}]}
+Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng cuốn, đặt fromVol=1 và toVol=số cuốn thấy được. Không thêm markdown.`;
+
+        const parts = [
+          { text: promptText },
+          { inline_data: { mime_type: imgObj.mimeType || "image/jpeg", data: imgObj.base64 } },
+        ];
+        const res = await callGeminiFastJson(apiKey, parts, 900);
+        const list = Array.isArray(res.data) ? res.data : Array.isArray(res.data?.items) ? res.data.items : [];
+        return { items: list, model: res.model, elapsedSec: res.elapsedSec };
       }
 
       async function testGeminiApiKey(apiKey) {
@@ -6876,8 +7338,8 @@ Quy tắc bắt buộc:
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  contents: [{ parts: [{ text: "Trả lời đúng 1 chữ: OK" }] }],
-                  generationConfig: { maxOutputTokens: 16 },
+                  contents: [{ parts: [{ text: "OK" }] }],
+                  generationConfig: { maxOutputTokens: 8 },
                 }),
               }
             );
@@ -6892,7 +7354,7 @@ Quy tắc bắt buộc:
               throw new Error("API Key không đúng.");
             }
             if (res.status === 429 && !firstMeaningfulErr) {
-              firstMeaningfulErr = "Key đúng nhưng đang chạm giới hạn miễn phí (429) — chờ 1 phút thử lại.";
+              firstMeaningfulErr = "Key đúng nhưng đang chạm giới hạn miễn phí (429) — chờ 30s thử lại.";
             }
           } catch (e) {
             lastErr = e?.message || String(e);
@@ -6902,12 +7364,15 @@ Quy tắc bắt buộc:
         throw new Error(firstMeaningfulErr || lastErr);
       }
 
-      function openQuickCoverModal() {
+      function openQuickCoverModal(initialTab = "single") {
+        let mode = initialTab; // "single" | "shelf"
         let frontFile = null;
-        let frontCoverData = ""; // Bản nén 2:3 lưu làm ảnh bìa
-        let frontAiObj = null;   // Bản nét ~1080px gửi AI đọc chữ
+        let frontCoverData = "";
+        let frontAiObj = null;
         let backAiObj = null;
         let backThumbData = "";
+        let shelfAiObj = null;
+        let shelfThumbData = "";
         let isReading = false;
 
         const hasKey = Boolean((state.geminiApiKey || "").trim());
@@ -6921,7 +7386,7 @@ Quy tắc bắt buộc:
                      <div class="small-muted" style="margin-top:4px;">
                        Lấy miễn phí trong 30 giây tại
                        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style="text-decoration:underline; font-weight:600;">aistudio.google.com/apikey</a>
-                       rồi dán vào đây (chỉ lưu riêng trên iPhone của bạn):
+                       rồi dán vào đây:
                      </div>
                      <div style="display:flex; gap:6px; margin-top:7px;">
                        <input type="text" id="qcQuickKeyInput" placeholder="Dán AIzaSy..." style="flex:1; padding:6px 8px; border:1px solid var(--line-strong); border-radius:2px; background:var(--surface);" />
@@ -6931,51 +7396,79 @@ Quy tắc bắt buộc:
                 : ""
             }
 
-            <div class="small-muted">
-              Chụp <strong>Bìa trước</strong> (làm ảnh bìa + đọc tên, tác giả, NXB). Nếu muốn tự lấy đúng <strong>Giá bìa</strong> in sau sách thì chụp thêm <strong>Bìa sau</strong>.
+            <div class="scope-switch" id="qcModeSwitch" style="margin-bottom:2px;">
+              <button type="button" class="${mode === "single" ? "active" : ""}" data-qcm="single">1 cuốn (Lấy bìa + giá)</button>
+              <button type="button" class="${mode === "shelf" ? "active" : ""}" data-qcm="shelf">Cả kệ / Nhiều cuốn (1 ảnh)</button>
             </div>
 
-            <div class="qc-grid">
-              <!-- Slot 1: Bìa trước -->
-              <div class="qc-slot">
-                <div class="qc-slot-label">
-                  <span>1. Bìa trước</span>
-                  <button type="button" class="small-muted" id="qcCropFrontBtn" style="display:none; text-decoration:underline;">Cắt lại</button>
+            <!-- MODE 1: SINGLE BOOK -->
+            <div id="qcSinglePane" class="form-grid" style="${mode === "single" ? "" : "display:none;"}">
+              <div class="small-muted">
+                Chụp <strong>Bìa trước</strong> (làm ảnh bìa + đọc tên, tác giả, NXB trong ~2 giây). Cần tự lấy đúng giá in sau sách thì chụp thêm <strong>Bìa sau</strong>.
+              </div>
+              <div class="qc-grid">
+                <div class="qc-slot">
+                  <div class="qc-slot-label">
+                    <span>1. Bìa trước</span>
+                    <button type="button" class="small-muted" id="qcCropFrontBtn" style="display:none; text-decoration:underline;">Cắt lại</button>
+                  </div>
+                  <div class="qc-preview" id="qcFrontPrev">
+                    <span>Chưa có bìa trước</span>
+                    <span style="font-size:10px; margin-top:4px;">(Lưu làm ảnh bìa tủ)</span>
+                  </div>
+                  <div class="qc-slot-btns">
+                    <label class="btn btn-sm btn-primary" style="margin:0;">
+                      Chụp cam
+                      <input type="file" id="qcFrontCamIn" accept="image/*" capture="environment" style="display:none;" />
+                    </label>
+                    <label class="btn btn-sm" style="margin:0;">
+                      Chọn ảnh
+                      <input type="file" id="qcFrontLibIn" accept="image/*" style="display:none;" />
+                    </label>
+                  </div>
                 </div>
-                <div class="qc-preview" id="qcFrontPrev">
-                  <span>Chưa có bìa trước</span>
-                  <span style="font-size:10px; margin-top:4px;">(Dùng làm ảnh bìa tủ)</span>
+
+                <div class="qc-slot">
+                  <div class="qc-slot-label">
+                    <span>2. Bìa sau</span>
+                    <span class="small-muted" style="font-weight:400; text-transform:none;">tuỳ chọn</span>
+                  </div>
+                  <div class="qc-preview" id="qcBackPrev">
+                    <span>Chưa có bìa sau</span>
+                    <span style="font-size:10px; margin-top:4px;">(Lấy giá bìa & NXB)</span>
+                  </div>
+                  <div class="qc-slot-btns">
+                    <label class="btn btn-sm" style="margin:0;">
+                      Chụp sau
+                      <input type="file" id="qcBackCamIn" accept="image/*" capture="environment" style="display:none;" />
+                    </label>
+                    <label class="btn btn-sm" style="margin:0;">
+                      Chọn ảnh
+                      <input type="file" id="qcBackLibIn" accept="image/*" style="display:none;" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MODE 2: SHELF BATCH SCAN -->
+            <div id="qcShelfPane" class="form-grid" style="${mode === "shelf" ? "" : "display:none;"}">
+              <div class="small-muted">
+                Dành cho tủ hàng trăm cuốn: chụp <strong>1 tấm cả tầng kệ sách hoặc 1 xấp truyện</strong> → AI quét một phát ra hết các bộ & số tập rồi nhập hàng loạt trong 3 giây!
+              </div>
+              <div class="qc-slot">
+                <div class="qc-preview" id="qcShelfPrev" style="aspect-ratio:4/3;">
+                  <span>Chụp ngang 1 tầng kệ (rõ chữ gáy hoặc bìa)</span>
+                  <span style="font-size:10px; margin-top:4px;">Nên chụp mỗi lần 1 tầng ~10–25 cuốn để AI đọc chuẩn nhất</span>
                 </div>
                 <div class="qc-slot-btns">
                   <label class="btn btn-sm btn-primary" style="margin:0;">
-                    Chụp cam
-                    <input type="file" id="qcFrontCamIn" accept="image/*" capture="environment" style="display:none;" />
+                    Chụp tầng kệ
+                    <input type="file" id="qcShelfCamIn" accept="image/*" capture="environment" style="display:none;" />
                   </label>
                   <label class="btn btn-sm" style="margin:0;">
-                    Chọn ảnh
-                    <input type="file" id="qcFrontLibIn" accept="image/*" style="display:none;" />
-                  </label>
-                </div>
-              </div>
-
-              <!-- Slot 2: Bìa sau -->
-              <div class="qc-slot">
-                <div class="qc-slot-label">
-                  <span>2. Bìa sau</span>
-                  <span class="small-muted" style="font-weight:400; text-transform:none;">tuỳ chọn</span>
-                </div>
-                <div class="qc-preview" id="qcBackPrev">
-                  <span>Chưa có bìa sau</span>
-                  <span style="font-size:10px; margin-top:4px;">(Lấy giá bìa & NXB)</span>
-                </div>
-                <div class="qc-slot-btns">
-                  <label class="btn btn-sm" style="margin:0;">
-                    Chụp sau
-                    <input type="file" id="qcBackCamIn" accept="image/*" capture="environment" style="display:none;" />
-                  </label>
-                  <label class="btn btn-sm" style="margin:0;">
-                    Chọn ảnh
-                    <input type="file" id="qcBackLibIn" accept="image/*" style="display:none;" />
+                    Chọn ảnh kệ
+                    <input type="file" id="qcShelfLibIn" accept="image/*" style="display:none;" />
                   </label>
                 </div>
               </div>
@@ -6983,18 +7476,21 @@ Quy tắc bắt buộc:
 
             <div class="qc-status-box" id="qcStatusBox" style="display:none;"></div>
 
-            <div class="modal-actions" style="justify-content:space-between; flex-wrap:wrap; margin-top:6px;">
+            <div class="modal-actions" style="justify-content:space-between; flex-wrap:wrap; margin-top:4px;">
               <button type="button" class="btn btn-sm" id="qcOpenSettingsBtn">Cài đặt API Key</button>
               <div style="display:flex; gap:6px;">
                 <button type="button" class="btn btn-sm" id="qcSkipAiBtn" style="display:none;">Tự điền</button>
-                <button type="button" class="btn btn-sm btn-primary" id="qcAnalyzeBtn" disabled>Đọc ảnh bằng AI</button>
+                <button type="button" class="btn btn-sm btn-primary" id="qcAnalyzeBtn" disabled>Đọc nhanh bằng AI</button>
               </div>
             </div>
           </div>`;
 
-        openModal("Tạo bìa nhanh (AI đọc bìa)", html, (body) => {
+        openModal("Tạo bìa nhanh (AI siêu tốc)", html, (body) => {
+          const singlePane = body.querySelector("#qcSinglePane");
+          const shelfPane = body.querySelector("#qcShelfPane");
           const frontPrev = body.querySelector("#qcFrontPrev");
           const backPrev = body.querySelector("#qcBackPrev");
+          const shelfPrev = body.querySelector("#qcShelfPrev");
           const cropFrontBtn = body.querySelector("#qcCropFrontBtn");
           const statusBox = body.querySelector("#qcStatusBox");
           const analyzeBtn = body.querySelector("#qcAnalyzeBtn");
@@ -7011,19 +7507,31 @@ Quy tắc bắt buộc:
           };
 
           const updateButtons = () => {
+            if (mode === "shelf") {
+              analyzeBtn.disabled = !shelfAiObj || isReading;
+              analyzeBtn.textContent = "Quét cả kệ bằng AI";
+              skipAiBtn.style.display = "none";
+              return;
+            }
             const hasAnyImg = Boolean(frontAiObj || backAiObj);
             analyzeBtn.disabled = !hasAnyImg || isReading;
             skipAiBtn.style.display = frontCoverData ? "" : "none";
-            if (frontAiObj && backAiObj) {
-              analyzeBtn.textContent = "Đọc cả 2 bìa bằng AI";
-            } else if (frontAiObj) {
-              analyzeBtn.textContent = "Đọc bìa trước bằng AI";
-            } else if (backAiObj) {
-              analyzeBtn.textContent = "Đọc bìa sau bằng AI";
-            } else {
-              analyzeBtn.textContent = "Đọc ảnh bằng AI";
-            }
+            if (frontAiObj && backAiObj) analyzeBtn.textContent = "Đọc nhanh 2 bìa";
+            else if (frontAiObj) analyzeBtn.textContent = "Đọc nhanh bìa trước";
+            else if (backAiObj) analyzeBtn.textContent = "Đọc nhanh bìa sau";
+            else analyzeBtn.textContent = "Đọc nhanh bằng AI";
           };
+
+          body.querySelector("#qcModeSwitch").addEventListener("click", (e) => {
+            const btn = e.target.closest("button[data-qcm]");
+            if (!btn) return;
+            mode = btn.dataset.qcm;
+            body.querySelectorAll("#qcModeSwitch button").forEach((b) => b.classList.toggle("active", b === btn));
+            singlePane.style.display = mode === "single" ? "grid" : "none";
+            shelfPane.style.display = mode === "shelf" ? "grid" : "none";
+            setStatus("");
+            updateButtons();
+          });
 
           const saveKeyBtn = body.querySelector("#qcQuickSaveKeyBtn");
           if (saveKeyBtn) {
@@ -7035,6 +7543,7 @@ Quy tắc bắt buộc:
                 return;
               }
               state.geminiApiKey = val;
+              state.geminiModel = "";
               saveState();
               SFX.success();
               const noKeyBox = body.querySelector("#qcNoKeyBox");
@@ -7051,18 +7560,18 @@ Quy tắc bắt buộc:
             if (!f) return;
             SFX.shutter();
             frontFile = f;
-            setStatus("Đang xử lý ảnh bìa trước...", "", true);
+            setStatus("Đang nén ảnh siêu nhẹ...", "", true);
             try {
               const [coverUrl, aiObj] = await Promise.all([
                 compressImageFile(f, 360, 540, 0.78),
-                prepareImageForAI(f, 1080, 0.84),
+                prepareImageForAI(f, 720, 0.72),
               ]);
               frontCoverData = coverUrl;
               frontAiObj = aiObj;
               frontPrev.classList.add("has-img");
               frontPrev.innerHTML = `<img src="${esc(frontCoverData)}" alt="Bìa trước" />`;
               cropFrontBtn.style.display = "";
-              setStatus("Đã nạp <strong>bìa trước</strong> — chụp thêm bìa sau (để lấy giá) hoặc bấm <strong>Đọc bìa</strong> ngay!", "ok");
+              setStatus("Đã nạp <strong>bìa trước</strong> — chụp thêm bìa sau (để lấy giá) hoặc bấm <strong>Đọc nhanh</strong>!", "ok");
               updateButtons();
             } catch {
               SFX.error();
@@ -7075,22 +7584,17 @@ Quy tắc bắt buộc:
             e.target.value = "";
             if (!f) return;
             SFX.shutter();
-            setStatus("Đang xử lý ảnh bìa sau...", "", true);
+            setStatus("Đang nén ảnh bìa sau...", "", true);
             try {
               const [thumbUrl, aiObj] = await Promise.all([
-                compressImageFile(f, 300, 450, 0.7),
-                prepareImageForAI(f, 1080, 0.84),
+                compressImageFile(f, 300, 450, 0.68),
+                prepareImageForAI(f, 720, 0.72),
               ]);
               backThumbData = thumbUrl;
               backAiObj = aiObj;
               backPrev.classList.add("has-img");
               backPrev.innerHTML = `<img src="${esc(backThumbData)}" alt="Bìa sau" />`;
-              setStatus(
-                frontAiObj
-                  ? "Đã đủ <strong>2 bìa</strong> — bấm <strong>Đọc cả 2 bìa bằng AI</strong> ngay thôi!"
-                  : "Đã nạp <strong>bìa sau</strong> — chụp thêm bìa trước để làm ảnh bìa hoặc bấm đọc luôn.",
-                "ok"
-              );
+              setStatus("Đã nạp <strong>bìa sau</strong> — bấm <strong>Đọc nhanh</strong> ngay!", "ok");
               updateButtons();
             } catch {
               SFX.error();
@@ -7098,19 +7602,41 @@ Quy tắc bắt buộc:
             }
           };
 
+          const onPickShelf = async (e) => {
+            const f = e.target.files?.[0];
+            e.target.value = "";
+            if (!f) return;
+            SFX.shutter();
+            setStatus("Đang nén ảnh tầng kệ...", "", true);
+            try {
+              // Ảnh cả kệ cần nét hơn chút (~1024px) để đọc rõ tên gáy nhiều cuốn
+              const [thumbUrl, aiObj] = await Promise.all([
+                compressImageFile(f, 520, 400, 0.72),
+                prepareImageForAI(f, 1024, 0.76),
+              ]);
+              shelfThumbData = thumbUrl;
+              shelfAiObj = aiObj;
+              shelfPrev.classList.add("has-img");
+              shelfPrev.innerHTML = `<img src="${esc(shelfThumbData)}" alt="Ảnh tầng kệ" />`;
+              setStatus("Đã nạp ảnh tầng kệ — bấm <strong>Quét cả kệ bằng AI</strong>!", "ok");
+              updateButtons();
+            } catch {
+              SFX.error();
+              setStatus("Không đọc được tệp ảnh kệ.", "err");
+            }
+          };
+
           body.querySelector("#qcFrontCamIn").addEventListener("change", onPickFront);
           body.querySelector("#qcFrontLibIn").addEventListener("change", onPickFront);
           body.querySelector("#qcBackCamIn").addEventListener("change", onPickBack);
           body.querySelector("#qcBackLibIn").addEventListener("change", onPickBack);
+          body.querySelector("#qcShelfCamIn").addEventListener("change", onPickShelf);
+          body.querySelector("#qcShelfLibIn").addEventListener("change", onPickShelf);
 
           cropFrontBtn.addEventListener("click", async () => {
             if (!frontFile) return;
             const cropped = await openImageCropper(frontFile, {
-              ratio: 2 / 3,
-              maxW: 360,
-              maxH: 540,
-              quality: 0.78,
-              title: "Cắt ảnh bìa lưu vào Tủ",
+              ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.78, title: "Cắt ảnh bìa lưu vào Tủ",
             });
             if (cropped) {
               frontCoverData = cropped;
@@ -7122,19 +7648,13 @@ Quy tắc bắt buộc:
           skipAiBtn.addEventListener("click", () => {
             openQuickCoverConfirmModal(
               {
-                seriesTitle: "",
-                volumeNumber: 1,
-                author: "",
+                seriesTitle: "", volumeNumber: 1, author: "",
                 publisher: state.lastEntry?.publisher || "Kim Đồng",
                 category: state.lastEntry?.category || "Manga",
                 coverPrice: state.lastEntry?.coverPrice || 35000,
-                editionHint: "Bản thường",
-                aliases: "",
-                note: "",
-                aiSuccess: false,
+                editionHint: "Bản thường", aliases: "", note: "", aiSuccess: false,
               },
-              frontCoverData,
-              frontFile
+              frontCoverData, frontFile
             );
           });
 
@@ -7143,20 +7663,39 @@ Quy tắc bắt buộc:
             const key = (state.geminiApiKey || "").trim();
             if (!key) {
               SFX.error();
-              setStatus(
-                'Chưa có Gemini API Key. Hãy dán Key miễn phí vào ô phía trên hoặc vào <strong>Cài đặt API Key</strong>.',
-                "err"
-              );
+              setStatus('Chưa có Gemini API Key. Dán Key miễn phí ở trên hoặc vào <strong>Cài đặt API Key</strong>.', "err");
               return;
             }
+            isReading = true;
+            updateButtons();
+
+            if (mode === "shelf") {
+              setStatus("Đang quét nhanh tất cả đầu truyện trong ảnh kệ...", "", true);
+              try {
+                const res = await callGeminiReadShelfBatch(key, shelfAiObj);
+                isReading = false;
+                if (!res.items.length) {
+                  SFX.error();
+                  updateButtons();
+                  setStatus("Chưa đọc rõ chữ trên gáy sách — thử chụp gần hơn một chút nhé.", "err");
+                  return;
+                }
+                SFX.success();
+                openShelfBatchConfirmModal(res.items, res.model, res.elapsedSec);
+              } catch (err) {
+                isReading = false;
+                updateButtons();
+                SFX.error();
+                setStatus(`Lỗi quét kệ: ${esc(err?.message || "Thử lại sau vài giây.")}`, "err");
+              }
+              return;
+            }
+
             const imgs = [];
             if (frontAiObj) imgs.push(frontAiObj);
             if (backAiObj) imgs.push(backAiObj);
             if (!imgs.length) return;
-
-            isReading = true;
-            updateButtons();
-            setStatus("AI đang nhìn bìa đọc tên truyện, tác giả, NXB & giá...", "", true);
+            setStatus("Đang đọc bìa siêu tốc...", "", true);
             try {
               const info = await callGeminiReadCovers(key, imgs);
               isReading = false;
@@ -7168,6 +7707,152 @@ Quy tắc bắt buộc:
               SFX.error();
               setStatus(`Lỗi đọc ảnh: ${esc(err?.message || "Thử lại sau vài giây.")}`, "err");
             }
+          });
+        });
+      }
+
+      // Xác nhận & nhập hàng loạt các bộ AI đọc được từ 1 tấm ảnh chụp cả tầng kệ
+      function openShelfBatchConfirmModal(rawItems, modelName = "", elapsedSec = "") {
+        const last = { ...DEFAULT_STATE.lastEntry, ...(state.lastEntry || {}) };
+        const validPubs = ["Trẻ", "Kim Đồng", "IPM", "Nhã Nam", "Khác"];
+        const validCats = ["Manga", "Light Novel", "Sách", "Artbook"];
+        const items = rawItems.map((it, idx) => {
+          const title = String(it.seriesTitle || it.title || "").trim();
+          const fromV = Math.max(1, Math.round(Number(it.fromVol) || 1));
+          const toV = Math.max(fromV, Math.round(Number(it.toVol) || fromV));
+          const pub = validPubs.includes(it.publisher) ? it.publisher : last.publisher || "Kim Đồng";
+          const cat = validCats.includes(it.category) ? it.category : "Manga";
+          const cp = Math.max(0, Math.round(Number(it.coverPrice) || 0)) || last.coverPrice || 35000;
+          const existing = state.series.find((s) => normVN(s.title) === normVN(title));
+          return { idx, title, fromV, toV, pub, cat, cp, existing };
+        }).filter((x) => x.title);
+
+        const html = `
+          <form id="shelfBatchForm" class="form-grid">
+            <div class="qc-status-box ok">
+              Quét xong <strong>${items.length} bộ</strong> trong <strong>${esc(elapsedSec || "?")}s</strong>${modelName ? ` (${esc(modelName)})` : ""}! Chỉnh nhanh số tập nếu cần rồi bấm nhập 1 phát:
+            </div>
+
+            <div class="qc-batch-list">
+              ${items
+                .map(
+                  (it, i) => `
+                  <div class="qc-batch-row">
+                    <input type="checkbox" name="pick_${i}" checked />
+                    <div style="min-width:0;">
+                      <input type="text" name="title_${i}" value="${esc(it.title)}" style="width:100%; padding:4px 6px; border:1px solid var(--line); border-radius:2px; background:var(--surface-2); font-size:13px; font-weight:600;" />
+                      <div style="display:flex; gap:5px; margin-top:4px; align-items:center; flex-wrap:wrap;">
+                        <select name="pub_${i}" style="padding:2px 4px; border:1px solid var(--line); border-radius:2px; background:var(--surface); font-size:11.5px;">
+                          ${validPubs.map((p) => `<option value="${p}" ${it.pub === p ? "selected" : ""}>${p}</option>`).join("")}
+                        </select>
+                        <span class="small-muted">Tập</span>
+                        <input type="number" name="from_${i}" min="1" value="${it.fromV}" style="width:48px; padding:2px 4px; border:1px solid var(--line); border-radius:2px; font-size:12px;" />
+                        <span class="small-muted">–</span>
+                        <input type="number" name="to_${i}" min="1" value="${it.toV}" style="width:52px; padding:2px 4px; border:1px solid var(--line); border-radius:2px; font-size:12px;" />
+                        ${it.existing ? `<span class="tag tag-forest">Đã có trong tủ</span>` : ""}
+                      </div>
+                    </div>
+                    <input type="number" name="price_${i}" min="0" value="${it.cp}" title="Giá bìa/tập" style="width:74px; padding:4px 5px; border:1px solid var(--line); border-radius:2px; font-size:12px; text-align:right;" class="mono" />
+                  </div>`
+                )
+                .join("")}
+            </div>
+
+            <div class="form-row-2">
+              <div class="field">
+                <label>Chiết khấu chung (%)</label>
+                <input name="discount" type="number" min="0" max="100" value="${last.discount ?? 15}" />
+              </div>
+              <div class="field">
+                <label>Mục mặc định</label>
+                <input name="secName" value="Bản thường" />
+              </div>
+            </div>
+
+            <label class="check-inline">
+              <input type="checkbox" id="shelfBatchLegacyChk" checked />
+              <span>Mua từ trước (không cộng vào hạn mức tháng này)</span>
+            </label>
+
+            <div class="modal-actions" style="justify-content:space-between;">
+              <button type="button" class="btn btn-sm" id="sbRetakeBtn">Chụp kệ khác</button>
+              <button type="submit" class="btn btn-sm btn-primary">Nhập tất cả đã chọn</button>
+            </div>
+          </form>`;
+
+        openModal(`Kết quả quét kệ (${items.length} bộ)`, html, (body) => {
+          body.querySelector("#sbRetakeBtn").addEventListener("click", () => openQuickCoverModal("shelf"));
+          body.querySelector("#shelfBatchForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const disc = Math.min(100, Math.max(0, Number(fd.get("discount")) || 0));
+            const secName = (fd.get("secName") || "Bản thường").trim();
+            const isLegacy = Boolean(body.querySelector("#shelfBatchLegacyChk")?.checked);
+
+            const picked = [];
+            for (let i = 0; i < items.length; i++) {
+              if (!fd.get(`pick_${i}`)) continue;
+              const title = String(fd.get(`title_${i}`) || "").trim();
+              if (!title) continue;
+              const from = Math.max(1, Math.round(Number(fd.get(`from_${i}`)) || 1));
+              const to = Math.max(from, Math.min(from + 150, Math.round(Number(fd.get(`to_${i}`)) || from)));
+              const pub = String(fd.get(`pub_${i}`) || "Khác");
+              const cp = Math.max(0, Math.round(Number(fd.get(`price_${i}`)) || 0));
+              picked.push({ title, from, to, pub, cat: items[i].cat, cp });
+            }
+            if (!picked.length) {
+              SFX.error();
+              showToast("Chọn ít nhất 1 bộ để nhập nhé.");
+              return;
+            }
+            pushUndo(`quét kệ nhập ${picked.length} bộ`);
+            let totalVolsAdded = 0;
+            picked.forEach((it) => {
+              let s = state.series.find((x) => normVN(x.title) === normVN(it.title));
+              if (!s) {
+                s = {
+                  id: uid(),
+                  title: it.title,
+                  author: "",
+                  publisher: it.pub,
+                  category: it.cat,
+                  status: "Đang theo",
+                  aliases: "",
+                  note: "",
+                  cover: "",
+                  createdAt: todayISO(),
+                  sections: [],
+                };
+                state.series.unshift(s);
+              }
+              s.sections = s.sections || [];
+              let sec = s.sections.find((x) => normVN(x.name) === normVN(secName));
+              if (!sec) {
+                sec = { id: uid(), name: secName, image: "", note: "", volumes: [] };
+                s.sections.push(sec);
+              }
+              totalVolsAdded += addBatchVolumesToSection(sec, {
+                from: it.from,
+                to: it.to,
+                priceMode: "unit",
+                coverInput: it.cp,
+                paidInput: 0,
+                discount: disc,
+                date: todayISO(),
+                isLegacy,
+                image: "",
+                note: "",
+              });
+            });
+
+            saveState();
+            renderBooks();
+            renderNews();
+            renderSpending();
+            closeModal();
+            SFX.success();
+            spawnCelebration(undefined, undefined, 22);
+            showToast(`Đã nhập ${picked.length} bộ (${totalVolsAdded} tập) từ ảnh kệ!`, { undoable: true });
           });
         });
       }
@@ -7199,7 +7884,7 @@ Quy tắc bắt buộc:
 
         const bannerHtml = info.aiSuccess
           ? `<div class="qc-status-box ok">
-               AI đã đọc xong từ bìa${parsedPrice > 0 ? ` · Bắt được giá bìa <strong>${fmtMoney(parsedPrice)}</strong>` : " · Kiểm tra lại giá bìa bên dưới nhé"}!
+               Đọc xong trong <strong>${esc(info._elapsedSec || "?")}s</strong>${parsedPrice > 0 ? ` · Bắt được giá <strong>${fmtMoney(parsedPrice)}</strong>` : " · Kiểm tra lại giá bìa bên dưới nhé"}!
              </div>`
           : "";
 
@@ -7209,7 +7894,7 @@ Quy tắc bắt buộc:
                  Trùng với bộ đang có: "${esc(matchedExisting.title)}"
                </div>
                <div class="field" style="margin-top:7px;">
-                 <label>Thêm thẳng Tập ${esc(defVol)} vào mục:</label>
+                 <label>Thêm vào mục:</label>
                  <select id="qcExistingSecSel">
                    ${(matchedExisting.sections || [])
                      .map((sec) => `<option value="${sec.id}">${esc(sec.name)} (${(sec.volumes || []).length} tập)</option>`)
@@ -7252,38 +7937,43 @@ Quy tắc bắt buộc:
 
             <div class="form-row-2">
               <div class="field">
-                <label>Số tập</label>
-                <input name="volNum" type="number" step="0.5" value="${esc(defVol)}" />
+                <label>Từ tập</label>
+                <input name="volFrom" type="number" step="0.5" value="${esc(defVol)}" />
               </div>
               <div class="field">
-                <label>Mục (Bản thường / ĐB...)</label>
-                <input name="secName" value="${esc(defSec)}" />
+                <label>Đến tập (nhập nhiều tập luôn)</label>
+                <input name="volTo" type="number" min="1" placeholder="1 tập thì để trống" />
               </div>
             </div>
 
             <div class="form-row-2">
+              <div class="field">
+                <label>Mục (Bản thường / ĐB...)</label>
+                <input name="secName" value="${esc(defSec)}" />
+              </div>
               <div class="field">
                 <label>Nhà xuất bản</label>
                 <select name="publisher">
                   ${validPubs.map((p) => `<option value="${p}" ${defPub === p ? "selected" : ""}>${p}</option>`).join("")}
                 </select>
               </div>
-              <div class="field">
-                <label>Danh mục</label>
-                <select name="category">
-                  ${validCats.map((c) => `<option value="${c}" ${defCat === c ? "selected" : ""}>${c}</option>`).join("")}
-                </select>
-              </div>
+            </div>
+
+            <div class="field">
+              <label>Danh mục</label>
+              <select name="category">
+                ${validCats.map((c) => `<option value="${c}" ${defCat === c ? "selected" : ""}>${c}</option>`).join("")}
+              </select>
             </div>
 
             <div class="field">
               <div class="form-row-2">
                 <div>
-                  <label>Giá bìa (VNĐ)</label>
+                  <label>Giá bìa / tập (VNĐ)</label>
                   <input name="coverPrice" id="qcConfCoverPrice" type="number" min="0" value="${defCoverPrice}" />
                 </div>
                 <div>
-                  <label>Thực chi (VNĐ)</label>
+                  <label>Thực chi / tập (VNĐ)</label>
                   <input name="paidPrice" id="qcConfPaidPrice" type="number" min="0" value="${defPaid}" />
                 </div>
               </div>
@@ -7354,11 +8044,7 @@ Quy tắc bắt buộc:
           if (cropBtn && currentFile) {
             cropBtn.addEventListener("click", async () => {
               const cropped = await openImageCropper(currentFile, {
-                ratio: 2 / 3,
-                maxW: 360,
-                maxH: 540,
-                quality: 0.78,
-                title: "Cắt ảnh bìa",
+                ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.78, title: "Cắt ảnh bìa",
               });
               if (cropped) {
                 currentCoverData = cropped;
@@ -7381,11 +8067,7 @@ Quy tắc bắt buộc:
             if (!f) return;
             currentFile = f;
             const cropped = await openImageCropper(f, {
-              ratio: 2 / 3,
-              maxW: 360,
-              maxH: 540,
-              quality: 0.78,
-              title: "Cắt ảnh bìa",
+              ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.78, title: "Cắt ảnh bìa",
             });
             if (cropped) {
               currentCoverData = cropped;
@@ -7395,7 +8077,7 @@ Quy tắc bắt buộc:
             }
           });
 
-          body.querySelector("#qcRetakeBtn").addEventListener("click", () => openQuickCoverModal());
+          body.querySelector("#qcRetakeBtn").addEventListener("click", () => openQuickCoverModal("single"));
 
           const commitSave = (snapNext) => {
             if (!form.reportValidity()) return;
@@ -7406,46 +8088,21 @@ Quy tắc bắt buộc:
             const publisher = fd.get("publisher");
             const category = fd.get("category");
             const secName = (fd.get("secName") || "Bản thường").trim();
-            const volNum = Number(fd.get("volNum")) || 1;
+            const volFrom = Number(fd.get("volFrom")) || 1;
+            const rawTo = String(fd.get("volTo") || "").trim();
+            const volTo = rawTo && Number(rawTo) > volFrom ? Math.min(volFrom + 150, Math.round(Number(rawTo))) : volFrom;
             const coverPrice = Math.max(0, Number(fd.get("coverPrice")) || 0);
             const paidPrice = Math.max(0, Number(fd.get("paidPrice")) || 0);
             const note = (fd.get("note") || "").trim();
             const aliases = (fd.get("aliases") || "").trim();
             const isLegacy = Boolean(body.querySelector("#qcConfLegacyChk")?.checked);
+            const disc = coverPrice > 0 ? Math.max(0, Math.min(100, Math.round((1 - paidPrice / coverPrice) * 100))) : 0;
 
-            pushUndo(`tạo nhanh "${title} T.${volNum}"`);
+            const volCount = volTo > volFrom ? volTo - Math.round(volFrom) + 1 : 1;
+            pushUndo(`tạo nhanh "${title}" (${volCount} tập)`);
 
             let targetSeries = matchedExisting;
-            if (targetSeries) {
-              if (author && !targetSeries.author) targetSeries.author = author;
-              if (currentCoverData && !targetSeries.cover) targetSeries.cover = currentCoverData;
-              const existingSecSel = body.querySelector("#qcExistingSecSel");
-              const pickedSecId = existingSecSel ? existingSecSel.value : "__new__";
-              targetSeries.sections = targetSeries.sections || [];
-              let sec =
-                pickedSecId !== "__new__"
-                  ? targetSeries.sections.find((x) => x.id === pickedSecId)
-                  : targetSeries.sections.find((x) => normVN(x.name) === normVN(secName));
-              if (!sec) {
-                sec = { id: uid(), name: secName, image: "", note: "", volumes: [] };
-                targetSeries.sections.push(sec);
-              }
-              sec.volumes = sec.volumes || [];
-              sec.volumes.push({
-                id: uid(),
-                number: volNum,
-                coverPrice,
-                paidPrice,
-                date: todayISO(),
-                isLegacy,
-                image: currentCoverData,
-                readState: "Chưa đọc",
-                lentTo: "",
-                note,
-                groupId: "",
-                groupLabel: "",
-              });
-            } else {
+            if (!targetSeries) {
               targetSeries = {
                 id: uid(),
                 title,
@@ -7457,32 +8114,58 @@ Quy tắc bắt buộc:
                 note: "",
                 cover: currentCoverData,
                 createdAt: todayISO(),
-                sections: [
-                  {
-                    id: uid(),
-                    name: secName,
-                    image: "",
-                    note: "",
-                    volumes: [
-                      {
-                        id: uid(),
-                        number: volNum,
-                        coverPrice,
-                        paidPrice,
-                        date: todayISO(),
-                        isLegacy,
-                        image: currentCoverData,
-                        readState: "Chưa đọc",
-                        lentTo: "",
-                        note,
-                        groupId: "",
-                        groupLabel: "",
-                      },
-                    ],
-                  },
-                ],
+                sections: [],
               };
               state.series.unshift(targetSeries);
+            } else {
+              if (author && !targetSeries.author) targetSeries.author = author;
+              if (currentCoverData && !targetSeries.cover) targetSeries.cover = currentCoverData;
+            }
+
+            const existingSecSel = body.querySelector("#qcExistingSecSel");
+            const pickedSecId = existingSecSel ? existingSecSel.value : "__new__";
+            targetSeries.sections = targetSeries.sections || [];
+            let sec =
+              pickedSecId !== "__new__"
+                ? targetSeries.sections.find((x) => x.id === pickedSecId)
+                : targetSeries.sections.find((x) => normVN(x.name) === normVN(secName));
+            if (!sec) {
+              sec = { id: uid(), name: secName, image: "", note: "", volumes: [] };
+              targetSeries.sections.push(sec);
+            }
+            sec.volumes = sec.volumes || [];
+
+            if (volTo > volFrom) {
+              const added = addBatchVolumesToSection(sec, {
+                from: Math.round(volFrom),
+                to: volTo,
+                priceMode: "unit",
+                coverInput: coverPrice,
+                paidInput: 0,
+                discount: disc,
+                date: todayISO(),
+                isLegacy,
+                image: "",
+                note,
+              });
+              // Gắn ảnh bìa chụp cho tập đầu tiên trong loạt
+              const firstAdded = sec.volumes[sec.volumes.length - added];
+              if (firstAdded && currentCoverData) firstAdded.image = currentCoverData;
+            } else {
+              sec.volumes.push({
+                id: uid(),
+                number: volFrom,
+                coverPrice,
+                paidPrice,
+                date: todayISO(),
+                isLegacy,
+                image: currentCoverData,
+                readState: "Chưa đọc",
+                lentTo: "",
+                note,
+                groupId: "",
+                groupLabel: "",
+              });
             }
 
             state.lastEntry = {
@@ -7490,7 +8173,7 @@ Quy tắc bắt buộc:
               category,
               sectionName: secName,
               coverPrice,
-              discount: coverPrice > 0 ? Math.max(0, Math.min(100, Math.round((1 - paidPrice / coverPrice) * 100))) : last.discount,
+              discount: coverPrice > 0 ? disc : last.discount,
             };
 
             saveState();
@@ -7501,11 +8184,11 @@ Quy tắc bắt buộc:
             spawnCelebration(undefined, undefined, 16);
 
             if (snapNext) {
-              showToast(`Đã lưu "${title}" (T.${volNum}) — chụp cuốn tiếp!`, { undoable: true });
-              openQuickCoverModal();
+              showToast(`Đã lưu "${title}" (${volCount} tập) — chụp tiếp!`, { undoable: true });
+              openQuickCoverModal("single");
             } else {
               openSeriesDetail(targetSeries.id);
-              showToast(`Đã lưu "${title}" (Tập ${volNum}).`, { undoable: true });
+              showToast(`Đã lưu "${title}" (${volCount} tập).`, { undoable: true });
             }
           };
 
@@ -7625,7 +8308,7 @@ Quy tắc bắt buộc:
           .join("")}</div>`;
 
         container.querySelectorAll("[data-open-group]").forEach((el) => {
-          el.addEventListener("click", () => openGiftGroupDetail(el.dataset.openGroup));
+          el.addEventListener("click", () => { SFX.openBook(); openGiftGroupDetail(el.dataset.openGroup); });
         });
       }
 
@@ -9417,10 +10100,45 @@ Quy tắc bắt buộc:
             </div>
 
             <div class="field">
-              <label>Âm thanh ứng dụng</label>
-              <div class="scope-switch" id="soundSwitch" style="margin-bottom:0;">
-                <button type="button" class="${isSoundOn() ? "active" : ""}" data-sndval="on">Bật (gỗ đầm & gãy)</button>
+              <label>Âm thanh ứng dụng (chạm vào từng gói để nghe thử ngay)</label>
+              <div class="scope-switch" id="soundSwitch" style="margin-bottom:6px;">
+                <button type="button" class="${isSoundOn() ? "active" : ""}" data-sndval="on">Đang bật âm thanh</button>
                 <button type="button" class="${!isSoundOn() ? "active" : ""}" data-sndval="off">Tắt (im lặng)</button>
+              </div>
+              <div class="sound-pack-grid" id="soundPackGrid">
+                <button type="button" class="sound-pack-btn ${getSoundPack() === "marble" ? "active" : ""}" data-spack="marble">
+                  <span class="sp-name">Bi đá / Creamy</span>
+                  <span class="sp-desc">Rainy75 · Mạt chược (#1)</span>
+                </button>
+                <button type="button" class="sound-pack-btn ${getSoundPack() === "tactile" ? "active" : ""}" data-spack="tactile">
+                  <span class="sp-name">Phím cơ Tactile</span>
+                  <span class="sp-desc">Holy Panda · 2 nấc giòn</span>
+                </button>
+                <button type="button" class="sound-pack-btn ${getSoundPack() === "console" ? "active" : ""}" data-spack="console">
+                  <span class="sp-name">Switch Snap</span>
+                  <span class="sp-desc">Joy-Con · Tách cực mượt</span>
+                </button>
+                <button type="button" class="sound-pack-btn ${getSoundPack() === "watch" ? "active" : ""}" data-spack="watch">
+                  <span class="sp-name">Đồng hồ / Leica</span>
+                  <span class="sp-desc">Watch Crown · Sắc gọn</span>
+                </button>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <span class="small-muted" style="font-weight:600; color:var(--ink);">Tuỳ chỉnh âm thanh riêng từng mục:</span>
+                <button type="button" class="small-muted" id="resetSoundMapBtn" style="text-decoration:underline;">Về mặc định</button>
+              </div>
+              <div class="sound-map-list" id="soundMapList">
+                ${SOUND_SECTIONS.map((sec) => {
+                  const curVal = (state.soundMap && state.soundMap[sec.key]) || "auto";
+                  return `
+                    <div class="sound-map-row">
+                      <span class="sound-map-lbl">${esc(sec.label)}</span>
+                      <select class="sound-map-sel" data-smap-key="${sec.key}">
+                        ${SOUND_VOICES.map((v) => `<option value="${v.id}" ${curVal === v.id ? "selected" : ""}>${esc(v.label)}</option>`).join("")}
+                      </select>
+                      <button type="button" class="sound-map-play" data-snd-test="${sec.key}" title="Nghe thử mục này">▶</button>
+                    </div>`;
+                }).join("")}
               </div>
             </div>
 
@@ -9485,6 +10203,7 @@ Quy tắc bắt buộc:
           }
 
           const sndSwitch = body.querySelector("#soundSwitch");
+          const packGrid = body.querySelector("#soundPackGrid");
           if (sndSwitch) {
             sndSwitch.addEventListener("click", (e) => {
               const btn = e.target.closest("button[data-sndval]");
@@ -9493,8 +10212,62 @@ Quy tắc bắt buộc:
               applySoundUI();
               saveState();
               sndSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
-              if (state.soundEnabled) SFX.success();
+              if (state.soundEnabled) SFX.demoPack();
               showToast(state.soundEnabled ? "Đã bật âm thanh ứng dụng." : "Đã tắt âm thanh.");
+            });
+          }
+          if (packGrid) {
+            packGrid.addEventListener("click", (e) => {
+              const btn = e.target.closest("button[data-spack]");
+              if (!btn) return;
+              state.soundPack = btn.dataset.spack;
+              state.soundEnabled = true;
+              applySoundUI();
+              saveState();
+              packGrid.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+              if (sndSwitch) {
+                sndSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.sndval === "on"));
+              }
+              SFX.demoPack();
+              showToast(`Đã đổi gói chung: ${btn.querySelector(".sp-name").textContent}`);
+            });
+          }
+          const mapList = body.querySelector("#soundMapList");
+          if (mapList) {
+            mapList.addEventListener("change", (e) => {
+              const sel = e.target.closest("select[data-smap-key]");
+              if (!sel) return;
+              const k = sel.dataset.smapKey;
+              state.soundMap = { ...DEFAULT_STATE.soundMap, ...(state.soundMap || {}), [k]: sel.value };
+              if (sel.value !== "off") {
+                state.soundEnabled = true;
+                applySoundUI();
+                if (sndSwitch) {
+                  sndSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.sndval === "on"));
+                }
+              }
+              saveState();
+              if (sel.value !== "off") SFX.previewSection(k);
+            });
+            mapList.addEventListener("click", (e) => {
+              const btn = e.target.closest("button[data-snd-test]");
+              if (!btn) return;
+              ensureAudioCtx();
+              SFX.previewSection(btn.dataset.sndTest);
+            });
+          }
+          const resetMapBtn = body.querySelector("#resetSoundMapBtn");
+          if (resetMapBtn) {
+            resetMapBtn.addEventListener("click", () => {
+              state.soundMap = { ...DEFAULT_STATE.soundMap };
+              saveState();
+              if (mapList) {
+                mapList.querySelectorAll("select[data-smap-key]").forEach((sel) => {
+                  sel.value = state.soundMap[sel.dataset.smapKey] || "auto";
+                });
+              }
+              SFX.demoPack();
+              showToast("Đã đặt lại âm thanh từng mục về mặc định.");
             });
           }
 
@@ -9508,6 +10281,7 @@ Quy tắc bắt buộc:
           body.querySelector("#saveGeminiKeyBtn").addEventListener("click", () => {
             const val = keyIn.value.trim();
             state.geminiApiKey = val;
+            state.geminiModel = "";
             saveState();
             SFX.success();
             showToast(val ? "Đã lưu Gemini API Key." : "Đã xoá Gemini API Key.");
@@ -9792,6 +10566,7 @@ Quy tắc bắt buộc:
       tabButtons.forEach((btn, idx) => {
         btn.addEventListener("click", () => {
           const tab = btn.dataset.tab;
+          SFX.tab(tab);
           tabButtons.forEach((b) => b.classList.toggle("active", b === btn));
           updateTabIndicator(idx);
           document.querySelectorAll(".view").forEach((v) => v.classList.toggle("active", v.id === `view-${tab}`));
