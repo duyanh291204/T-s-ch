@@ -182,7 +182,7 @@
 
     /* Main Content */
     .main {
-      padding: 10px 16px 24px;
+      padding: 8px 16px 24px;
       flex: 1;
     }
 
@@ -494,7 +494,7 @@
 
     .row-thumb {
       width: 38px;
-      height: 58px;
+      height: 54px;
       border: 1px solid var(--line);
       background: var(--surface-2);
       overflow: hidden;
@@ -2527,7 +2527,7 @@
       align-items: flex-end;
       gap: 7px;
       padding: 14px 10px 0;
-      min-height: 186px;
+      min-height: 204px;
       overflow-x: auto;
       scrollbar-width: none;
       background: linear-gradient(180deg, transparent 52%, rgba(0, 0, 0, 0.045) 100%);
@@ -2580,13 +2580,13 @@
 
     .shelf-spine-main {
       position: relative;
-      width: 40px;
+      width: 42px;
       border-radius: 2.5px 2px 0 0;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       padding: 0 0 6px;
       color: var(--sp-ink, #F7F4EE);
       background: var(--sp-bg, #2B2825);
@@ -2653,15 +2653,17 @@
 
     /* Ô ảnh bìa thu nhỏ kiểu gáy truyện Nhật (Tankobon spine inset) */
     .sp-thumb-win {
-      width: 28px;
-      height: 34px;
+      position: relative;
+      z-index: 3;
+      width: 30px;
+      height: 36px;
       margin-top: 5px;
       border-radius: 1.5px;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.38);
-      flex-shrink: 0;
-      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.42);
+      flex: 0 0 36px;
+      background: rgba(0, 0, 0, 0.24);
     }
 
     .sp-thumb-win img {
@@ -2671,37 +2673,41 @@
       display: block;
     }
 
-    /* Tên bộ dọc sắc nét, dễ đọc, có khoảng thở */
+    /* Tên bộ dọc: cố định chiều cao cứng, cắt sạch từ trên xuống dưới -> tuyệt đối KHÔNG đè ảnh trên iOS Safari */
     .sp-title-vert {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 5px 2px;
-      min-height: 0;
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      margin: 6px 0 4px;
       overflow: hidden;
+      flex: 0 0 auto;
     }
 
     .sp-title-vert span {
+      display: block;
       writing-mode: vertical-rl;
+      -webkit-writing-mode: vertical-rl;
       text-orientation: mixed;
-      font-size: 10.5px;
+      margin: 0 auto;
+      font-size: 10px;
       font-weight: 600;
       line-height: 1.15;
-      max-height: 82px;
+      height: 100%;
+      max-height: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      letter-spacing: 0.015em;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
-    }
-
-    .sp-title-vert.no-thumb span {
-      max-height: 112px;
+      text-align: left;
+      letter-spacing: 0.01em;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.48);
     }
 
     /* Số tập đóng khung gọn ở chân gáy giống truyện thật */
     .sp-vol-box {
+      position: relative;
+      z-index: 3;
+      margin-top: auto;
       font-size: 9.5px;
       font-weight: 700;
       min-width: 24px;
@@ -2714,7 +2720,7 @@
       background: rgba(255, 255, 255, 0.14);
       border: 1px solid rgba(255, 255, 255, 0.18);
       color: #FFFDF8;
-      flex-shrink: 0;
+      flex: 0 0 16px;
     }
 
     /* Sound pack selector pills in Settings */
@@ -2896,100 +2902,52 @@
     }
 
     /* ============================
-       6. MÈO BÉO TẬP THỂ DỤC (CHUBBY GYM CAT TRACK)
+       6. MÈO BÉO XANH CAPOO NGỒI & CHẠY NGAY TRÊN VIỀN Ô TẤT CẢ / TRUYỆN / SÁCH
        ============================ */
-    .cat-track-wrap {
-      padding: 8px 16px 0;
-    }
-
-    .cat-track-wrap.hidden {
-      display: none;
-    }
-
-    .cat-track-bar {
+    .group-switch-stage {
       position: relative;
-      width: 100%;
-      height: 54px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--surface);
-      overflow: hidden;
-      cursor: pointer;
-      touch-action: manipulation;
-      -webkit-user-select: none;
-      user-select: none;
-      transition: border-color 0.2s ease, background-color 0.25s ease;
+      padding-top: 44px;
+      margin-bottom: 8px;
     }
 
-    .cat-track-bar:active {
-      border-color: var(--line-strong);
+    .group-switch-stage.no-cat {
+      padding-top: 0;
     }
 
-    .cat-track-bar canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
+    .group-switch-stage .scope-switch-3 {
+      margin-bottom: 0;
     }
 
-    .cat-hud {
+    .capoo-canvas {
       position: absolute;
-      top: 5px;
-      right: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      display: block;
+      z-index: 6;
       pointer-events: none;
     }
 
-    .cat-status-pill {
-      font-size: 9.5px;
-      font-weight: 500;
-      color: var(--muted);
-      letter-spacing: 0.02em;
-      opacity: 0.86;
-      transition: color 0.2s ease;
+    .group-switch-stage.no-cat .capoo-canvas {
+      display: none;
     }
 
-    .cat-status-pill.is-run {
-      color: var(--accent);
-      font-weight: 600;
+    .capoo-hit {
+      position: absolute;
+      top: 4px;
+      left: 0;
+      width: 50px;
+      height: 40px;
+      z-index: 7;
+      cursor: pointer;
+      touch-action: manipulation;
+      background: transparent;
     }
 
-    .cat-status-pill.is-tired {
-      color: var(--danger);
-      font-weight: 600;
+    .group-switch-stage.no-cat .capoo-hit {
+      display: none;
     }
-
-    .cat-stamina-wrap {
-      width: 34px;
-      height: 4px;
-      border-radius: 2px;
-      background: var(--surface-2);
-      border: 1px solid var(--line);
-      overflow: hidden;
-      opacity: 0;
-      transition: opacity 0.28s ease;
-    }
-
-    .cat-stamina-wrap.show {
-      opacity: 1;
-    }
-
-    .cat-stamina-fill {
-      height: 100%;
-      width: 100%;
-      background: var(--forest);
-      transition: background-color 0.2s ease;
-    }
-
-    .cat-stamina-fill.mid {
-      background: var(--amber);
-    }
-
-    .cat-stamina-fill.low {
-      background: var(--danger);
-    }
-
   </style>
 </head>
 <body>
@@ -3017,24 +2975,17 @@
       </div>
     </header>
 
-    <!-- Chubby Gym Cat Track -->
-    <div class="cat-track-wrap" id="catTrackWrap">
-      <div class="cat-track-bar" id="catTrackBar" role="button" aria-label="Mèo béo tập thể dục — chạm chậm để đi bộ, chạm nhanh để chạy">
-        <canvas id="catCanvas"></canvas>
-        <div class="cat-hud">
-          <div class="cat-stamina-wrap" id="catStaminaWrap"><div class="cat-stamina-fill" id="catStaminaFill"></div></div>
-          <span class="cat-status-pill mono" id="catStatusPill">Chạm để chạy</span>
-        </div>
-      </div>
-    </div>
-
     <main class="main">
       <!-- TAB 1: TỦ SÁCH -->
       <section class="view active" id="view-books">
-        <div class="scope-switch-3" id="bookGroupSwitch">
-          <button class="active" data-group="all">Tất cả <span class="mono" id="cntAllBooks">(0)</span></button>
-          <button data-group="truyen">Truyện <span class="mono" id="cntTruyen">(0)</span></button>
-          <button data-group="sach">Sách <span class="mono" id="cntSach">(0)</span></button>
+        <div class="group-switch-stage" id="bookGroupStage">
+          <canvas class="capoo-canvas" id="catCanvas" aria-hidden="true"></canvas>
+          <div class="capoo-hit" id="catHitBox" aria-label="Mèo béo"></div>
+          <div class="scope-switch-3" id="bookGroupSwitch">
+            <button class="active" data-group="all">Tất cả <span class="mono" id="cntAllBooks">(0)</span></button>
+            <button data-group="truyen">Truyện <span class="mono" id="cntTruyen">(0)</span></button>
+            <button data-group="sach">Sách <span class="mono" id="cntSach">(0)</span></button>
+          </div>
         </div>
 
         <div class="toolbar">
@@ -3994,8 +3945,6 @@
         applyFxLevel();
         applySoundUI();
         applyCatVisibility();
-        applyCatVisibility();
-        applySoundUI();
         renderAll();
         closeModal();
         if (undoStack.length > 0) flashUndoBtnFor5s();
@@ -4084,7 +4033,7 @@
       const BACK_CLICK_SEL =
         "#backToSeriesBtn, #backFromSecFormBtn, #backSecBtn, #backBulkBtn, #lbDoneBtn, #backGiftGroupBtn";
       const SILENT_FALLBACK_SEL =
-        "#themeBtn, #soundBtn, #undoBtn, #modalCloseBtn, .status-cycle, .tab-btn, .shelf-book-group, .sound-pack-btn, .sound-map-play, .cat-track-bar, [data-sndval], [data-spack], [data-snd-test]";
+        "#themeBtn, #soundBtn, #undoBtn, #modalCloseBtn, .status-cycle, .tab-btn, .shelf-book-group, #bookGroupSwitch button, [data-sndval]";
 
       document.addEventListener("click", (e) => {
         // Nếu nút vừa bấm đã tự phát tiếng chuyên biệt (mở sách, rút kệ, lưu, xoá, đóng, chuyển tab...) -> bỏ qua không phát chồng!
@@ -4112,26 +4061,18 @@
       let lastSfxAt = 0;
       const detBufferCache = new Map();
 
-      const SOUND_VOICES = [
-        { id: "auto", label: "Theo gói chung" },
-        { id: "marble", label: "Bi đá / Creamy" },
-        { id: "tactile", label: "Phím cơ Tactile" },
-        { id: "console", label: "Switch Snap" },
-        { id: "watch", label: "Đồng hồ / Leica" },
-        { id: "paper", label: "Lật giấy / Gỗ" },
-        { id: "off", label: "Tắt mục này" },
-      ];
-
-      const SOUND_SECTIONS = [
-        { key: "tabs", label: "4 Tab chính (Tủ·Quà·Tin·Chi)" },
-        { key: "book", label: "Mở sách / Mục / Tập" },
-        { key: "shelf", label: "Rút sách trên Kệ" },
-        { key: "filter", label: "Lọc chip / Lưới·Kệ / %CK" },
-        { key: "save", label: "Lưu & Thêm tập (+T.x)" },
-        { key: "close", label: "Đóng bảng / Quay lại" },
-        { key: "del", label: "Xoá & Hoàn tác" },
-        { key: "camera", label: "Chụp bìa & Hoá đơn" },
-      ];
+      // Gán CỐ ĐỊNH 100% âm thanh cho từng thanh / khu vực (không random, không cần chỉnh tay)
+      const FIXED_SOUND_MAP = {
+        tabs: "marble",      // 4 Tab đáy (mỗi tab 1 cao độ riêng cố định)
+        group: "console",    // Thanh Tất cả / Truyện / Sách (Switch Snap siêu mượt)
+        filter: "tactile",   // Thanh chip lọc loại, NXB, Lưới/Dòng/Kệ, %CK (Tactile giòn nhẹ)
+        book: "marble",      // Mở thẻ sách / mục / tập
+        shelf: "paper",      // Rút sách trên Kệ (lật giấy + gỗ)
+        save: "marble",      // Lưu & thêm tập (+T.x)
+        close: "marble",     // Đóng bảng / quay lại
+        del: "tactile",      // Xoá & hoàn tác
+        camera: "watch",     // Chụp bìa AI & Xuất hoá đơn (màn trập máy ảnh)
+      };
 
       function markSfx() {
         lastSfxAt = performance.now();
@@ -4141,16 +4082,8 @@
         return state.soundEnabled !== false;
       }
 
-      function getSoundPack() {
-        const p = state.soundPack || "marble";
-        return ["marble", "tactile", "console", "watch"].includes(p) ? p : "marble";
-      }
-
       function getSectionVoice(sectionKey) {
-        const raw = state.soundMap && state.soundMap[sectionKey] ? state.soundMap[sectionKey] : "auto";
-        if (raw === "off") return "off";
-        if (raw === "auto") return getSoundPack();
-        return ["marble", "tactile", "console", "watch", "paper"].includes(raw) ? raw : getSoundPack();
+        return FIXED_SOUND_MAP[sectionKey] || "marble";
       }
 
       function ensureAudioCtx() {
@@ -4352,7 +4285,15 @@
           playVoiceStrike(v, 1.0, 0, 0.92);
         },
 
-        // 2. Thanh lọc chip / NXB / Chế độ Lưới-Dòng-Kệ / %CK (tiếng tách gọn cao hơn nút thường)
+        // Thanh chuyển Tất cả / Truyện / Sách (cố định Switch Snap 3 bậc êm mượt)
+        groupSwitch(idx = 0) {
+          if (!isSoundOn()) return;
+          markSfx();
+          const pitch = idx === 0 ? 0.96 : idx === 1 ? 1.08 : 1.2;
+          playVoiceStrike("console", pitch, 0, 0.92);
+        },
+
+        // 2. Thanh lọc chip / NXB / Chế độ Lưới-Dòng-Kệ / %CK (cố định Tactile giòn nhẹ)
         filter() {
           const v = getSectionVoice("filter");
           if (v === "off") return;
@@ -5441,9 +5382,10 @@
                         // Số lát sách xếp phía sau thể hiện độ dày thật của bộ (1-4: 0 lát, 5-14: 1 lát, 15-29: 2 lát, 30+: 3 lát)
                         const sliceCount = vCount >= 30 ? 3 : vCount >= 15 ? 2 : vCount >= 5 ? 1 : 0;
                         const baseH =
-                          s.category === "Artbook" ? 172 : s.category === "Sách" ? 162 : s.category === "Light Novel" ? 156 : 150;
+                          s.category === "Artbook" ? 190 : s.category === "Sách" ? 182 : s.category === "Light Novel" ? 176 : 170;
                         const jitter = ((s.title || "").length * 5 + idx * 3) % 9 - 4;
                         const heightPx = baseH + jitter;
+                        const titleBoxH = Math.max(46, heightPx - 18 - (coverSrc ? 41 : 0) - 10 - 24);
                         const pubShort =
                           s.publisher === "Kim Đồng" ? "KĐ" : s.publisher === "Nhã Nam" ? "NN" : s.publisher.slice(0, 3);
                         const pal = rgbToSpinePalette(pubFallbackRGB(s.publisher));
@@ -5458,7 +5400,7 @@
                             <span class="shelf-spine-main ${holo ? "sp-gold" : ""}" style="height:${heightPx}px;">
                               <span class="sp-top-cap mono">${esc(pubShort)}${holo ? '<span class="sp-gold-dot">✦</span>' : ""}</span>
                               ${coverSrc ? `<span class="sp-thumb-win"><img src="${esc(coverSrc)}" alt="" loading="lazy" /></span>` : ""}
-                              <span class="sp-title-vert ${coverSrc ? "" : "no-thumb"}"><span>${esc(s.title)}</span></span>
+                              <span class="sp-title-vert" style="height:${titleBoxH}px; max-height:${titleBoxH}px;"><span style="height:${titleBoxH}px; max-height:${titleBoxH}px;">${esc(s.title)}</span></span>
                               <span class="sp-vol-box mono">${vCount}</span>
                             </span>
                             ${slicesHtml}
@@ -10238,58 +10180,18 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
             </div>
 
             <div class="field">
-              <label>Mèo béo tập thể dục (thanh đầu trang)</label>
-              <div class="scope-switch" id="catEnableSwitch" style="margin-bottom:6px;">
-                <button type="button" class="${state.catEnabled !== false ? "active" : ""}" data-caten="on">Hiện mèo béo</button>
-                <button type="button" class="${state.catEnabled === false ? "active" : ""}" data-caten="off">Ẩn tạm</button>
-              </div>
-              <div class="scope-switch-3" id="catCoatSwitch" style="margin-bottom:0;">
-                <button type="button" class="${(state.catCoat || "ginger") === "ginger" ? "active" : ""}" data-coat="ginger">Mèo Cam</button>
-                <button type="button" class="${state.catCoat === "tabby" ? "active" : ""}" data-coat="tabby">Mèo Mướp</button>
-                <button type="button" class="${state.catCoat === "cream" ? "active" : ""}" data-coat="cream">Mèo Trắng</button>
+              <label>Âm thanh ứng dụng</label>
+              <div class="scope-switch" id="soundSwitch" style="margin-bottom:0;">
+                <button type="button" class="${isSoundOn() ? "active" : ""}" data-sndval="on">Bật âm thanh</button>
+                <button type="button" class="${!isSoundOn() ? "active" : ""}" data-sndval="off">Tắt (im lặng)</button>
               </div>
             </div>
 
             <div class="field">
-              <label>Âm thanh ứng dụng (chạm vào từng gói để nghe thử ngay)</label>
-              <div class="scope-switch" id="soundSwitch" style="margin-bottom:6px;">
-                <button type="button" class="${isSoundOn() ? "active" : ""}" data-sndval="on">Đang bật âm thanh</button>
-                <button type="button" class="${!isSoundOn() ? "active" : ""}" data-sndval="off">Tắt (im lặng)</button>
-              </div>
-              <div class="sound-pack-grid" id="soundPackGrid">
-                <button type="button" class="sound-pack-btn ${getSoundPack() === "marble" ? "active" : ""}" data-spack="marble">
-                  <span class="sp-name">Bi đá / Creamy</span>
-                  <span class="sp-desc">Rainy75 · Mạt chược (#1)</span>
-                </button>
-                <button type="button" class="sound-pack-btn ${getSoundPack() === "tactile" ? "active" : ""}" data-spack="tactile">
-                  <span class="sp-name">Phím cơ Tactile</span>
-                  <span class="sp-desc">Holy Panda · 2 nấc giòn</span>
-                </button>
-                <button type="button" class="sound-pack-btn ${getSoundPack() === "console" ? "active" : ""}" data-spack="console">
-                  <span class="sp-name">Switch Snap</span>
-                  <span class="sp-desc">Joy-Con · Tách cực mượt</span>
-                </button>
-                <button type="button" class="sound-pack-btn ${getSoundPack() === "watch" ? "active" : ""}" data-spack="watch">
-                  <span class="sp-name">Đồng hồ / Leica</span>
-                  <span class="sp-desc">Watch Crown · Sắc gọn</span>
-                </button>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                <span class="small-muted" style="font-weight:600; color:var(--ink);">Tuỳ chỉnh âm thanh riêng từng mục:</span>
-                <button type="button" class="small-muted" id="resetSoundMapBtn" style="text-decoration:underline;">Về mặc định</button>
-              </div>
-              <div class="sound-map-list" id="soundMapList">
-                ${SOUND_SECTIONS.map((sec) => {
-                  const curVal = (state.soundMap && state.soundMap[sec.key]) || "auto";
-                  return `
-                    <div class="sound-map-row">
-                      <span class="sound-map-lbl">${esc(sec.label)}</span>
-                      <select class="sound-map-sel" data-smap-key="${sec.key}">
-                        ${SOUND_VOICES.map((v) => `<option value="${v.id}" ${curVal === v.id ? "selected" : ""}>${esc(v.label)}</option>`).join("")}
-                      </select>
-                      <button type="button" class="sound-map-play" data-snd-test="${sec.key}" title="Nghe thử mục này">▶</button>
-                    </div>`;
-                }).join("")}
+              <label>Mèo béo xanh trên thanh Tất cả / Truyện / Sách</label>
+              <div class="scope-switch" id="catEnableSwitch" style="margin-bottom:0;">
+                <button type="button" class="${state.catEnabled !== false ? "active" : ""}" data-caten="on">Hiện mèo béo</button>
+                <button type="button" class="${state.catEnabled === false ? "active" : ""}" data-caten="off">Ẩn tạm</button>
               </div>
             </div>
 
@@ -10353,6 +10255,20 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
             });
           }
 
+          const sndSwitch = body.querySelector("#soundSwitch");
+          if (sndSwitch) {
+            sndSwitch.addEventListener("click", (e) => {
+              const btn = e.target.closest("button[data-sndval]");
+              if (!btn) return;
+              state.soundEnabled = btn.dataset.sndval === "on";
+              applySoundUI();
+              saveState();
+              sndSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+              if (state.soundEnabled) SFX.pop();
+              showToast(state.soundEnabled ? "Đã bật âm thanh ứng dụng." : "Đã tắt âm thanh.");
+            });
+          }
+
           const catEnSw = body.querySelector("#catEnableSwitch");
           if (catEnSw) {
             catEnSw.addEventListener("click", (e) => {
@@ -10362,93 +10278,8 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
               saveState();
               applyCatVisibility();
               catEnSw.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
-              showToast(state.catEnabled ? "Boss mèo đã ra sân tập!" : "Đã tạm ẩn mèo béo.");
-            });
-          }
-          const catCoatSw = body.querySelector("#catCoatSwitch");
-          if (catCoatSw) {
-            catCoatSw.addEventListener("click", (e) => {
-              const btn = e.target.closest("button[data-coat]");
-              if (!btn) return;
-              state.catCoat = btn.dataset.coat;
-              state.catEnabled = true;
-              saveState();
-              applyCatVisibility();
-              catCoatSw.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
-              if (catEnSw) {
-                catEnSw.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.caten === "on"));
-              }
-              SFX.catWake();
-              showToast(`Đã đổi màu lông: ${btn.textContent}`);
-            });
-          }
-
-          const sndSwitch = body.querySelector("#soundSwitch");
-          const packGrid = body.querySelector("#soundPackGrid");
-          if (sndSwitch) {
-            sndSwitch.addEventListener("click", (e) => {
-              const btn = e.target.closest("button[data-sndval]");
-              if (!btn) return;
-              state.soundEnabled = btn.dataset.sndval === "on";
-              applySoundUI();
-              saveState();
-              sndSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
-              if (state.soundEnabled) SFX.demoPack();
-              showToast(state.soundEnabled ? "Đã bật âm thanh ứng dụng." : "Đã tắt âm thanh.");
-            });
-          }
-          if (packGrid) {
-            packGrid.addEventListener("click", (e) => {
-              const btn = e.target.closest("button[data-spack]");
-              if (!btn) return;
-              state.soundPack = btn.dataset.spack;
-              state.soundEnabled = true;
-              applySoundUI();
-              saveState();
-              packGrid.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
-              if (sndSwitch) {
-                sndSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.sndval === "on"));
-              }
-              SFX.demoPack();
-              showToast(`Đã đổi gói chung: ${btn.querySelector(".sp-name").textContent}`);
-            });
-          }
-          const mapList = body.querySelector("#soundMapList");
-          if (mapList) {
-            mapList.addEventListener("change", (e) => {
-              const sel = e.target.closest("select[data-smap-key]");
-              if (!sel) return;
-              const k = sel.dataset.smapKey;
-              state.soundMap = { ...DEFAULT_STATE.soundMap, ...(state.soundMap || {}), [k]: sel.value };
-              if (sel.value !== "off") {
-                state.soundEnabled = true;
-                applySoundUI();
-                if (sndSwitch) {
-                  sndSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.sndval === "on"));
-                }
-              }
-              saveState();
-              if (sel.value !== "off") SFX.previewSection(k);
-            });
-            mapList.addEventListener("click", (e) => {
-              const btn = e.target.closest("button[data-snd-test]");
-              if (!btn) return;
-              ensureAudioCtx();
-              SFX.previewSection(btn.dataset.sndTest);
-            });
-          }
-          const resetMapBtn = body.querySelector("#resetSoundMapBtn");
-          if (resetMapBtn) {
-            resetMapBtn.addEventListener("click", () => {
-              state.soundMap = { ...DEFAULT_STATE.soundMap };
-              saveState();
-              if (mapList) {
-                mapList.querySelectorAll("select[data-smap-key]").forEach((sel) => {
-                  sel.value = state.soundMap[sel.dataset.smapKey] || "auto";
-                });
-              }
-              SFX.demoPack();
-              showToast("Đã đặt lại âm thanh từng mục về mặc định.");
+              if (state.catEnabled) SFX.catWake();
+              showToast(state.catEnabled ? "Boss mèo đã lên sân!" : "Đã tạm ẩn mèo béo.");
             });
           }
 
@@ -10798,13 +10629,17 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
       document.getElementById("bookGroupSwitch").addEventListener("click", (e) => {
         const btn = e.target.closest("button[data-group]");
         if (!btn) return;
-        filters.bookGroup = btn.dataset.group;
+        const grp = btn.dataset.group;
+        const idx = grp === "all" ? 0 : grp === "truyen" ? 1 : 2;
+        SFX.groupSwitch(idx);
+        filters.bookGroup = grp;
         if (filters.bookGroup === "truyen" && filters.bookCat === "Sách") {
           filters.bookCat = "Tất cả";
           document.querySelectorAll("#bookCatChips .chip").forEach((c) => c.classList.toggle("active", c.dataset.cat === "Tất cả"));
         }
         document.querySelectorAll("#bookGroupSwitch button").forEach((b) => b.classList.toggle("active", b === btn));
         renderBooks();
+        onCapooTabSwitch(grp);
       });
 
       document.getElementById("bookSortSel").addEventListener("change", (e) => {
@@ -10900,972 +10735,747 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
 
 
       // ============================
-      // MÈO BÉO TẬP THỂ DỤC (60FPS RETINA CANVAS ENGINE)
-      // - Ấn chậm: đi bộ mượt mà (gait phase khớp vận tốc thật, không trượt chân)
-      // - Ấn nhanh: tăng tốc chạy nước rút + vệt bụi + băng đô phấp phới
-      // - Ấn nhanh lâu quá: cạn thể lực -> nằm thở dốc, thè lưỡi, đổ mồ hôi hồi sức
-      // - Dừng không ấn ~5 giây: tự random Ngồi nghỉ (vẫy đuôi/liếm chân) hoặc Cuộn tròn ngủ (z Z z)
+      // MÈO BÉO XANH CAPOO (60FPS RETINA · CHẠY NGAY TRÊN VIỀN Ô TẤT CẢ / TRUYỆN / SÁCH)
+      // - Chuyển 3 tab: chạy/đi sang và dừng ngay chính giữa ô đang xem
+      // - Chuyển nhanh -> chạy nhanh + vệt bụi + biểu cảm > ω <
+      // - Đổi nhanh liên tục quá -> cạn sức nằm bẹp thở hổn hển + mồ hôi bay
+      // - Dừng không ấn 5s -> tự cuộn/dẹt người ngủ ngon lành (z Z z)
+      // - Chạm trực tiếp vào mèo -> nhảy lên tung tim hồng siêu cute!
       // ============================
-      const CAT_COATS = {
-        ginger: {
-          body: "#F0A04B",
-          shade: "#DC822D",
-          stripe: "#B95D18",
-          belly: "#FFF3DC",
-          earIn: "#F7B7AE",
-          cheek: "#F27E72",
-          band: "#C43E2E",
-          stroke: "#4A2A15",
-        },
-        tabby: {
-          body: "#A6A39E",
-          shade: "#87837D",
-          stripe: "#5A5752",
-          belly: "#F2EFE9",
-          earIn: "#E8AEB0",
-          cheek: "#EC8C84",
-          band: "#2F6B5B",
-          stroke: "#2C2A28",
-        },
-        cream: {
-          body: "#F7EFE2",
-          shade: "#E7DAC6",
-          stripe: "#D4B895",
-          belly: "#FFFFFF",
-          earIn: "#F5B8B4",
-          cheek: "#F48E86",
-          band: "#D15338",
-          stroke: "#52463A",
-        },
+      const catStage = document.getElementById("bookGroupStage");
+      const catCanvas = document.getElementById("catCanvas");
+      const catHitBox = document.getElementById("catHitBox");
+      const bookGroupSwitchEl = document.getElementById("bookGroupSwitch");
+
+      const CAPOO_PAL = {
+        blue: "#57C7EE",
+        blueDeep: "#43B2DA",
+        white: "#FFFFFF",
+        ink: "#38383E",
+        pink: "#FF7D88",
+        cheek: "#FF9AA4",
+        sweat: "#9BE5FF",
       };
 
-      const catWrap = document.getElementById("catTrackWrap");
-      const catBar = document.getElementById("catTrackBar");
-      const catCanvas = document.getElementById("catCanvas");
-      const catStatusPill = document.getElementById("catStatusPill");
-      const catStaminaWrap = document.getElementById("catStaminaWrap");
-      const catStaminaFill = document.getElementById("catStaminaFill");
-
-      const cat = {
+      const capoo = {
         w: 340,
-        h: 58,
+        h: 50,
         dpr: 1,
-        x: 90,
-        dir: 1,            // 1 = right, -1 = left
-        facing: 1,         // smoothly lerped toward dir for silky turn
-        speed: 28,         // current px/s
-        targetSpeed: 28,   // desired px/s
-        gait: 0,           // advances strictly with distance moved -> zero foot slip!
-        state: "walk",     // "walk" | "run" | "tired" | "sit" | "sleep"
-        stamina: 100,      // 0..100
+        x: 60,
+        targetX: 60,
+        activeGroup: "all",
+        dir: 1,              // 1 = right, -1 = left
+        vx: 0,               // smooth velocity px/s
+        gait: 0,             // step cycle tied strictly to distance moved
+        state: "idle",       // "idle" | "walk" | "run" | "tired" | "sleep"
+        stamina: 100,        // hidden internal stamina (drains on rapid switches)
         tiredTimer: 0,
-        idleTimer: 0,      // seconds since last tap
-        lastTapAt: 0,
-        tapHistory: [],    // recent tap timestamps (ms)
-        hasTappedOnce: false,
+        idleTimer: 0,
+        cheerTimer: 0,       // happy heart-waving celebration on tap / arrival
+        switchTimes: [],     // recent switch timestamps (ms)
+        lastSwitchAt: 0,
 
-        // Smooth animation blend weights (0..1)
+        // Smooth blend weights (0..1)
         runMix: 0,
-        sitMix: 0,
         sleepMix: 0,
         tiredMix: 0,
+        moveMix: 0,          // 0 = front-facing cute Capoo, 1 = side-running Capoo
+        squash: 0,           // springy squash-and-stretch
+        squashV: 0,
         hopY: 0,
         hopV: 0,
         wobble: 0,
 
-        // Expressive micro-timers
+        // Micro-animation timers
         clock: 0,
-        blinkTimer: 2.2,
+        blinkTimer: 2.3,
         blinkDur: 0,
-        lickTimer: 3.4,
-        lickDur: 0,
         dustCD: 0,
         sweatCD: 0,
         zzzCD: 0,
-        lastSfxStep: 0,
-
-        particles: [],     // dust puffs, sweat drops, zzz, hearts/sparks
+        particles: [],       // hearts, dust, sweat, zzz
       };
 
+      function getGroupCenterX(groupName) {
+        const w = capoo.w || 340;
+        if (groupName === "truyen") return w * 0.5;
+        if (groupName === "sach") return w * (5 / 6);
+        return w * (1 / 6);
+      }
+
       function applyCatVisibility() {
-        if (!catWrap) return;
+        if (!catStage) return;
         const on = state.catEnabled !== false;
-        catWrap.classList.toggle("hidden", !on);
-        if (on) resizeCatCanvas();
+        catStage.classList.toggle("no-cat", !on);
+        if (on) {
+          resizeCatCanvas();
+          capoo.targetX = getGroupCenterX(capoo.activeGroup);
+          if (capoo.state === "idle" || capoo.state === "sleep") {
+            capoo.x = capoo.targetX;
+          }
+        }
       }
 
       function resizeCatCanvas() {
-        if (!catCanvas || !catBar) return;
-        const rect = catBar.getBoundingClientRect();
+        if (!catCanvas || !catStage) return;
+        const rect = (bookGroupSwitchEl || catStage).getBoundingClientRect();
         if (rect.width < 40) return;
-        cat.w = Math.round(rect.width);
-        cat.h = Math.round(rect.height);
-        cat.dpr = Math.min(window.devicePixelRatio || 1, 3);
-        catCanvas.width = Math.round(cat.w * cat.dpr);
-        catCanvas.height = Math.round(cat.h * cat.dpr);
-        const margin = 34;
-        cat.x = Math.max(margin, Math.min(cat.w - margin, cat.x));
+        const prevW = capoo.w || rect.width;
+        capoo.w = Math.round(rect.width);
+        capoo.h = 50;
+        capoo.dpr = Math.min(window.devicePixelRatio || 1, 3);
+        catCanvas.width = Math.round(capoo.w * capoo.dpr);
+        catCanvas.height = Math.round(capoo.h * capoo.dpr);
+        capoo.targetX = getGroupCenterX(capoo.activeGroup);
+        if (prevW > 40) {
+          capoo.x = Math.max(20, Math.min(capoo.w - 20, (capoo.x / prevW) * capoo.w));
+        } else {
+          capoo.x = capoo.targetX;
+        }
       }
 
-      function spawnCatParticle(kind, x, y, extra = {}) {
-        if (cat.particles.length > 26) cat.particles.shift();
-        cat.particles.push({
+      function spawnCapooParticle(kind, x, y, extra = {}) {
+        if (capoo.particles.length > 22) capoo.particles.shift();
+        capoo.particles.push({
           kind,
           x,
           y,
           vx: extra.vx || 0,
           vy: extra.vy || 0,
           age: 0,
-          life: extra.life || 0.7,
+          life: extra.life || 0.75,
           size: extra.size || 4,
           text: extra.text || "",
         });
       }
 
-      function setCatHud(text, cls = "") {
-        if (!catStatusPill) return;
-        if (catStatusPill.textContent !== text) catStatusPill.textContent = text;
-        catStatusPill.className = "cat-status-pill mono" + (cls ? " " + cls : "");
-      }
-
-      function handleCatTap(clientX) {
+      function onCapooTabSwitch(groupName) {
         if (state.catEnabled === false) return;
-        ensureAudioCtx();
         const now = performance.now();
-        const prevTap = cat.lastTapAt;
-        cat.lastTapAt = now;
-        cat.hasTappedOnce = true;
+        const prevAt = capoo.lastSwitchAt;
+        const prevGroup = capoo.activeGroup;
+        capoo.activeGroup = groupName;
+        capoo.targetX = getGroupCenterX(groupName);
+        capoo.idleTimer = 0;
 
-        // Giữ cửa sổ các lần chạm trong 1.8 giây gần nhất để đo tốc độ ấn cực mượt
-        cat.tapHistory.push(now);
-        while (cat.tapHistory.length && now - cat.tapHistory[0] > 1800) {
-          cat.tapHistory.shift();
+        // Cửa sổ 2.6 giây gần nhất để bắt nhịp đổi nhanh
+        capoo.switchTimes.push(now);
+        while (capoo.switchTimes.length && now - capoo.switchTimes[0] > 2600) {
+          capoo.switchTimes.shift();
         }
+        capoo.lastSwitchAt = now;
 
-        // Nếu đang mệt thở dốc: không ép chạy ngay được, chỉ giật mình đổ thêm giọt mồ hôi dễ thương!
-        if (cat.state === "tired") {
-          cat.wobble = 1.0;
-          spawnCatParticle("sweat", cat.x + cat.facing * 12, cat.h - 32, {
-            vx: cat.facing * 24,
+        // Nếu đang mệt bẹp dí -> giật mình đổ thêm giọt mồ hôi, chờ hồi sức xong mới chạy sang ô đang xem
+        if (capoo.state === "tired") {
+          capoo.wobble = 1.0;
+          capoo.squashV = -4.2;
+          spawnCapooParticle("sweat", capoo.x + capoo.dir * 10, 18, {
+            vx: capoo.dir * 26,
             vy: -36,
             life: 0.65,
-            size: 3.4,
+            size: 3.1,
           });
-          if (now - cat.lastSfxStep > 240) {
-            cat.lastSfxStep = now;
-            SFX.catTired();
-          }
+          SFX.catTired();
           return;
         }
 
-        const wasResting = cat.state === "sit" || cat.state === "sleep";
-        cat.idleTimer = 0;
-
-        // Nếu đang ngủ / ngồi nghỉ -> giật mình bật dậy siêu dễ thương & quay về phía ngón tay chạm
-        if (wasResting) {
-          cat.hopV = -82;
-          if (typeof clientX === "number" && catBar) {
-            const rect = catBar.getBoundingClientRect();
-            const tapX = clientX - rect.left;
-            if (Math.abs(tapX - cat.x) > 16) {
-              cat.dir = tapX >= cat.x ? 1 : -1;
-            }
-          }
-          spawnCatParticle("spark", cat.x + cat.facing * 10, cat.h - 36, {
-            vx: cat.facing * 10,
-            vy: -26,
-            life: 0.6,
-            text: "!",
-          });
-          SFX.catWake();
-          cat.lastSfxStep = now;
+        // Đang ngủ -> bật dậy siêu cute
+        if (capoo.state === "sleep") {
+          capoo.hopV = -115;
+          capoo.squashV = 5.0;
+          spawnCapooParticle("heart", capoo.x, 12, { vx: 0, vy: -20, life: 0.85, size: 5.5 });
         }
 
-        // Tính nhịp ấn: khoảng cách 2 lần chạm gần nhất + số lần chạm trong 1.8s
-        const gap = prevTap ? now - prevTap : 999;
-        const recentCount = cat.tapHistory.length;
-        const isFast = (gap < 360 && recentCount >= 2) || recentCount >= 4;
+        // Bấm lại đúng ô đang đứng -> nhảy tung tim cute!
+        if (prevGroup === groupName && Math.abs(capoo.x - capoo.targetX) < 6) {
+          capoo.state = "idle";
+          capoo.cheerTimer = 1.1;
+          capoo.hopV = -110;
+          capoo.squashV = 5.4;
+          spawnCapooParticle("heart", capoo.x, 8, { vx: 0, vy: -18, life: 0.9, size: 6.2 });
+          return;
+        }
+
+        const gap = prevAt ? now - prevAt : 9999;
+        const recentCount = capoo.switchTimes.length;
+        const isFast = (gap < 430 && recentCount >= 2) || recentCount >= 3;
+
+        if (capoo.targetX !== capoo.x) {
+          capoo.dir = capoo.targetX > capoo.x ? 1 : -1;
+        }
 
         if (isFast) {
-          cat.state = "run";
-          // Ấn càng nhanh chạy càng tít (88 -> 168 px/s)
-          const cadenceBoost = Math.min(1, Math.max(0, (recentCount - 2) / 6));
-          cat.targetSpeed = 92 + cadenceBoost * 78;
-          // Mỗi cú chạm nhanh trong khi đang chạy làm mất nhẹ stamina (chạy nhanh liên tục ~5–6s sẽ mệt!)
-          cat.stamina = Math.max(0, cat.stamina - 4.2);
-          spawnCatParticle("dust", cat.x - cat.facing * 14, cat.h - 9, {
-            vx: -cat.facing * (28 + cadenceBoost * 24),
-            vy: -14,
-            life: 0.45,
-            size: 4.5,
+          capoo.state = "run";
+          capoo.squashV = 3.8;
+          // Đổi nhanh liên tục ~6-7 lần sẽ cạn sức -> mệt!
+          capoo.stamina = Math.max(0, capoo.stamina - 15.5);
+          spawnCapooParticle("dust", capoo.x - capoo.dir * 12, 43, {
+            vx: -capoo.dir * 28,
+            vy: -10,
+            life: 0.42,
+            size: 3.8,
           });
-          if (!wasResting && now - cat.lastSfxStep > 135) {
-            cat.lastSfxStep = now;
-            SFX.catTap(true);
+          if (capoo.stamina <= 0) {
+            capoo.state = "tired";
+            capoo.tiredTimer = 3.8;
+            capoo.wobble = 1.0;
+            capoo.squashV = -6.0;
+            SFX.catTired();
+            spawnCapooParticle("sweat", capoo.x + capoo.dir * 11, 18, {
+              vx: capoo.dir * 24,
+              vy: -38,
+              life: 0.7,
+              size: 3.3,
+            });
           }
         } else {
-          cat.state = "walk";
-          cat.targetSpeed = 48;
-          if (!wasResting && now - cat.lastSfxStep > 160) {
-            cat.lastSfxStep = now;
-            SFX.catTap(false);
-          }
+          capoo.state = "walk";
+          capoo.squashV = 2.4;
         }
       }
 
-      if (catBar) {
-        catBar.addEventListener("pointerdown", (e) => {
+      // Chạm trực tiếp vào con mèo Capoo -> nhảy lên tung tim hồng y như ảnh mẫu!
+      if (catHitBox) {
+        catHitBox.addEventListener("pointerdown", (e) => {
           e.preventDefault();
-          handleCatTap(e.clientX);
+          e.stopPropagation();
+          if (state.catEnabled === false) return;
+          ensureAudioCtx();
+          if (capoo.state === "tired") {
+            capoo.wobble = 1.0;
+            spawnCapooParticle("sweat", capoo.x + 10, 18, { vx: 22, vy: -34, life: 0.6, size: 3.0 });
+            SFX.catTired();
+            return;
+          }
+          capoo.idleTimer = 0;
+          if (capoo.state === "sleep") capoo.state = "idle";
+          capoo.cheerTimer = 1.35;
+          capoo.hopV = -125;
+          capoo.squashV = 6.2;
+          SFX.catWake();
+          spawnCapooParticle("heart", capoo.x, 7, { vx: 0, vy: -20, life: 0.95, size: 6.4 });
+          spawnCapooParticle("heart", capoo.x - 12, 16, { vx: -14, vy: -18, life: 0.85, size: 4.8 });
+          spawnCapooParticle("heart", capoo.x + 12, 16, { vx: 14, vy: -18, life: 0.85, size: 4.8 });
         });
       }
 
-      function updateCatPhysics(dt) {
-        cat.clock += dt;
+      function updateCapooPhysics(dt) {
+        capoo.clock += dt;
 
-        // Blink timer
-        if (cat.blinkDur > 0) {
-          cat.blinkDur = Math.max(0, cat.blinkDur - dt);
+        // Blink
+        if (capoo.blinkDur > 0) {
+          capoo.blinkDur = Math.max(0, capoo.blinkDur - dt);
         } else {
-          cat.blinkTimer -= dt;
-          if (cat.blinkTimer <= 0) {
-            cat.blinkDur = 0.14;
-            cat.blinkTimer = 2.4 + Math.random() * 2.8;
+          capoo.blinkTimer -= dt;
+          if (capoo.blinkTimer <= 0) {
+            capoo.blinkDur = 0.13;
+            capoo.blinkTimer = 2.2 + Math.random() * 2.6;
           }
         }
 
-        // Sit paw-lick timer
-        if (cat.state === "sit") {
-          if (cat.lickDur > 0) {
-            cat.lickDur = Math.max(0, cat.lickDur - dt);
-          } else {
-            cat.lickTimer -= dt;
-            if (cat.lickTimer <= 0) {
-              cat.lickDur = 1.35;
-              cat.lickTimer = 3.2 + Math.random() * 3.0;
-            }
-          }
-        } else {
-          cat.lickDur = 0;
-        }
+        if (capoo.cheerTimer > 0) capoo.cheerTimer = Math.max(0, capoo.cheerTimer - dt);
+        capoo.wobble = Math.max(0, capoo.wobble - dt * 3.8);
 
-        // Hop physics
-        if (cat.hopY < 0 || cat.hopV !== 0) {
-          cat.hopY += cat.hopV * dt;
-          cat.hopV += 580 * dt;
-          if (cat.hopY >= 0) {
-            cat.hopY = 0;
-            cat.hopV = 0;
+        // Spring squash-and-stretch (mochi physics!)
+        const kSpring = 180;
+        const cDamp = 14;
+        const aSq = -kSpring * capoo.squash - cDamp * capoo.squashV;
+        capoo.squashV += aSq * dt;
+        capoo.squash += capoo.squashV * dt;
+        capoo.squash = Math.max(-0.35, Math.min(0.35, capoo.squash));
+
+        // Hop gravity
+        if (capoo.hopY < 0 || capoo.hopV !== 0) {
+          capoo.hopY += capoo.hopV * dt;
+          capoo.hopV += 620 * dt;
+          if (capoo.hopY >= 0) {
+            capoo.hopY = 0;
+            if (Math.abs(capoo.hopV) > 45) capoo.squashV = -5.2; // squishy landing!
+            capoo.hopV = 0;
           }
         }
 
-        cat.wobble = Math.max(0, cat.wobble - dt * 3.6);
-
+        // Dọn lịch sử bấm quá 2.6s
         const now = performance.now();
-        // Dọn lịch sử chạm quá 1.8s
-        while (cat.tapHistory.length && now - cat.tapHistory[0] > 1800) {
-          cat.tapHistory.shift();
+        while (capoo.switchTimes.length && now - capoo.switchTimes[0] > 2600) {
+          capoo.switchTimes.shift();
         }
 
-        // Quản lý trạng thái & thể lực
-        if (cat.state === "tired") {
-          cat.targetSpeed = 0;
-          cat.tiredTimer -= dt;
-          cat.stamina = Math.min(100, cat.stamina + dt * 11.5);
-          cat.sweatCD -= dt;
-          if (cat.sweatCD <= 0) {
-            cat.sweatCD = 0.58;
-            spawnCatParticle("sweat", cat.x + cat.facing * 11, cat.h - 29, {
-              vx: cat.facing * 16,
+        const dx = capoo.targetX - capoo.x;
+        const dist = Math.abs(dx);
+
+        if (capoo.state === "tired") {
+          capoo.vx *= Math.max(0, 1 - dt * 10);
+          capoo.x += capoo.vx * dt;
+          capoo.tiredTimer -= dt;
+          capoo.stamina = Math.min(100, capoo.stamina + dt * 24);
+          capoo.sweatCD -= dt;
+          if (capoo.sweatCD <= 0) {
+            capoo.sweatCD = 0.62;
+            spawnCapooParticle("sweat", capoo.x + capoo.dir * 11, 20, {
+              vx: capoo.dir * 18,
               vy: -30,
-              life: 0.72,
-              size: 3.0,
+              life: 0.65,
+              size: 2.9,
             });
           }
-          if (cat.tiredTimer <= 0 && cat.stamina >= 48) {
-            // Hồi sức xong: nếu vẫn không bấm nữa thì nghỉ, ngược lại đi bộ nhẹ lại
-            cat.state = "walk";
-            cat.targetSpeed = 24;
-            cat.idleTimer = 2.8;
+          if (capoo.tiredTimer <= 0 && capoo.stamina >= 60) {
+            // Hồi sức xong -> nhẹ nhàng đi bộ về đúng ô đang xem!
+            capoo.state = dist > 2 ? "walk" : "idle";
+            capoo.idleTimer = 0;
+            capoo.squashV = 3.2;
           }
-        } else if (cat.state === "run") {
-          cat.idleTimer += dt;
-          // Chạy nhanh liên tục đốt thể lực (hết sau ~5–6s chạy hăng)
-          const drainRate = 11.5 + Math.max(0, (cat.speed - 90) * 0.14);
-          cat.stamina = Math.max(0, cat.stamina - drainRate * dt);
+        } else if (capoo.state === "walk" || capoo.state === "run") {
+          if (dist <= 2.2) {
+            // Đã tới đúng ô đang xem -> dừng gọn, nảy nhẹ mochi!
+            const wasRunning = capoo.state === "run";
+            capoo.x = capoo.targetX;
+            capoo.vx = 0;
+            capoo.state = "idle";
+            capoo.idleTimer = 0;
+            capoo.squashV = wasRunning ? -5.0 : -2.6;
+            if (wasRunning) {
+              capoo.cheerTimer = 0.65;
+              spawnCapooParticle("heart", capoo.x, 10, { vx: 0, vy: -18, life: 0.75, size: 5.2 });
+            }
+          } else {
+            capoo.dir = dx > 0 ? 1 : -1;
+            const boost = Math.min(1, Math.max(0, (capoo.switchTimes.length - 2) / 4));
+            const maxSpd = capoo.state === "run" ? 280 + boost * 150 : 148;
+            // Ease-out nhẹ khi sắp tới đích để dừng siêu mượt, không giật cục
+            const arriveFactor = Math.min(1, Math.max(0.28, dist / 46));
+            const desiredVx = capoo.dir * maxSpd * arriveFactor;
+            capoo.vx += (desiredVx - capoo.vx) * Math.min(1, dt * 14);
+            const stepX = capoo.vx * dt;
+            if (Math.abs(stepX) >= dist) {
+              capoo.x = capoo.targetX;
+              capoo.vx = 0;
+            } else {
+              capoo.x += stepX;
+            }
+            capoo.gait += Math.abs(stepX) * 0.28;
 
-          // Bụi chạy mượt sau chân
-          cat.dustCD -= dt;
-          if (cat.dustCD <= 0 && cat.speed > 75) {
-            cat.dustCD = Math.max(0.11, 0.24 - (cat.speed - 80) * 0.0012);
-            spawnCatParticle("dust", cat.x - cat.facing * 15, cat.h - 8, {
-              vx: -cat.facing * (22 + Math.random() * 14),
-              vy: -8 - Math.random() * 10,
-              life: 0.42,
-              size: 3.4 + Math.random() * 2.2,
-            });
-          }
-
-          // Nếu cạn thể lực -> MỆT!
-          if (cat.stamina <= 0) {
-            cat.state = "tired";
-            cat.tiredTimer = 4.6;
-            cat.targetSpeed = 0;
-            cat.idleTimer = 0;
-            SFX.catTired();
-            spawnCatParticle("sweat", cat.x + cat.facing * 12, cat.h - 32, {
-              vx: cat.facing * 22,
-              vy: -38,
-              life: 0.75,
-              size: 3.4,
-            });
-          } else if (cat.idleTimer > 1.05) {
-            // Không bấm nhanh nữa -> hạ nhịp mượt về đi bộ
-            cat.state = "walk";
-            cat.targetSpeed = 36;
-          }
-        } else if (cat.state === "walk") {
-          cat.idleTimer += dt;
-          cat.stamina = Math.min(100, cat.stamina + dt * 10);
-
-          // Giảm tốc êm dần sau 2.2s không ấn để chuẩn bị nghỉ ở mốc 5s
-          if (cat.idleTimer > 2.2) {
-            const cool = Math.max(0, 1 - (cat.idleTimer - 2.2) / 2.6);
-            cat.targetSpeed = 16 + cool * 22;
-          }
-
-          // Đủ 5 giây không chạm -> Random 50/50 Ngồi nghỉ hoặc Ngủ!
-          if (cat.idleTimer >= 5.0) {
-            cat.state = Math.random() < 0.5 ? "sleep" : "sit";
-            cat.targetSpeed = 0;
-            cat.zzzCD = 0.45;
-          }
-        } else {
-          // sit hoặc sleep
-          cat.targetSpeed = 0;
-          cat.stamina = Math.min(100, cat.stamina + dt * 18);
-          if (cat.state === "sleep") {
-            cat.zzzCD -= dt;
-            if (cat.zzzCD <= 0) {
-              cat.zzzCD = 1.15;
-              const letters = ["z", "Z", "z"];
-              const ch = letters[Math.floor(cat.clock) % letters.length];
-              spawnCatParticle("zzz", cat.x + cat.facing * 11, cat.h - 27, {
-                vx: cat.facing * 6,
-                vy: -16,
-                life: 1.55,
-                text: ch,
-              });
+            if (capoo.state === "run") {
+              capoo.stamina = Math.max(0, capoo.stamina - dt * 12);
+              capoo.dustCD -= dt;
+              if (capoo.dustCD <= 0 && Math.abs(capoo.vx) > 160) {
+                capoo.dustCD = 0.12;
+                spawnCapooParticle("dust", capoo.x - capoo.dir * 13, 43, {
+                  vx: -capoo.dir * (24 + Math.random() * 14),
+                  vy: -7 - Math.random() * 8,
+                  life: 0.36,
+                  size: 3.0 + Math.random() * 1.6,
+                });
+              }
+              if (capoo.stamina <= 0) {
+                capoo.state = "tired";
+                capoo.tiredTimer = 3.8;
+                capoo.wobble = 1.0;
+                capoo.squashV = -6.0;
+                SFX.catTired();
+              }
+            } else {
+              capoo.stamina = Math.min(100, capoo.stamina + dt * 12);
             }
           }
+        } else if (capoo.state === "idle") {
+          capoo.vx = 0;
+          capoo.x += (capoo.targetX - capoo.x) * Math.min(1, dt * 12);
+          capoo.stamina = Math.min(100, capoo.stamina + dt * 22);
+          capoo.idleTimer += dt;
+          // Dừng không ấn 5 giây -> tự ngủ!
+          if (capoo.idleTimer >= 5.0) {
+            capoo.state = "sleep";
+            capoo.zzzCD = 0.45;
+          }
+        } else if (capoo.state === "sleep") {
+          capoo.vx = 0;
+          capoo.x += (capoo.targetX - capoo.x) * Math.min(1, dt * 10);
+          capoo.stamina = Math.min(100, capoo.stamina + dt * 28);
+          capoo.zzzCD -= dt;
+          if (capoo.zzzCD <= 0) {
+            capoo.zzzCD = 1.25;
+            const ch = Math.floor(capoo.clock) % 2 === 0 ? "z" : "Z";
+            spawnCapooParticle("zzz", capoo.x + 12, 16, {
+              vx: 5,
+              vy: -13,
+              life: 1.5,
+              text: ch,
+            });
+          }
         }
 
-        // Nội suy vận tốc & hướng quay mượt như bơ
-        const accel = cat.targetSpeed > cat.speed ? 8.5 : 5.2;
-        cat.speed += (cat.targetSpeed - cat.speed) * Math.min(1, dt * accel);
-        if (Math.abs(cat.speed) < 0.4 && cat.targetSpeed === 0) cat.speed = 0;
+        // Smooth animation blend weights
+        const lerp = (a, b, r) => a + (b - a) * Math.min(1, dt * r);
+        const isMoving = capoo.state === "walk" || capoo.state === "run";
+        capoo.moveMix = lerp(capoo.moveMix, isMoving ? 1 : 0, 10);
+        capoo.runMix = lerp(capoo.runMix, capoo.state === "run" ? 1 : 0, 9);
+        capoo.sleepMix = lerp(capoo.sleepMix, capoo.state === "sleep" ? 1 : 0, 5.5);
+        capoo.tiredMix = lerp(capoo.tiredMix, capoo.state === "tired" ? 1 : 0, 8);
 
-        cat.facing += (cat.dir - cat.facing) * Math.min(1, dt * 11.5);
-
-        // Di chuyển theo hướng + quay đầu mượt ở 2 mép sân tập
-        const margin = 32;
-        cat.x += cat.dir * cat.speed * dt;
-        if (cat.x > cat.w - margin) {
-          cat.x = cat.w - margin;
-          cat.dir = -1;
-        } else if (cat.x < margin) {
-          cat.x = margin;
-          cat.dir = 1;
+        // Keep invisible tap hitbox aligned over Capoo
+        if (catHitBox) {
+          catHitBox.style.left = Math.max(0, Math.round(capoo.x - 24)) + "px";
         }
-
-        // Gait phase gắn chặt với quãng đường đi thực tế (không trượt chân ở bất kỳ tốc độ nào!)
-        cat.gait += cat.speed * dt * 0.24;
-
-        // Smooth pose blends
-        const lerp = (cur, tgt, rate) => cur + (tgt - cur) * Math.min(1, dt * rate);
-        cat.runMix = lerp(cat.runMix, cat.state === "run" ? Math.min(1, (cat.speed - 52) / 75) : 0, 7);
-        cat.sitMix = lerp(cat.sitMix, cat.state === "sit" ? 1 : 0, 6.5);
-        cat.sleepMix = lerp(cat.sleepMix, cat.state === "sleep" ? 1 : 0, 5.2);
-        cat.tiredMix = lerp(cat.tiredMix, cat.state === "tired" ? 1 : 0, 7.5);
 
         // Update particles
-        for (let i = cat.particles.length - 1; i >= 0; i--) {
-          const p = cat.particles[i];
+        for (let i = capoo.particles.length - 1; i >= 0; i--) {
+          const p = capoo.particles[i];
           p.age += dt;
           p.x += p.vx * dt;
           p.y += p.vy * dt;
-          if (p.kind === "sweat") p.vy += 120 * dt;
+          if (p.kind === "sweat") p.vy += 125 * dt;
           if (p.kind === "dust") {
-            p.vx *= 0.94;
-            p.vy *= 0.94;
+            p.vx *= 0.92;
+            p.vy *= 0.92;
           }
-          if (p.age >= p.life) cat.particles.splice(i, 1);
-        }
-
-        // Update HUD status + stamina bar
-        if (cat.state === "tired") {
-          setCatHud("Hộc... mệt quá!", "is-tired");
-        } else if (cat.state === "run") {
-          setCatHud(cat.speed > 130 ? "Chạy hết tốc!" : "Đang chạy!", "is-run");
-        } else if (cat.state === "sleep") {
-          setCatHud("Đang ngủ khò...");
-        } else if (cat.state === "sit") {
-          setCatHud("Ngồi nghỉ");
-        } else {
-          setCatHud(cat.hasTappedOnce ? "Đi bộ" : "Chạm để tập");
-        }
-
-        if (catStaminaWrap && catStaminaFill) {
-          const showBar = cat.state === "run" || cat.state === "tired" || cat.stamina < 96;
-          catStaminaWrap.classList.toggle("show", showBar);
-          const pct = Math.max(0, Math.min(100, Math.round(cat.stamina)));
-          catStaminaFill.style.width = pct + "%";
-          catStaminaFill.classList.toggle("low", cat.state === "tired" || pct < 28);
-          catStaminaFill.classList.toggle("mid", cat.state !== "tired" && pct >= 28 && pct < 62);
+          if (p.age >= p.life) capoo.particles.splice(i, 1);
         }
       }
 
-      function drawCatScene() {
+      // Vẽ hình trái tim hồng có viền đậm chuẩn style Capoo!
+      function drawCapooHeart(ctx, x, y, s, alpha = 1) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = CAPOO_PAL.pink;
+        ctx.strokeStyle = CAPOO_PAL.ink;
+        ctx.lineWidth = Math.max(1.3, s * 0.26);
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo(0, s * 0.72);
+        ctx.bezierCurveTo(-s * 1.15, s * 0.05, -s * 1.05, -s * 0.92, 0, -s * 0.34);
+        ctx.bezierCurveTo(s * 1.05, -s * 0.92, s * 1.15, s * 0.05, 0, s * 0.72);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Vẽ Capoo chuẩn từng nét theo ảnh mẫu:
+      // 2 tai tam giác bầu nằm phía sau vòm đầu + thân mochi tròn múp + bụng trắng bầu + 4 chân ngắn tũn + viền đậm
+      function traceCapooBun(ctx, rx, ry) {
+        ctx.beginPath();
+        // Đáy hơi phẳng nhẹ, 2 má béo phúng phính, đỉnh đầu cong tròn múp
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(rx * 0.88, 0, rx * 1.12, -ry * 0.28, rx * 1.04, -ry * 0.92);
+        ctx.bezierCurveTo(rx * 0.98, -ry * 1.62, rx * 0.54, -ry * 1.92, 0, -ry * 1.92);
+        ctx.bezierCurveTo(-rx * 0.54, -ry * 1.92, -rx * 0.98, -ry * 1.62, -rx * 1.04, -ry * 0.92);
+        ctx.bezierCurveTo(-rx * 1.12, -ry * 0.28, -rx * 0.88, 0, 0, 0);
+        ctx.closePath();
+      }
+
+      function drawCapooEar(ctx, side, rx, ry, droop) {
+        // side: -1 (trái), 1 (phải)
+        const baseX1 = side * rx * 0.16;
+        const baseX2 = side * rx * 0.88;
+        const baseY1 = -ry * 1.62;
+        const baseY2 = -ry * 1.18;
+        const tipX = side * rx * (0.64 + droop * 0.14);
+        const tipY = -ry * 2.46 + droop * 4.2;
+
+        ctx.fillStyle = CAPOO_PAL.blue;
+        ctx.strokeStyle = CAPOO_PAL.ink;
+        ctx.lineWidth = 2.15;
+        ctx.beginPath();
+        ctx.moveTo(baseX1, baseY1);
+        ctx.quadraticCurveTo(side * rx * 0.42, tipY - 0.6, tipX, tipY);
+        ctx.quadraticCurveTo(side * rx * 0.92, tipY + 1.4, baseX2, baseY2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      function drawCapooScene() {
         if (!catCanvas) return;
         const ctx = catCanvas.getContext("2d");
-        const w = cat.w;
-        const h = cat.h;
+        const w = capoo.w;
+        const h = capoo.h;
         const isDark = state.theme === "dark";
-        const pal = CAT_COATS[state.catCoat] || CAT_COATS.ginger;
+        const groundY = 45.5; // đặt chân ngay trên mép trên của khung Tất cả | Truyện | Sách!
 
         ctx.save();
-        ctx.setTransform(cat.dpr, 0, 0, cat.dpr, 0, 0);
+        ctx.setTransform(capoo.dpr, 0, 0, capoo.dpr, 0, 0);
         ctx.clearRect(0, 0, w, h);
 
-        const groundY = h - 9;
-
-        // 1. Đường chạy tối giản hợp tone Tủ Sách
-        ctx.strokeStyle = isDark ? "rgba(237, 234, 227, 0.13)" : "rgba(28, 27, 25, 0.12)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(10, groundY + 1.5);
-        ctx.lineTo(w - 10, groundY + 1.5);
-        ctx.stroke();
-
-        // Vạch chia cự ly nhỏ xíu kiểu sân chạy bộ mini
-        ctx.fillStyle = isDark ? "rgba(237, 234, 227, 0.16)" : "rgba(28, 27, 25, 0.14)";
-        for (let tx = 20; tx < w - 16; tx += 28) {
-          ctx.fillRect(tx, groundY + 2, 1, 3);
-        }
-
-        // Bóng chạm đất co giãn theo nhịp nhảy/chạy
-        const restMix = Math.max(cat.sitMix, cat.sleepMix, cat.tiredMix);
-        const shadowW = 19 + cat.sleepMix * 3 - Math.abs(cat.hopY) * 0.25;
-        ctx.fillStyle = isDark ? "rgba(0, 0, 0, 0.45)" : "rgba(28, 24, 20, 0.12)";
-        ctx.beginPath();
-        ctx.ellipse(cat.x, groundY + 1.5, Math.max(8, shadowW), 3.2, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 2. Vẽ bụi phía sau mèo
-        cat.particles.forEach((p) => {
+        // 1. Bụi chạy phía sau
+        capoo.particles.forEach((p) => {
           if (p.kind !== "dust") return;
           const a = Math.max(0, 1 - p.age / p.life);
-          ctx.fillStyle = isDark ? `rgba(220, 210, 195, ${(a * 0.28).toFixed(2)})` : `rgba(150, 136, 118, ${(a * 0.34).toFixed(2)})`;
+          ctx.fillStyle = isDark
+            ? `rgba(220, 215, 206, ${(a * 0.35).toFixed(2)})`
+            : `rgba(140, 130, 118, ${(a * 0.35).toFixed(2)})`;
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size * (0.7 + (1 - a) * 0.7), 0, Math.PI * 2);
           ctx.fill();
         });
 
-        // 3. Vẽ Mèo Béo Cute!
-        const movingFactor = Math.min(1, cat.speed / 30) * (1 - restMix);
-        const bobWalk = Math.abs(Math.sin(cat.gait)) * 2.2 * movingFactor;
-        const bobRun = Math.abs(Math.sin(cat.gait)) * 3.4 * cat.runMix;
-        const breath =
-          cat.sleepMix > 0.2
-            ? Math.sin(cat.clock * 2.4) * 1.1 * cat.sleepMix
-            : cat.tiredMix > 0.2
-            ? Math.sin(cat.clock * 11.5) * 1.35 * cat.tiredMix
-            : Math.sin(cat.clock * 3.0) * 0.45;
-        const wobbleX = cat.wobble > 0 ? Math.sin(cat.clock * 46) * cat.wobble * 2.2 : 0;
+        // 2. Bóng mềm bám ngay mép trên thanh tab
+        const shadowRx = 14.5 + capoo.sleepMix * 3.2 + capoo.tiredMix * 3.8 - Math.abs(capoo.hopY) * 0.22;
+        ctx.fillStyle = isDark ? "rgba(0, 0, 0, 0.48)" : "rgba(28, 25, 22, 0.14)";
+        ctx.beginPath();
+        ctx.ellipse(capoo.x, groundY + 0.4, Math.max(6, shadowRx), 2.0, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-        // Vẽ tốc độ (vệt gió) khi chạy nhanh
-        if (cat.runMix > 0.45) {
-          ctx.strokeStyle = isDark ? `rgba(237, 234, 227, ${(cat.runMix * 0.22).toFixed(2)})` : `rgba(158, 71, 42, ${(cat.runMix * 0.22).toFixed(2)})`;
-          ctx.lineWidth = 1.2;
+        // 3. Co giãn mochi (squash & stretch + nhịp chạy/thở)
+        const moveBob = Math.abs(Math.sin(capoo.gait)) * (2.6 + capoo.runMix * 2.2) * capoo.moveMix;
+        const breath =
+          capoo.sleepMix > 0.2
+            ? Math.sin(capoo.clock * 2.4) * 0.065 * capoo.sleepMix
+            : capoo.tiredMix > 0.2
+            ? Math.sin(capoo.clock * 12) * 0.08 * capoo.tiredMix
+            : Math.sin(capoo.clock * 3.1) * 0.024;
+        const wobbleX = capoo.wobble > 0 ? Math.sin(capoo.clock * 48) * capoo.wobble * 2.2 : 0;
+
+        const scaleY = 1 + capoo.squash + breath - capoo.sleepMix * 0.25 - capoo.tiredMix * 0.32;
+        const scaleX = 1 - capoo.squash * 0.72 - breath * 0.45 + capoo.sleepMix * 0.18 + capoo.tiredMix * 0.25;
+        const lean = capoo.dir * (capoo.moveMix * 0.075 + capoo.runMix * 0.11);
+
+        // Vệt gió xanh khi chạy nhanh
+        if (capoo.runMix > 0.4) {
+          ctx.strokeStyle = `rgba(87, 199, 238, ${(capoo.runMix * 0.55).toFixed(2)})`;
+          ctx.lineWidth = 1.6;
           ctx.lineCap = "round";
-          const sx = cat.x - cat.facing * 24;
+          const gx = capoo.x - capoo.dir * 20;
           for (let k = 0; k < 2; k++) {
-            const ly = groundY - 12 - k * 8 + Math.sin(cat.clock * 20 + k) * 1.5;
+            const gy = groundY - 10 - k * 8 + Math.sin(capoo.clock * 22 + k) * 1.4;
             ctx.beginPath();
-            ctx.moveTo(sx, ly);
-            ctx.lineTo(sx - cat.facing * (9 + cat.runMix * 8), ly);
+            ctx.moveTo(gx, gy);
+            ctx.lineTo(gx - capoo.dir * (8 + capoo.runMix * 7), gy);
             ctx.stroke();
           }
         }
 
         ctx.save();
-        // Tâm toạ độ ngay dưới chân mèo
-        ctx.translate(cat.x + wobbleX, groundY + cat.hopY);
-        // Quay mặt mượt (tránh scaleX = 0 gây dẹt biến mất)
-        const sxScale = Math.abs(cat.facing) < 0.08 ? (cat.facing >= 0 ? 0.08 : -0.08) : cat.facing;
-        ctx.scale(sxScale, 1);
-
-        ctx.lineJoin = "round";
+        // Chân mèo chạm đúng groundY (trừ 2.2px cho độ cao chân ngắn tũn)
+        const legLiftOff = 2.2 * Math.max(0, 1 - capoo.sleepMix - capoo.tiredMix);
+        ctx.translate(capoo.x + wobbleX, groundY - legLiftOff + capoo.hopY - moveBob);
+        ctx.rotate(lean);
+        ctx.scale(scaleX, scaleY);
         ctx.lineCap = "round";
+        ctx.lineJoin = "round";
 
-        // ---- POSE A: NGỦ CUỘN TRÒN (SLEEPING CROISSANT) ----
-        if (cat.sleepMix > 0.65) {
-          const sl = cat.sleepMix;
-          const br = Math.sin(cat.clock * 2.3) * 1.1;
+        const rx = 15.2;
+        const ry = 11.4;
+        const earDroop = capoo.sleepMix * 0.45 + capoo.tiredMix * 0.75 + capoo.runMix * 0.22;
 
-          // Đuôi quấn ôm thân
-          ctx.strokeStyle = pal.stroke;
-          ctx.lineWidth = 6.2;
-          ctx.beginPath();
-          ctx.moveTo(-13, -5);
-          ctx.quadraticCurveTo(-20, -1, -7, -1.5);
-          ctx.stroke();
-          ctx.strokeStyle = pal.body;
-          ctx.lineWidth = 3.6;
-          ctx.stroke();
+        // 3a. 2 TAI TAM GIÁC BẦU PHÍA SAU ĐẦU (vẽ trước thân -> đường vòm đầu đè lên cực chuẩn ảnh mẫu!)
+        drawCapooEar(ctx, -1, rx, ry, earDroop);
+        drawCapooEar(ctx, 1, rx, ry, earDroop);
 
-          // Cục thân tròn xoe phập phồng
-          ctx.fillStyle = pal.body;
-          ctx.strokeStyle = pal.stroke;
-          ctx.lineWidth = 1.6;
-          ctx.beginPath();
-          ctx.ellipse(-2, -10.5 - br * 0.35, 17.5 + br * 0.4, 11.2 + br * 0.65, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
+        // 3b. 4 CHÂN NGẮN TŨN MẬP MẠP (vẽ trước thân để ăn liền vào đáy người)
+        const legVis = Math.max(0, 1 - capoo.sleepMix * 1.25 - capoo.tiredMix * 1.0);
+        if (legVis > 0.06) {
+          const swingA = Math.sin(capoo.gait) * (3.8 + capoo.runMix * 2.8) * capoo.moveMix;
+          const liftA = Math.max(0, -Math.cos(capoo.gait)) * (2.4 + capoo.runMix * 1.6) * capoo.moveMix;
+          const swingB = Math.sin(capoo.gait + Math.PI) * (3.8 + capoo.runMix * 2.8) * capoo.moveMix;
+          const liftB = Math.max(0, -Math.cos(capoo.gait + Math.PI)) * (2.4 + capoo.runMix * 1.6) * capoo.moveMix;
 
-          // Vằn lưng khi ngủ
-          ctx.strokeStyle = pal.stripe;
-          ctx.lineWidth = 2.0;
-          [-8, -3, 2].forEach((tx) => {
+          const drawStubLeg = (lx, ly, darker) => {
+            ctx.fillStyle = darker ? CAPOO_PAL.blueDeep : CAPOO_PAL.blue;
+            ctx.strokeStyle = CAPOO_PAL.ink;
+            ctx.lineWidth = 2.0;
             ctx.beginPath();
-            ctx.moveTo(tx, -20.5 - br * 0.6);
-            ctx.quadraticCurveTo(tx - 1, -16.5, tx + 1, -14);
+            ctx.ellipse(lx, ly, 2.3, 3.1 * legVis, 0, 0, Math.PI * 2);
+            ctx.fill();
             ctx.stroke();
-          });
+          };
+          drawStubLeg(-6.2 + swingB * 0.8, 0.2 - liftB, true);
+          drawStubLeg(6.2 + swingA * 0.8, 0.2 - liftA, true);
+          drawStubLeg(-9.8 + swingA, 0.5 - liftA, false);
+          drawStubLeg(9.8 + swingB, 0.5 - liftB, false);
+        }
 
-          // Đầu gối nhẹ lên chân trước
-          ctx.fillStyle = pal.body;
-          ctx.strokeStyle = pal.stroke;
-          ctx.lineWidth = 1.6;
+        // 3c. THÂN MOCHI XANH + BỤNG TRẮNG TRÒN MŨM MĨM
+        ctx.save();
+        traceCapooBun(ctx, rx, ry);
+        ctx.fillStyle = CAPOO_PAL.blue;
+        ctx.fill();
+        ctx.clip();
+        // Bụng trắng bầu y chang ảnh mẫu!
+        ctx.fillStyle = CAPOO_PAL.white;
+        const bellyShiftX = capoo.dir * capoo.moveMix * 2.4;
+        ctx.beginPath();
+        ctx.ellipse(bellyShiftX, 1.4, rx * 0.52, ry * 0.78, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Viền thân đậm nét bo mượt
+        traceCapooBun(ctx, rx, ry);
+        ctx.strokeStyle = CAPOO_PAL.ink;
+        ctx.lineWidth = 2.15;
+        ctx.stroke();
+
+        // 3d. ĐÔI TAY NHỎ GIƠ LÊN CẦM TIM HỒNG KHI VUI / CHẠM VÀO (y hệt ảnh mẫu!)
+        if (capoo.cheerTimer > 0 && capoo.tiredMix < 0.3 && capoo.sleepMix < 0.3) {
+          const wave = Math.sin(capoo.clock * 22) * 2.0;
+          ctx.fillStyle = CAPOO_PAL.blue;
+          ctx.strokeStyle = CAPOO_PAL.ink;
+          ctx.lineWidth = 2.0;
+          // Tay trái
           ctx.beginPath();
-          ctx.ellipse(10.5, -9.2, 10.5, 8.8, 0.12, 0, Math.PI * 2);
+          ctx.moveTo(-rx * 0.88, -ry * 0.52);
+          ctx.quadraticCurveTo(-rx * 1.28, -ry * 0.88 + wave, -rx * 1.08, -ry * 1.18 + wave);
+          ctx.quadraticCurveTo(-rx * 0.86, -ry * 1.02 + wave, -rx * 0.78, -ry * 0.68);
           ctx.fill();
           ctx.stroke();
-
-          // Tai nhỏ gọn
-          ctx.fillStyle = pal.body;
+          // Tay phải
           ctx.beginPath();
-          ctx.moveTo(4, -16);
-          ctx.lineTo(2, -23);
-          ctx.lineTo(9, -17.5);
-          ctx.closePath();
+          ctx.moveTo(rx * 0.88, -ry * 0.52);
+          ctx.quadraticCurveTo(rx * 1.28, -ry * 0.88 - wave, rx * 1.08, -ry * 1.18 - wave);
+          ctx.quadraticCurveTo(rx * 0.86, -ry * 1.02 - wave, rx * 0.78, -ry * 0.68);
           ctx.fill();
           ctx.stroke();
+          // 2 trái tim nhỏ lắc lư trên tay!
+          const ha = Math.min(1, capoo.cheerTimer * 1.6);
+          drawCapooHeart(ctx, -rx * 1.2, -ry * 1.32 + wave, 3.8, ha);
+          drawCapooHeart(ctx, rx * 1.2, -ry * 1.32 - wave, 3.8, ha);
+        }
 
-          ctx.beginPath();
-          ctx.moveTo(12, -17);
-          ctx.lineTo(15.5, -23.5);
-          ctx.lineTo(18.5, -15.5);
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
+        // 3e. KHUÔN MẶT CAPOO SIÊU CUTE!
+        const faceX = capoo.dir * capoo.moveMix * 3.6;
+        const faceY = -ry * 1.22 + capoo.sleepMix * 2.0 + capoo.tiredMix * 2.4;
 
-          // Băng đô thể dục vẫn đeo lúc ngủ!
-          ctx.strokeStyle = pal.band;
-          ctx.lineWidth = 2.6;
-          ctx.beginPath();
-          ctx.moveTo(3.5, -14.2);
-          ctx.quadraticCurveTo(11, -16.2, 18.2, -13.2);
-          ctx.stroke();
+        ctx.save();
+        ctx.translate(faceX, faceY);
+        ctx.strokeStyle = CAPOO_PAL.ink;
+        ctx.fillStyle = CAPOO_PAL.ink;
 
-          // Mắt nhắm tít ︶ ︶ + má hồng
-          ctx.fillStyle = pal.cheek;
-          ctx.globalAlpha = 0.55;
+        // Má hồng nhẹ
+        if (capoo.sleepMix < 0.7) {
+          ctx.fillStyle = CAPOO_PAL.cheek;
+          ctx.globalAlpha = 0.4 + capoo.runMix * 0.25 + (capoo.cheerTimer > 0 ? 0.25 : 0);
           ctx.beginPath();
-          ctx.ellipse(15.5, -7.2, 2.5, 1.5, 0, 0, Math.PI * 2);
+          ctx.ellipse(-7.8, 2.3, 2.2, 1.25, 0, 0, Math.PI * 2);
+          ctx.ellipse(7.8, 2.3, 2.2, 1.25, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.globalAlpha = 1;
-
-          ctx.strokeStyle = pal.stroke;
-          ctx.lineWidth = 1.4;
-          ctx.beginPath();
-          ctx.arc(13.2, -9.5, 2.2, 0.15 * Math.PI, 0.85 * Math.PI);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(18.2, -8.8, 1.9, 0.15 * Math.PI, 0.85 * Math.PI);
-          ctx.stroke();
-
-          // 2 chân trước gác dưới cằm
-          ctx.fillStyle = pal.belly;
-          ctx.strokeStyle = pal.stroke;
-          ctx.lineWidth = 1.3;
-          ctx.beginPath();
-          ctx.ellipse(14.5, -2.5, 4.2, 2.3, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-
-          ctx.restore();
-          drawForegroundParticles(ctx, isDark);
-          ctx.restore();
-          return;
         }
 
-        // ---- POSE B: ĐI BỘ / CHẠY / MỆT / NGỒI NGHỈ (INTERPOLATED SMOOTHLY!) ----
-        const bodyY = -13.0 - bobWalk - bobRun + cat.tiredMix * 3.8 + cat.sitMix * 1.2 - breath * 0.4;
-        const bodyTilt = cat.runMix * 0.11 - cat.sitMix * 0.28 + cat.tiredMix * 0.06;
-        const bodyRx = 16.2 + cat.runMix * 2.2 - cat.sitMix * 2.6 + cat.tiredMix * 1.8 + breath * 0.35;
-        const bodyRy = 11.4 - cat.runMix * 1.0 + cat.sitMix * 2.0 - cat.tiredMix * 1.6 + breath * 0.55;
-
-        // 1. Đuôi (vẽ sau thân)
-        const tailWag =
-          cat.state === "tired"
-            ? Math.sin(cat.clock * 2.2) * 2
-            : cat.state === "sit"
-            ? Math.sin(cat.clock * 3.8) * 5.5
-            : Math.sin(cat.clock * (4.5 + cat.runMix * 6)) * (4 + cat.runMix * 3);
-        const tailBaseX = -bodyRx + 3;
-        const tailBaseY = bodyY + 1 + cat.sitMix * 5;
-        const tailTipX = tailBaseX - (9 + cat.runMix * 6) + cat.sitMix * 5;
-        const tailTipY = tailBaseY - (10 - cat.runMix * 6 - cat.tiredMix * 8 + cat.sitMix * 3) + tailWag * 0.5;
-        const tailCtrlX = tailBaseX - 11;
-        const tailCtrlY = tailBaseY - 4 + tailWag;
-
-        ctx.strokeStyle = pal.stroke;
-        ctx.lineWidth = 6.4;
-        ctx.beginPath();
-        ctx.moveTo(tailBaseX, tailBaseY);
-        ctx.quadraticCurveTo(tailCtrlX, tailCtrlY, tailTipX, tailTipY);
-        ctx.stroke();
-        ctx.strokeStyle = pal.body;
-        ctx.lineWidth = 3.8;
-        ctx.stroke();
-
-        // 2. Chân xa (back-far & front-far)
-        const legAmp = (4.8 + cat.runMix * 4.6) * movingFactor;
-        const legLift = (2.8 + cat.runMix * 3.2) * movingFactor;
-        const phaseBL = cat.gait + Math.PI;
-        const phaseFR = cat.gait + (cat.runMix > 0.35 ? 0.45 : Math.PI * 0.5);
-        const phaseBR = cat.gait + (cat.runMix > 0.35 ? Math.PI + 0.45 : Math.PI * 1.5);
-        const phaseFL = cat.gait;
-
-        const drawLeg = (hipX, hipY, phase, isFar) => {
-          const swing = Math.sin(phase) * legAmp;
-          const lift = Math.max(0, -Math.cos(phase)) * legLift;
-          const footX = hipX + swing * (1 - restMix);
-          const footY = Math.min(groundY - groundY - 2, -2.6 - lift * (1 - restMix));
-          const legTopY = hipY;
-
-          ctx.strokeStyle = pal.stroke;
-          ctx.lineWidth = 6.2;
+        if (capoo.sleepMix > 0.55) {
+          // NGỦ: mắt nhắm bình yên ︶ ︶ + miệng :3 nhỏ
+          ctx.lineWidth = 1.75;
           ctx.beginPath();
-          ctx.moveTo(hipX, legTopY);
-          ctx.lineTo(footX, footY);
+          ctx.arc(-5.4, 0.6, 2.2, 0.15 * Math.PI, 0.85 * Math.PI);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(5.4, 0.6, 2.2, 0.15 * Math.PI, 0.85 * Math.PI);
           ctx.stroke();
 
-          ctx.strokeStyle = isFar ? pal.shade : pal.body;
-          ctx.lineWidth = 3.6;
+          ctx.lineWidth = 1.45;
+          ctx.beginPath();
+          ctx.arc(-1.3, 1.7, 1.3, 0.05 * Math.PI, 0.92 * Math.PI);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(1.3, 1.7, 1.3, 0.08 * Math.PI, 0.95 * Math.PI);
+          ctx.stroke();
+        } else if (capoo.tiredMix > 0.5) {
+          // MỆT BẸP DÍ: mắt x _ x + lưỡi hồng thè ra thở hổn hển
+          ctx.lineWidth = 1.75;
+          ctx.beginPath();
+          ctx.moveTo(-7.2, -1.6);
+          ctx.lineTo(-4.0, 1.4);
+          ctx.moveTo(-4.0, -1.6);
+          ctx.lineTo(-7.2, 1.4);
+          ctx.moveTo(4.0, -1.6);
+          ctx.lineTo(7.2, 1.4);
+          ctx.moveTo(7.2, -1.6);
+          ctx.lineTo(4.0, 1.4);
           ctx.stroke();
 
-          // Tất kem nhỏ xíu ở bàn chân
-          ctx.fillStyle = pal.belly;
-          ctx.strokeStyle = pal.stroke;
-          ctx.lineWidth = 1.2;
+          const pant = Math.abs(Math.sin(capoo.clock * 12));
+          ctx.fillStyle = CAPOO_PAL.pink;
+          ctx.strokeStyle = CAPOO_PAL.ink;
+          ctx.lineWidth = 1.55;
           ctx.beginPath();
-          ctx.ellipse(footX + 1.2, footY + 0.4, 3.1, 2.1, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, 3.0 + pant * 1.1, 2.6, 2.4 + pant * 1.2, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
-        };
-
-        if (cat.sitMix < 0.7 && cat.tiredMix < 0.75) {
-          drawLeg(-8, bodyY + 6, phaseBR, true);
-          drawLeg(8.5, bodyY + 6, phaseFR, true);
-        }
-
-        // 3. Thân tròn béo ú
-        ctx.save();
-        ctx.translate(0, bodyY);
-        ctx.rotate(bodyTilt);
-
-        ctx.fillStyle = pal.body;
-        ctx.strokeStyle = pal.stroke;
-        ctx.lineWidth = 1.65;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, bodyRx, bodyRy, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Bụng kem mũm mĩm (có độ nảy nhẹ khi chạy!)
-        const bellyJiggle = Math.sin(cat.gait * 2) * cat.runMix * 1.1;
-        ctx.fillStyle = pal.belly;
-        ctx.beginPath();
-        ctx.ellipse(1.5, bodyRy * 0.42 + bellyJiggle * 0.4, bodyRx * 0.62, bodyRy * 0.45, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 3 sọc vằn lưng cute
-        ctx.strokeStyle = pal.stripe;
-        ctx.lineWidth = 2.0;
-        [-6, -1.5, 3].forEach((sx) => {
+        } else if (capoo.runMix > 0.45 || capoo.cheerTimer > 0) {
+          // CHẠY NHANH / VUI VẺ: > < + miệng mở chữ w hồng y chang ảnh mẫu!
+          ctx.lineWidth = 1.9;
           ctx.beginPath();
-          ctx.moveTo(sx, -bodyRy + 1.4);
-          ctx.quadraticCurveTo(sx - 1.2, -bodyRy + 5.0, sx + 0.5, -bodyRy + 7.2);
+          ctx.moveTo(-7.8, -1.9);
+          ctx.lineTo(-4.8, -0.1);
+          ctx.lineTo(-7.8, 1.7);
           ctx.stroke();
-        });
-        ctx.restore();
 
-        // 4. Chân gần (hoặc chân ngồi / chân nằm bẹp khi mệt)
-        if (cat.tiredMix >= 0.75) {
-          // Nằm bẹp duỗi 2 chân trước thở dốc
-          ctx.fillStyle = pal.belly;
-          ctx.strokeStyle = pal.stroke;
-          ctx.lineWidth = 1.4;
           ctx.beginPath();
-          ctx.ellipse(14, -2.8, 5.2, 2.4, 0, 0, Math.PI * 2);
+          ctx.moveTo(7.8, -1.9);
+          ctx.lineTo(4.8, -0.1);
+          ctx.lineTo(7.8, 1.7);
+          ctx.stroke();
+
+          ctx.fillStyle = CAPOO_PAL.pink;
+          ctx.strokeStyle = CAPOO_PAL.ink;
+          ctx.lineWidth = 1.65;
+          ctx.beginPath();
+          ctx.moveTo(-3.5, 0.1);
+          ctx.quadraticCurveTo(-1.7, 2.3, 0, 0.3);
+          ctx.quadraticCurveTo(1.7, 2.3, 3.5, 0.1);
+          ctx.bezierCurveTo(3.3, 5.4, -3.3, 5.4, -3.5, 0.1);
+          ctx.closePath();
           ctx.fill();
           ctx.stroke();
-          ctx.beginPath();
-          ctx.ellipse(-14, -2.8, 4.8, 2.4, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-        } else if (cat.sitMix >= 0.7) {
-          // Chân ngồi gọn + thi thoảng giơ chân lên liếm cute!
-          const isLicking = cat.lickDur > 0;
-          ctx.fillStyle = pal.belly;
-          ctx.strokeStyle = pal.stroke;
-          ctx.lineWidth = 1.3;
-          ctx.beginPath();
-          ctx.ellipse(5, -2.6, 3.6, 2.4, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          if (isLicking) {
-            const lOff = Math.sin(cat.clock * 14) * 1.8;
+        } else {
+          // ĐI BỘ / ĐỨNG NGHỈ: mắt tròn đen long lanh + miệng chữ w nhỏ cute
+          if (capoo.blinkDur > 0) {
+            ctx.lineWidth = 1.75;
             ctx.beginPath();
-            ctx.ellipse(13.2, bodyY - 7.5 + lOff, 3.2, 2.3, -0.45, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.moveTo(-7.2, 0);
+            ctx.lineTo(-4.4, 0);
+            ctx.moveTo(4.4, 0);
+            ctx.lineTo(7.2, 0);
             ctx.stroke();
           } else {
+            ctx.fillStyle = CAPOO_PAL.ink;
             ctx.beginPath();
-            ctx.ellipse(10.5, -2.6, 3.4, 2.3, 0, 0, Math.PI * 2);
+            ctx.arc(-5.8, -0.2, 1.9, 0, Math.PI * 2);
+            ctx.arc(5.8, -0.2, 1.9, 0, Math.PI * 2);
             ctx.fill();
-            ctx.stroke();
           }
-        } else {
-          drawLeg(-10, bodyY + 6, phaseBL, false);
-          drawLeg(6.5, bodyY + 6, phaseFL, false);
-        }
-
-        // 5. Đầu tròn to mũm mĩm
-        const headX = 12.5 + cat.runMix * 3.0 - cat.sitMix * 5.2 + cat.tiredMix * 3.2;
-        const headY = bodyY - 7.5 + cat.runMix * 1.4 - cat.sitMix * 5.2 + cat.tiredMix * 5.6 + Math.sin(cat.gait) * 0.7 * movingFactor;
-        const headTilt = cat.runMix * 0.12 + cat.tiredMix * 0.16;
-
-        ctx.save();
-        ctx.translate(headX, headY);
-        ctx.rotate(headTilt);
-
-        // Tai sau
-        ctx.fillStyle = pal.shade;
-        ctx.strokeStyle = pal.stroke;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(1, -8);
-        ctx.lineTo(5.5, -16 + cat.runMix * 2);
-        ctx.lineTo(8.5, -7);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        // Đầu tròn bầu
-        ctx.fillStyle = pal.body;
-        ctx.strokeStyle = pal.stroke;
-        ctx.lineWidth = 1.65;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 11.2, 9.6, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Tai trước (hơi cụp nhẹ khi chạy nước rút)
-        ctx.fillStyle = pal.body;
-        ctx.beginPath();
-        ctx.moveTo(-7.5, -6);
-        ctx.lineTo(-9.5 - cat.runMix * 1.5, -15.5 + cat.runMix * 2.5);
-        ctx.lineTo(-1.5, -9);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        // Lòng tai hồng
-        ctx.fillStyle = pal.earIn;
-        ctx.beginPath();
-        ctx.moveTo(-6.5, -7.2);
-        ctx.lineTo(-8.0 - cat.runMix, -13.0 + cat.runMix * 2);
-        ctx.lineTo(-3.2, -8.8);
-        ctx.closePath();
-        ctx.fill();
-
-        // Băng đô tập thể dục đỏ + 2 dải dây phấp phới sau gáy!
-        const flap = Math.sin(cat.clock * (8 + cat.runMix * 18)) * (1.2 + cat.runMix * 3.0);
-        ctx.strokeStyle = pal.band;
-        ctx.lineWidth = 2.1;
-        ctx.beginPath();
-        ctx.moveTo(-9.5, -4.5);
-        ctx.quadraticCurveTo(-13.5, -5.5 + flap * 0.5, -16.5 - cat.runMix * 4, -3.5 + flap);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(-9.5, -3.5);
-        ctx.quadraticCurveTo(-13, -2.5 - flap * 0.4, -15.5 - cat.runMix * 3, -0.5 - flap * 0.7);
-        ctx.stroke();
-
-        ctx.strokeStyle = pal.band;
-        ctx.lineWidth = 2.7;
-        ctx.beginPath();
-        ctx.moveTo(-9.6, -4.4);
-        ctx.quadraticCurveTo(1, -6.8, 10.2, -3.6);
-        ctx.stroke();
-
-        // Má hồng (đậm hơn khi chạy/mệt)
-        ctx.fillStyle = pal.cheek;
-        ctx.globalAlpha = 0.48 + cat.runMix * 0.25 + cat.tiredMix * 0.3;
-        ctx.beginPath();
-        ctx.ellipse(2.0, 2.8, 2.5, 1.5, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.ellipse(9.8, 2.8, 2.0, 1.4, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-
-        // Biểu cảm MẮT & MIỆNG
-        ctx.strokeStyle = pal.stroke;
-        ctx.fillStyle = pal.stroke;
-
-        if (cat.tiredMix > 0.5) {
-          // Mắt mệt xỉu (︵ ︵) + lưỡi hồng thè ra thở hổn hển
-          ctx.lineWidth = 1.5;
+          ctx.lineWidth = 1.65;
           ctx.beginPath();
-          ctx.moveTo(1.5, -1.2);
-          ctx.lineTo(5.0, 0.2);
-          ctx.moveTo(1.5, 0.8);
-          ctx.lineTo(5.0, -0.6);
-          ctx.stroke();
-
-          ctx.beginPath();
-          ctx.moveTo(8.0, -0.6);
-          ctx.lineTo(10.6, 0.6);
-          ctx.stroke();
-
-          // Lưỡi hồng thò ra thụt vào theo nhịp thở
-          const pant = Math.abs(Math.sin(cat.clock * 11.5));
-          ctx.fillStyle = "#F06E7A";
-          ctx.strokeStyle = pal.stroke;
-          ctx.lineWidth = 1.0;
-          ctx.beginPath();
-          ctx.ellipse(6.8, 4.4 + pant * 1.4, 2.1, 2.0 + pant * 1.2, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-        } else if (cat.runMix > 0.55) {
-          // Mắt chạy quyết tâm (> <) siêu cute
-          ctx.lineWidth = 1.6;
-          ctx.beginPath();
-          ctx.moveTo(2.0, -1.6);
-          ctx.lineTo(4.8, 0.0);
-          ctx.lineTo(2.0, 1.6);
-          ctx.stroke();
-
-          ctx.beginPath();
-          ctx.moveTo(10.2, -1.4);
-          ctx.lineTo(8.0, 0.0);
-          ctx.lineTo(10.2, 1.4);
-          ctx.stroke();
-
-          // Miệng cười hăng hái :D
-          ctx.fillStyle = "#F07A7E";
-          ctx.beginPath();
-          ctx.arc(6.6, 3.0, 2.0, 0, Math.PI);
-          ctx.fill();
-          ctx.stroke();
-        } else if (cat.blinkDur > 0) {
-          // Nháy mắt ◡ ◡
-          ctx.lineWidth = 1.4;
-          ctx.beginPath();
-          ctx.arc(3.5, 0.2, 1.9, 0.15 * Math.PI, 0.85 * Math.PI);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(9.0, 0.2, 1.6, 0.15 * Math.PI, 0.85 * Math.PI);
-          ctx.stroke();
-        } else {
-          // Mắt tròn long lanh đi bộ / ngồi nghỉ
-          ctx.beginPath();
-          ctx.arc(3.6, -0.2, 1.9, 0, Math.PI * 2);
-          ctx.arc(9.0, -0.2, 1.7, 0, Math.PI * 2);
-          ctx.fill();
-          // Chấm sáng mắt
-          ctx.fillStyle = "#FFFFFF";
-          ctx.beginPath();
-          ctx.arc(4.2, -0.8, 0.65, 0, Math.PI * 2);
-          ctx.arc(9.5, -0.8, 0.55, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // Mũi hồng + miệng :3 (khi không mệt & không mở miệng chạy)
-        if (cat.tiredMix <= 0.5 && cat.runMix <= 0.55) {
-          ctx.fillStyle = "#EE827F";
-          ctx.beginPath();
-          ctx.arc(6.6, 1.8, 1.15, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.strokeStyle = pal.stroke;
-          ctx.lineWidth = 1.15;
-          ctx.beginPath();
-          ctx.arc(5.5, 3.1, 1.2, 0, Math.PI * 0.9);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(7.7, 3.1, 1.2, Math.PI * 0.1, Math.PI);
+          ctx.moveTo(-3.2, 0.3);
+          ctx.quadraticCurveTo(-1.6, 2.5, 0, 0.6);
+          ctx.quadraticCurveTo(1.6, 2.5, 3.2, 0.3);
           ctx.stroke();
         }
 
-        // Râu mèo siêu mảnh
-        ctx.strokeStyle = pal.stroke;
-        ctx.lineWidth = 0.95;
-        ctx.globalAlpha = 0.65;
-        ctx.beginPath();
-        ctx.moveTo(-2, 2.2);
-        ctx.lineTo(-6.5, 1.5);
-        ctx.moveTo(-2, 3.8);
-        ctx.lineTo(-6.2, 4.4);
-        ctx.stroke();
-        ctx.globalAlpha = 1;
+        ctx.restore(); // end face
+        ctx.restore(); // end capoo transform
 
-        ctx.restore(); // end head
-        ctx.restore(); // end cat transform
-
-        drawForegroundParticles(ctx, isDark);
-        ctx.restore();
-      }
-
-      function drawForegroundParticles(ctx, isDark) {
-        cat.particles.forEach((p) => {
+        // 4. Particles phía trước (tim hồng có viền, mồ hôi, z Z z)
+        capoo.particles.forEach((p) => {
           if (p.kind === "dust") return;
           const a = Math.max(0, 1 - p.age / p.life);
-          ctx.save();
-          ctx.globalAlpha = a;
-          if (p.kind === "sweat") {
-            ctx.fillStyle = "#5CC8FF";
+          if (p.kind === "heart") {
+            drawCapooHeart(ctx, p.x, p.y, p.size * (0.85 + (1 - a) * 0.25), a);
+          } else if (p.kind === "sweat") {
+            ctx.save();
+            ctx.globalAlpha = a;
+            ctx.fillStyle = CAPOO_PAL.sweat;
+            ctx.strokeStyle = CAPOO_PAL.ink;
+            ctx.lineWidth = 1.1;
             ctx.beginPath();
             ctx.moveTo(p.x, p.y - p.size * 1.3);
             ctx.quadraticCurveTo(p.x + p.size, p.y, p.x, p.y + p.size);
             ctx.quadraticCurveTo(p.x - p.size, p.y, p.x, p.y - p.size * 1.3);
             ctx.fill();
+            ctx.stroke();
+            ctx.restore();
           } else if (p.kind === "zzz") {
-            ctx.fillStyle = isDark ? "#EDEAE3" : "#5A554E";
-            const sz = 8 + (1 - a) * 4.5;
+            ctx.save();
+            ctx.globalAlpha = a;
+            ctx.fillStyle = isDark ? "#EDEAE3" : "#4A4742";
+            const sz = 7.5 + (1 - a) * 4.5;
             ctx.font = `700 ${sz.toFixed(1)}px "IBM Plex Mono", monospace`;
             ctx.fillText(p.text || "z", p.x, p.y);
-          } else if (p.kind === "spark") {
-            ctx.fillStyle = "#E06346";
-            ctx.font = `700 11px "Be Vietnam Pro", sans-serif`;
-            ctx.fillText(p.text || "!", p.x, p.y);
+            ctx.restore();
           }
-          ctx.restore();
         });
+
+        ctx.restore();
       }
 
       let lastCatFrame = 0;
@@ -11875,14 +11485,22 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
           lastCatFrame = ts;
           return;
         }
+        // Chỉ cần vẽ khi đang ở tab Tủ sách (tiết kiệm pin tối đa)
+        const booksView = document.getElementById("view-books");
+        if (booksView && !booksView.classList.contains("active")) {
+          lastCatFrame = ts;
+          return;
+        }
         const dt = lastCatFrame ? Math.min(0.05, (ts - lastCatFrame) / 1000) : 0.016;
         lastCatFrame = ts;
-        updateCatPhysics(dt);
-        drawCatScene();
+        updateCapooPhysics(dt);
+        drawCapooScene();
       }
 
       window.addEventListener("resize", resizeCatCanvas, { passive: true });
       resizeCatCanvas();
+      capoo.x = getGroupCenterX(filters.bookGroup || "all");
+      capoo.targetX = capoo.x;
       requestAnimationFrame(catLoop);
 
       async function initApp() {
