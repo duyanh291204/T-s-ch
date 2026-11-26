@@ -2209,14 +2209,12 @@
       to { opacity: 1; transform: scale(1); }
     }
 
-    /* Barcode Scanner Overlay */
+    /* Barcode Scanner Overlay (Tắt backdrop-filter & transform animation để tránh lỗi cam đen trên iOS PWA) */
     .scan-backdrop {
       position: fixed;
       inset: 0;
       z-index: 75;
-      background: rgba(12, 11, 10, 0.84);
-      -webkit-backdrop-filter: blur(6px);
-      backdrop-filter: blur(6px);
+      background: rgba(12, 11, 10, 0.9);
       display: none;
       align-items: center;
       justify-content: center;
@@ -2225,7 +2223,6 @@
 
     .scan-backdrop.open {
       display: flex;
-      animation: fadeOverlayIn 0.2s ease both;
     }
 
     .scan-modal {
@@ -2238,13 +2235,12 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      animation: cropPopIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     .scan-stage {
       position: relative;
       width: 100%;
-      height: 270px;
+      height: 265px;
       background: #0F0E0D;
       overflow: hidden;
       display: flex;
@@ -2253,12 +2249,86 @@
     }
 
     #scanVideo {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
       background: #0F0E0D;
-      transition: transform 0.2s ease;
+      z-index: 1;
+    }
+
+    #scanPreviewCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    #scanPreviewCanvas.active {
+      display: block;
+    }
+
+    .scan-reticle {
+      z-index: 3;
+    }
+
+    .scan-zoom-pill {
+      z-index: 4 !important;
+    }
+
+    /* Online Title Lookup Picker */
+    .lookup-inline-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .lookup-inline-row input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .lookup-results {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+      max-height: 230px;
+      overflow-y: auto;
+      padding: 6px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+    }
+
+    .lookup-item {
+      display: flex;
+      gap: 9px;
+      align-items: center;
+      text-align: left;
+      width: 100%;
+      padding: 6px 7px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .lookup-item:active {
+      background: var(--surface-2);
+    }
+
+    .lookup-thumb {
+      width: 36px;
+      height: 52px;
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      object-fit: cover;
+      flex-shrink: 0;
     }
 
     .scan-zoom-pill {
@@ -2650,6 +2720,7 @@
       </div>
       <div class="scan-stage" id="scanStage">
         <video id="scanVideo" autoplay playsinline webkit-playsinline muted></video>
+        <canvas id="scanPreviewCanvas"></canvas>
         <div class="scan-reticle" id="scanReticle">
           <div class="scan-box-frame">
             <div class="scan-laser"></div>
@@ -4339,7 +4410,11 @@
           <form id="seriesForm" class="form-grid" style="${initialMode === "batch" && isCreate ? "display:none;" : ""}">
             <div class="field">
               <label>Tên bộ truyện / Đầu sách *</label>
-              <input name="title" id="seriesTitleInput" required value="${esc(s?.title || "")}" placeholder="VD: Dungeon Meshi, Chainsaw Man, Rừng Na Uy..." />
+              <div class="lookup-inline-row">
+                <input name="title" id="seriesTitleInput" required value="${esc(s?.title || "")}" placeholder="VD: Dungeon Meshi, Chainsaw Man, Rừng Na Uy..." />
+                <button type="button" class="btn btn-sm" id="seriesTitleSearchBtn">Tìm bìa</button>
+              </div>
+              <div class="lookup-results" id="seriesLookupResults" style="display:none;"></div>
             </div>
             <div class="field">
               <label>Tác giả (tuỳ chọn)</label>
@@ -4497,6 +4572,46 @@
               : "Bìa chữ";
             clearBtn.style.display = currentCover ? "" : "none";
           };
+
+          const sSearchBtn = body.querySelector("#seriesTitleSearchBtn");
+          const sLookupBox = body.querySelector("#seriesLookupResults");
+          if (sSearchBtn && sLookupBox) {
+            sSearchBtn.addEventListener("click", async () => {
+              const q = (body.querySelector("#seriesTitleInput")?.value || "").trim();
+              if (q.length < 2) {
+                showToast("Gõ tên truyện/sách trước rồi bấm Tìm bìa nhé.");
+                return;
+              }
+              sSearchBtn.textContent = "Đang tìm...";
+              sSearchBtn.disabled = true;
+              const items = await searchBooksOnline(q);
+              sSearchBtn.textContent = "Tìm bìa";
+              sSearchBtn.disabled = false;
+              renderTitleLookupPicker(sLookupBox, items, async (picked) => {
+                if (picked.seriesTitle) singleForm.title.value = picked.seriesTitle;
+                if (picked.author) singleForm.author.value = picked.author;
+                if (picked.publisher && ["Trẻ", "Kim Đồng", "IPM", "Nhã Nam", "Khác"].includes(picked.publisher)) {
+                  singleForm.publisher.value = picked.publisher;
+                }
+                if (picked.category && ["Manga", "Light Novel", "Sách", "Artbook"].includes(picked.category)) {
+                  singleForm.category.value = picked.category;
+                }
+                if (picked.aliases && !singleForm.aliases.value.trim()) {
+                  singleForm.aliases.value = picked.aliases;
+                }
+                if (picked.coverPrice > 0 && body.querySelector("#quickCoverPriceIn")) {
+                  body.querySelector("#quickCoverPriceIn").value = picked.coverPrice;
+                  body.querySelector("#quickCoverPriceIn").dispatchEvent(new Event("input"));
+                }
+                if (picked.coverUrl) {
+                  showToast("Đang tải ảnh bìa...");
+                  const dataUrl = await fetchCoverAsDataUrl(picked.coverUrl);
+                  if (dataUrl) setPreview(dataUrl);
+                }
+                showToast(`Đã điền thông tin từ ${picked.source}!`);
+              });
+            });
+          }
 
           const undoCoverBtn = body.querySelector("#undoCoverBtn");
           let clearedCoverBackup = "";
@@ -5918,10 +6033,10 @@
         if (!cleaned.length) return null;
 
         const score = (c) => {
-          // Ưu tiên mã 893... (định danh chính xác NXB & ấn bản Việt Nam: Trẻ, IPM, Nhã Nam, Kim Đồng)
+          // Ưu tiên mã 893... (Trẻ, IPM, Nhã Nam, Kim Đồng) & mã nội bộ Kim Đồng 52x... (SKU trực tiếp trên web Kim Đồng)
           if (c.length === 13 && c.startsWith("893")) return 100;
-          if (c.length === 13 && (c.startsWith("978") || c.startsWith("979"))) return 95;
-          if (/^5[1-3]\d{11}$/.test(c)) return 90; // Mã nội bộ Kim Đồng (VD: 5262220100001)
+          if (/^5[1-3]\d{11}$/.test(c)) return 98;
+          if (c.length === 13 && (c.startsWith("978") || c.startsWith("979"))) return 92;
           if (c.length === 13) return 70;
           if (c.length === 10 || c.length === 12) return 55;
           return 30;
@@ -6167,10 +6282,21 @@
         }
       }
 
-      async function stopBarcodeCamera() {
+      let scanPreviewRaf = null;
+      let scanBlackCheckTimer = null;
+
+      function stopBarcodeCamera() {
         if (scanLoopTimer) {
           clearTimeout(scanLoopTimer);
           scanLoopTimer = null;
+        }
+        if (scanBlackCheckTimer) {
+          clearTimeout(scanBlackCheckTimer);
+          scanBlackCheckTimer = null;
+        }
+        if (scanPreviewRaf) {
+          cancelAnimationFrame(scanPreviewRaf);
+          scanPreviewRaf = null;
         }
         const stream = scanStream;
         scanStream = null;
@@ -6185,12 +6311,16 @@
           video.srcObject = null;
           video.style.transform = "";
         }
+        const previewCanvas = document.getElementById("scanPreviewCanvas");
+        if (previewCanvas) {
+          previewCanvas.classList.remove("active");
+        }
         const zoomBtn = document.getElementById("scanZoomBtn");
         if (zoomBtn) zoomBtn.classList.remove("show");
       }
 
-      async function closeBarcodeScanner() {
-        await stopBarcodeCamera();
+      function closeBarcodeScanner() {
+        stopBarcodeCamera();
         document.getElementById("scanBackdrop").classList.remove("open");
         scanBusy = false;
       }
@@ -6201,7 +6331,7 @@
         scanBusy = true;
         const statusEl = document.getElementById("scanStatusText");
         if (statusEl) statusEl.textContent = `Đã đọc mã ${clean} — đang tra thông tin...`;
-        await stopBarcodeCamera();
+        stopBarcodeCamera();
 
         const info = await lookupBarcode(clean, altCode);
         document.getElementById("scanBackdrop").classList.remove("open");
@@ -6212,19 +6342,81 @@
       async function applyScannerZoom(nextZoom) {
         scanZoomLevel = nextZoom;
         const zoomBtn = document.getElementById("scanZoomBtn");
-        const video = document.getElementById("scanVideo");
         if (zoomBtn) zoomBtn.textContent = `Zoom ${scanZoomLevel}x`;
 
         if (scanStream && scanHwZoomSupported) {
           try {
             const track = scanStream.getVideoTracks()[0];
             if (track) await track.applyConstraints({ advanced: [{ zoom: scanZoomLevel }] });
-            if (video) video.style.transform = "";
             return;
           } catch {}
         }
-        // Fallback zoom số mượt trên giao diện + crop khi quét
-        if (video) video.style.transform = scanZoomLevel > 1 ? `scale(${scanZoomLevel})` : "";
+      }
+
+      // Vẽ khung hình trực tiếp từ <video> lên <canvas> 2D (chữa triệt để lỗi iOS PWA bị đen layer video!)
+      function startCanvasPreviewLoop() {
+        const video = document.getElementById("scanVideo");
+        const canvas = document.getElementById("scanPreviewCanvas");
+        const stage = document.getElementById("scanStage");
+        if (!video || !canvas || !stage) return;
+        const ctx = canvas.getContext("2d");
+
+        const renderFrame = () => {
+          if (!scanStream) return;
+          if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+            const rect = stage.getBoundingClientRect();
+            const cw = Math.max(240, Math.round(rect.width));
+            const ch = Math.max(200, Math.round(rect.height));
+            if (canvas.width !== cw || canvas.height !== ch) {
+              canvas.width = cw;
+              canvas.height = ch;
+            }
+            const vw = video.videoWidth;
+            const vh = video.videoHeight;
+            // Zoom số nếu máy không hỗ trợ zoom phần cứng
+            const digZoom = !scanHwZoomSupported && scanZoomLevel > 1 ? scanZoomLevel : 1;
+            const targetRatio = cw / ch;
+            const srcRatio = vw / vh;
+            let sw = vw;
+            let sh = vh;
+            if (srcRatio > targetRatio) {
+              sw = vh * targetRatio;
+            } else {
+              sh = vw / targetRatio;
+            }
+            sw = sw / digZoom;
+            sh = sh / digZoom;
+            const sx = (vw - sw) / 2;
+            const sy = (vh - sh) / 2;
+
+            ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
+            if (!canvas.classList.contains("active")) {
+              canvas.classList.add("active");
+            }
+          }
+          scanPreviewRaf = requestAnimationFrame(renderFrame);
+        };
+        scanPreviewRaf = requestAnimationFrame(renderFrame);
+      }
+
+      function isCanvasPureBlack(canvas) {
+        try {
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          const w = canvas.width;
+          const h = canvas.height;
+          if (!w || !h) return true;
+          // Lấy mẫu 16 điểm giữa khung xem có pixel sáng nào không
+          const data = ctx.getImageData(Math.floor(w * 0.25), Math.floor(h * 0.25), Math.max(1, Math.floor(w * 0.5)), Math.max(1, Math.floor(h * 0.5))).data;
+          let sum = 0;
+          const step = Math.max(4, Math.floor(data.length / 200) * 4);
+          for (let i = 0; i < data.length; i += step) {
+            sum += data[i] + data[i + 1] + data[i + 2];
+            if (sum > 30) return false;
+          }
+          return true;
+        } catch {
+          return false;
+        }
       }
 
       async function runLiveScanTick() {
@@ -6240,10 +6432,9 @@
         try {
           const vw = video.videoWidth;
           const vh = video.videoHeight;
-          // Cắt vùng trung tâm tương ứng khung ngắm (hoặc sâu hơn nếu bật Zoom 2x số)
-          const cropScale = !scanHwZoomSupported && scanZoomLevel > 1 ? 0.55 : 0.82;
+          const cropScale = !scanHwZoomSupported && scanZoomLevel > 1 ? 0.55 : 0.85;
           const sw = Math.round(vw * cropScale);
-          const sh = Math.round(vh * 0.58);
+          const sh = Math.round(vh * 0.62);
           const sx = Math.round((vw - sw) / 2);
           const sy = Math.round((vh - sh) / 2);
 
@@ -6268,7 +6459,8 @@
         }
       }
 
-      async function openBarcodeScanner() {
+      // Gọi getUserMedia ĐỒNG BỘ ngay trong user tap (không await trước!) để iOS PWA không chặn video
+      function openBarcodeScanner() {
         const backdrop = document.getElementById("scanBackdrop");
         const statusEl = document.getElementById("scanStatusText");
         const manualIn = document.getElementById("scanManualInput");
@@ -6276,7 +6468,7 @@
         const video = document.getElementById("scanVideo");
         const zoomBtn = document.getElementById("scanZoomBtn");
 
-        await stopBarcodeCamera();
+        stopBarcodeCamera();
         backdrop.classList.add("open");
         manualIn.value = "";
         scanBusy = false;
@@ -6285,65 +6477,226 @@
         reticleEl.style.display = "flex";
         statusEl.textContent = "Đang bật camera sau...";
 
-        // Nạp song song bộ giải mã WASM + mở camera native iOS (không để chờ nhau)
         const decoderWarmup = getBarcodeDetector();
 
-        try {
-          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            throw new Error("Trình duyệt không hỗ trợ camera trực tiếp.");
-          }
-          const stream = await navigator.mediaDevices.getUserMedia({
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          reticleEl.style.display = "none";
+          statusEl.textContent = "Trình duyệt không hỗ trợ cam trực tiếp — bấm 'Chụp mã nét' bên dưới.";
+          return;
+        }
+
+        // Đặt thuộc tính playsinline trước khi gọi getUserMedia
+        video.setAttribute("playsinline", "true");
+        video.setAttribute("webkit-playsinline", "true");
+        video.playsInline = true;
+        video.muted = true;
+        video.autoplay = true;
+
+        navigator.mediaDevices
+          .getUserMedia({
             video: {
               facingMode: { ideal: "environment" },
               width: { ideal: 1280 },
               height: { ideal: 720 },
             },
             audio: false,
-          });
+          })
+          .then(async (stream) => {
+            if (!backdrop.classList.contains("open")) {
+              stream.getTracks().forEach((t) => t.stop());
+              return;
+            }
+            scanStream = stream;
+            video.srcObject = stream;
 
-          if (!backdrop.classList.contains("open")) {
-            stream.getTracks().forEach((t) => t.stop());
-            return;
-          }
+            await new Promise((resolve) => {
+              if (video.readyState >= 1) return resolve();
+              video.onloadedmetadata = () => resolve();
+              setTimeout(resolve, 1400);
+            });
 
-          scanStream = stream;
-          video.setAttribute("playsinline", "");
-          video.setAttribute("webkit-playsinline", "");
-          video.muted = true;
-          video.autoplay = true;
-          video.srcObject = stream;
+            try {
+              await video.play();
+            } catch {}
 
-          await new Promise((resolve) => {
-            if (video.readyState >= 1) return resolve();
-            video.onloadedmetadata = () => resolve();
-            setTimeout(resolve, 1200);
-          });
-          await video.play();
+            // Bắt đầu gương khung hình 2D canvas để thoát lỗi iOS PWA black layer
+            startCanvasPreviewLoop();
 
-          // Kiểm tra xem camera có hỗ trợ zoom phần cứng không (iPhone 15 Pro Max có!)
-          const track = stream.getVideoTracks()[0];
-          const caps = track && typeof track.getCapabilities === "function" ? track.getCapabilities() : {};
-          if (caps && caps.zoom && caps.zoom.max >= 2) {
-            scanHwZoomSupported = true;
-          }
-          zoomBtn.textContent = "Zoom 1x";
-          zoomBtn.classList.add("show");
+            const track = stream.getVideoTracks()[0];
+            const caps = track && typeof track.getCapabilities === "function" ? track.getCapabilities() : {};
+            if (caps && caps.zoom && caps.zoom.max >= 2) {
+              scanHwZoomSupported = true;
+            }
+            zoomBtn.textContent = "Zoom 1x";
+            zoomBtn.classList.add("show");
 
-          const detObj = await decoderWarmup;
-          if (!scanStream) return;
-          if (detObj) {
+            // Tự kiểm tra sau 1.8 giây xem iOS PWA có đang trả khung hình đen xì không
+            scanBlackCheckTimer = setTimeout(() => {
+              if (!scanStream || scanBusy) return;
+              const pCanvas = document.getElementById("scanPreviewCanvas");
+              if (!video.videoWidth || (pCanvas && isCanvasPureBlack(pCanvas))) {
+                statusEl.textContent =
+                  "iOS Web App đang chặn luồng cam trực tiếp — bấm nút trắng 'Chụp mã nét' ngay dưới (mở cam gốc iPhone cực nét)!";
+              }
+            }, 1800);
+
+            const detObj = await decoderWarmup;
+            if (!scanStream) return;
+            if (detObj) {
+              statusEl.textContent =
+                "Sẵn sàng · Sách Kim Đồng ưu tiên vạch DƯỚI (52x...), Trẻ/IPM/Nhã Nam ưu tiên vạch 893...";
+              runLiveScanTick();
+            } else {
+              statusEl.textContent = "Camera đã lên — bấm 'Chụp mã nét' hoặc gõ 13 số.";
+            }
+          })
+          .catch(() => {
+            reticleEl.style.display = "none";
             statusEl.textContent =
-              "Sẵn sàng · Để sách cách 15–20cm (hoặc bấm Zoom 2x nếu bị mờ).";
-            runLiveScanTick();
-          } else {
-            statusEl.textContent =
-              "Camera đã lên — bấm 'Chụp mã nét' hoặc gõ 13 số nếu mạng yếu chưa tải được bộ giải mã.";
-          }
-        } catch (err) {
-          reticleEl.style.display = "none";
-          statusEl.textContent =
-            "Không mở được camera trực tiếp — bấm 'Chụp mã nét' hoặc gõ 13 số dưới mã vạch.";
+              "Không mở được camera trực tiếp — bấm 'Chụp mã nét' hoặc gõ 13 số dưới mã vạch.";
+          });
+      }
+
+      // ============================
+      // TÌM SÁCH / MANGA THEO TÊN (WORKER 4 NXB VN + ANILIST + GOOGLE BOOKS)
+      // ============================
+      async function searchAniListByTitle(query) {
+        try {
+          const gql = `query ($s: String) {
+            Page(page: 1, perPage: 5) {
+              media(search: $s, type: MANGA, sort: SEARCH_MATCH) {
+                title { romaji english native }
+                format
+                coverImage { extraLarge large }
+                staff(perPage: 3) {
+                  edges { role node { name { full } } }
+                }
+              }
+            }
+          }`;
+          const res = await fetch("https://graphql.anilist.co", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ query: gql, variables: { s: query } }),
+          });
+          if (!res.ok) return [];
+          const json = await res.json();
+          const list = json?.data?.Page?.media || [];
+          return list.map((m) => {
+            const title = m.title?.english || m.title?.romaji || m.title?.native || "";
+            const authorEdge = (m.staff?.edges || []).find((e) => /story|art|original/i.test(e.role || "")) || m.staff?.edges?.[0];
+            const aliases = [...new Set([m.title?.romaji, m.title?.english, m.title?.native].filter(Boolean))].join(", ");
+            return {
+              source: "AniList",
+              fullTitle: title,
+              seriesTitle: title,
+              author: authorEdge?.node?.name?.full || "",
+              publisher: "",
+              category: m.format === "NOVEL" ? "Light Novel" : "Manga",
+              coverPrice: 0,
+              coverUrl: m.coverImage?.extraLarge || m.coverImage?.large || "",
+              aliases,
+            };
+          });
+        } catch {
+          return [];
         }
+      }
+
+      async function searchGoogleBooksByTitle(query) {
+        try {
+          const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=4`);
+          if (!res.ok) return [];
+          const data = await res.json();
+          return (data?.items || [])
+            .map((it) => {
+              const v = it.volumeInfo || {};
+              const title = v.title || "";
+              if (!title) return null;
+              let cover = v.imageLinks?.large || v.imageLinks?.medium || v.imageLinks?.thumbnail || "";
+              if (cover.startsWith("http://")) cover = cover.replace("http://", "https://");
+              return {
+                source: "Google Books",
+                fullTitle: title,
+                seriesTitle: title,
+                author: Array.isArray(v.authors) ? v.authors.join(", ") : "",
+                publisher: "",
+                category: "Sách",
+                coverPrice: 0,
+                coverUrl: cover,
+                aliases: "",
+              };
+            })
+            .filter(Boolean);
+        } catch {
+          return [];
+        }
+      }
+
+      async function searchBooksOnline(query) {
+        const q = String(query || "").trim();
+        if (q.length < 2) return [];
+        const workerBase = (state.barcodeWorkerUrl || "").trim().replace(/\/+$/, "");
+
+        const workerTask = workerBase
+          ? fetch(`${workerBase}/search?q=${encodeURIComponent(q)}`, { cache: "no-store" })
+              .then((r) => (r.ok ? r.json() : { items: [] }))
+              .then((d) => (Array.isArray(d?.items) ? d.items : []))
+              .catch(() => [])
+          : Promise.resolve([]);
+
+        const [vnItems, aniItems, gbItems] = await Promise.all([
+          workerTask,
+          searchAniListByTitle(q),
+          searchGoogleBooksByTitle(q),
+        ]);
+
+        const all = [...vnItems, ...aniItems, ...gbItems];
+        const seen = new Set();
+        const out = [];
+        for (const it of all) {
+          if (!it || !it.fullTitle) continue;
+          const key = normVN(`${it.fullTitle} ${it.source}`);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push(it);
+        }
+        return out.slice(0, 10);
+      }
+
+      function renderTitleLookupPicker(containerEl, items, onPick) {
+        if (!items.length) {
+          containerEl.innerHTML = `<div class="small-muted" style="padding:6px;">Không tìm thấy kết quả — thử gõ tên tiếng Anh hoặc tên ngắn gọn hơn.</div>`;
+          containerEl.style.display = "flex";
+          return;
+        }
+        const workerBase = (state.barcodeWorkerUrl || "").trim().replace(/\/+$/, "");
+        containerEl.innerHTML = items
+          .map((it, idx) => {
+            let thumb = it.coverUrl || "";
+            if (thumb && workerBase && /^https?:\/\//i.test(thumb) && !thumb.includes("anilist.co") && !thumb.includes("googleapis.com")) {
+              thumb = `${workerBase}/img?url=${encodeURIComponent(thumb)}`;
+            }
+            return `
+              <button type="button" class="lookup-item" data-lk-idx="${idx}">
+                ${thumb ? `<img class="lookup-thumb" src="${esc(thumb)}" alt="" referrerpolicy="no-referrer" />` : `<div class="lookup-thumb"></div>`}
+                <div style="min-width:0; flex:1;">
+                  <div style="font-size:12.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(it.fullTitle)}</div>
+                  <div class="small-muted" style="font-size:11px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${esc(it.source)}${it.author ? ` · ${esc(it.author)}` : ""}${it.coverPrice ? ` · ${fmtMoney(it.coverPrice)}` : ""}
+                  </div>
+                </div>
+              </button>`;
+          })
+          .join("");
+        containerEl.style.display = "flex";
+        containerEl.querySelectorAll("[data-lk-idx]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const picked = items[Number(btn.dataset.lkIdx)];
+            containerEl.style.display = "none";
+            if (picked && typeof onPick === "function") onPick(picked);
+          });
+        });
       }
 
       function openBarcodeResultModal(info) {
@@ -6413,7 +6766,10 @@
               <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:7px;">
                 <div class="field">
                   <label>Tên bộ truyện / sách *</label>
-                  <input name="seriesTitle" required value="${esc(info.seriesTitle || "")}" placeholder="Nhập tên bộ..." />
+                  <div class="lookup-inline-row">
+                    <input name="seriesTitle" id="bcTitleInput" required value="${esc(info.seriesTitle || "")}" placeholder="Nhập tên bộ..." />
+                    <button type="button" class="btn btn-sm" id="bcTitleSearchBtn">Tìm bìa</button>
+                  </div>
                 </div>
                 <div class="field">
                   <label>Tác giả</label>
@@ -6421,6 +6777,8 @@
                 </div>
               </div>
             </div>
+
+            <div class="lookup-results" id="bcLookupResults" style="display:none;"></div>
 
             <div style="display:flex; flex-wrap:wrap; gap:6px;">
               <label class="btn btn-sm" style="margin:0;">
@@ -6551,6 +6909,48 @@
               clearBtn.style.display = "";
             }
           });
+
+          const bcSearchBtn = body.querySelector("#bcTitleSearchBtn");
+          const bcLookupBox = body.querySelector("#bcLookupResults");
+          if (bcSearchBtn && bcLookupBox) {
+            bcSearchBtn.addEventListener("click", async () => {
+              const q = (body.querySelector("#bcTitleInput")?.value || "").trim();
+              if (q.length < 2) {
+                showToast("Gõ ít nhất 2 chữ tên truyện/sách rồi bấm Tìm bìa nhé.");
+                return;
+              }
+              bcSearchBtn.textContent = "Đang tìm...";
+              bcSearchBtn.disabled = true;
+              const items = await searchBooksOnline(q);
+              bcSearchBtn.textContent = "Tìm bìa";
+              bcSearchBtn.disabled = false;
+              renderTitleLookupPicker(bcLookupBox, items, async (picked) => {
+                if (picked.seriesTitle) form.seriesTitle.value = picked.seriesTitle;
+                if (picked.author) form.author.value = picked.author;
+                if (picked.publisher && ["Trẻ", "Kim Đồng", "IPM", "Nhã Nam", "Khác"].includes(picked.publisher)) {
+                  form.publisher.value = picked.publisher;
+                }
+                if (picked.category && ["Manga", "Light Novel", "Sách", "Artbook"].includes(picked.category)) {
+                  form.category.value = picked.category;
+                }
+                if (picked.coverPrice > 0) {
+                  cpIn.value = picked.coverPrice;
+                  const defCkNow = state.lastEntry?.discount ?? 15;
+                  ppIn.value = Math.round(picked.coverPrice * (1 - defCkNow / 100));
+                  syncCkActive();
+                }
+                if (picked.coverUrl) {
+                  const dataUrl = await fetchCoverAsDataUrl(picked.coverUrl);
+                  if (dataUrl) {
+                    currentCoverData = dataUrl;
+                    coverBox.innerHTML = `<img src="${esc(dataUrl)}" alt="" referrerpolicy="no-referrer" />`;
+                    clearBtn.style.display = "";
+                  }
+                }
+                showToast(`Đã điền từ ${picked.source}!`);
+              });
+            });
+          }
 
           body.querySelector("#bcRescanBtn").addEventListener("click", () => {
             closeModal();
@@ -8257,7 +8657,7 @@
               if (res.ok && data?.ok) {
                 state.barcodeWorkerUrl = val;
                 saveState();
-                showToast("Kết nối Worker ngon lành! Đã tự lưu.");
+                showToast(`Kết nối Worker v${data.version || 1} ngon lành! Đã tự lưu.`);
               } else {
                 showToast("Worker phản hồi lạ — kiểm tra lại code đã dán.");
               }
