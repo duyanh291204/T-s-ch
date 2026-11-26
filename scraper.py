@@ -13,6 +13,7 @@ from curl_cffi import requests as cffi_requests
 VN_TZ = timezone(timedelta(hours=7))
 NOW = datetime.now(VN_TZ)
 OUTPUT_FILE = Path("news.json")
+SCHEMA_VERSION = 2
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 APIFY_TOKEN = os.getenv("APIFY_TOKEN", "").strip()
@@ -93,6 +94,114 @@ SOCIAL_TARGETS = {
     ],
 }
 
+# Các từ khoá rác cần loại cứng (khuyến mãi sàn, tuyển creator, nghỉ lễ, bảo trì...)
+HARD_SPAM_KEYWORDS = [
+    "mã giảm giá",
+    "voucher shopee",
+    "voucher lazada",
+    "black friday",
+    "flash sale",
+    "mega live",
+    "siêu sale",
+    "săn sale shopee",
+    "sale 25",
+    "sale ngày đôi",
+    "freeship",
+    "ipmate",
+    "creator trên tiktok",
+    "tiktok shop",
+    "group dành riêng cho các creator",
+    "tuyển dụng",
+    "tuyển cộng tác viên",
+    "tuyển nhân viên",
+    "thông báo nghỉ lễ",
+    "lịch nghỉ tết",
+    "lịch nghỉ lễ",
+    "bảo trì hệ thống",
+    "quà tri ân creator",
+    "chúc mừng năm mới",
+    "chúc mừng ngày",
+    "happy new year",
+    "minigame",
+    "giveaway",
+]
+
+# Từ khoá cho thấy bài viết thực sự là tin phát hành/quà/Fes (giúp giữ lại kể cả khi có nhắc mua trên shopee)
+RELEASE_SIGNAL_KEYWORDS = [
+    "lịch phát hành",
+    "tái bản",
+    "in nối bản",
+    "bản đặc biệt",
+    "bản giới hạn",
+    "limited",
+    "boxset",
+    "pre-order",
+    "đặt trước",
+    "standee",
+    "shikishi",
+    "postcard",
+    "bookmark",
+    "obi",
+    "booklet",
+    "hội sách",
+    "festival",
+    "fes",
+    "ký tặng",
+    "booth",
+    "ra mắt tập",
+    "tập mới",
+]
+
+
+def strip_emojis(text: str) -> str:
+    if not text:
+        return ""
+    # Xoá các khối emoji / ký hiệu trang trí phổ biến để giao diện sạch sẽ
+    cleaned = re.sub(
+        r"[\U0001F300-\U0001FAFF\U00002600-\U000027BF\U0000FE0F\U0000200D]+",
+        "",
+        text,
+    )
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def clean_web_snippet(title: str, snippet: str):
+    """Dọn rác HTML như 'Mua ngay', 'Thêm vào giỏ' và tách giá tiền sạch."""
+    s = re.sub(r"\s+", " ", (snippet or "")).strip()
+    price = 0
+    m = re.search(r"(\d{1,3}(?:[.,]\d{3})+)\s*(?:đ|₫|vnđ|vnd)?", s, re.IGNORECASE)
+    if m:
+        digits = re.sub(r"[^\d]", "", m.group(1))
+        if digits:
+            price = int(digits)
+    # Gỡ nút bấm thương mại điện tử
+    s = re.sub(r"\b(mua ngay|thêm vào giỏ|xem nhanh|chi tiết|hết hàng|còn hàng|giảm giá)\b", "", s, flags=re.IGNORECASE)
+    s = re.sub(r"\d{1,3}(?:[.,]\d{3})+\s*(?:đ|₫|vnđ|vnd)", "", s, flags=re.IGNORECASE)
+    # Gỡ lặp lại tiêu đề ở đầu snippet
+    t_clean = (title or "").strip()
+    if t_clean and s.lower().startswith(t_clean.lower()):
+        s = s[len(t_clean) :].strip(" -–:|.,")
+    s = re.sub(r"\s+", " ", s).strip()
+    return s, price
+
+
+def is_spam_post(title: str, text: str, channel: str) -> bool:
+    combined = f"{title} {text}".lower()
+    # Nếu chứa từ khoá rác nặng
+    has_spam = any(kw in combined for kw in HARD_SPAM_KEYWORDS)
+    if not has_spam:
+        return False
+    # Ngoại lệ duy nhất: bài có lịch phát hành / hội sách / bản đặc biệt thực sự
+    strong_release = any(
+        kw in combined
+        for kw in ["lịch phát hành", "bản đặc biệt", "boxset", "hội sách", "festival", "tái bản"]
+    )
+    if strong_release and not any(
+        hard in combined for hard in ["mã giảm giá", "ipmate", "tuyển dụng", "creator trên tiktok", "black friday"]
+    ):
+        return False
+    return True
+
 
 def make_id(url: str, text: str) -> str:
     raw = (url or text[:120]).strip().encode("utf-8")
@@ -126,9 +235,11 @@ def load_existing():
     try:
         data = json.loads(OUTPUT_FILE.read_text(encoding="utf-8"))
         if isinstance(data, dict):
+            # Tự động xoá tin rác cũ nếu file news.json thuộc phiên bản cũ
+            if data.get("version") != SCHEMA_VERSION:
+                print(f"[Reset] Nâng cấp news.json lên v{SCHEMA_VERSION}, dọn sạch tin cũ...")
+                return []
             return data.get("items", [])
-        if isinstance(data, list):
-            return data
     except Exception as e:
         print(f"[Load existing error]: {e}")
     return []
@@ -167,7 +278,7 @@ def scrape_haravan_json(base_url: str, json_paths: list, publisher: str):
                     "publisher": publisher,
                     "channel": "Web",
                     "raw_title": title,
-                    "raw_text": f"{title}. Giá: {price}đ. {body_text[:500]}",
+                    "raw_text": body_text[:700] if body_text else title,
                     "price_hint": price,
                     "url": url,
                     "image": img,
@@ -205,7 +316,7 @@ def scrape_html_fallback(url: str, base: str, publisher: str):
             for a in soup.select(sel):
                 href = (a.get("href") or "").strip()
                 title = (a.get("title") or a.get_text(" ", strip=True)).strip()
-                if not href or not title or len(title) < 10:
+                if not href or not title or len(title) < 8:
                     continue
                 if href.startswith(("javascript:", "mailto:", "tel:", "#")):
                     continue
@@ -215,7 +326,9 @@ def scrape_html_fallback(url: str, base: str, publisher: str):
                 seen_links.add(full_url)
 
                 parent = a.find_parent(["article", "div", "li"])
-                snippet = parent.get_text(" ", strip=True)[:450] if parent else title
+                raw_snippet = parent.get_text(" ", strip=True)[:500] if parent else title
+                clean_snip, price_hint = clean_web_snippet(title, raw_snippet)
+
                 img_tag = parent.find("img") if parent else None
                 img = ""
                 if img_tag:
@@ -229,8 +342,8 @@ def scrape_html_fallback(url: str, base: str, publisher: str):
                     "publisher": publisher,
                     "channel": "Web",
                     "raw_title": title[:180],
-                    "raw_text": snippet,
-                    "price_hint": 0,
+                    "raw_text": clean_snip or title,
+                    "price_hint": price_hint,
                     "url": full_url,
                     "image": img,
                     "published_at": NOW.isoformat(timespec="seconds"),
@@ -298,8 +411,8 @@ def collect_social():
         raw_items.append({
             "publisher": pub,
             "channel": "FB",
-            "raw_title": text.splitlines()[0][:140],
-            "raw_text": text[:900],
+            "raw_title": strip_emojis(text.splitlines()[0])[:140],
+            "raw_text": text[:1600],
             "price_hint": 0,
             "url": p.get("url") or p.get("topLevelUrl") or page_url,
             "image": thumb,
@@ -324,8 +437,8 @@ def collect_social():
         raw_items.append({
             "publisher": pub,
             "channel": "IG",
-            "raw_title": caption.splitlines()[0][:140],
-            "raw_text": caption[:900],
+            "raw_title": strip_emojis(caption.splitlines()[0])[:140],
+            "raw_text": caption[:1600],
             "price_hint": 0,
             "url": p.get("url") or f"https://www.instagram.com/p/{p.get('shortCode', '')}/",
             "image": p.get("displayUrl", ""),
@@ -350,8 +463,8 @@ def collect_social():
         raw_items.append({
             "publisher": pub,
             "channel": "TikTok",
-            "raw_title": desc[:140],
-            "raw_text": desc[:900],
+            "raw_title": strip_emojis(desc)[:140],
+            "raw_text": desc[:1200],
             "price_hint": 0,
             "url": p.get("webVideoUrl", ""),
             "image": p.get("videoMeta", {}).get("coverUrl", ""),
@@ -365,32 +478,35 @@ GEMINI_PROMPT = """
 Bạn là hệ thống lọc tin xuất bản manga, light novel và sách tại Việt Nam cho 4 NXB: Trẻ, Kim Đồng, IPM, Nhã Nam.
 Đầu vào là danh sách bài viết thô từ Web/FB/IG/TikTok.
 
-Nhiệm vụ:
-1. LOẠI BỎ tin rác: tuyển dụng, thông báo nghỉ lễ, chúc mừng ngày lễ, trích dẫn sách vu vơ không gắn với phát hành/quà/sự kiện, thông báo bảo trì.
-2. CHỈ GIỮ LẠI tin liên quan tới:
-   - "new": Ra mắt truyện/sách mới, tập mới, lịch phát hành, mở pre-order.
+QUY TẮC LỌC RÁC NGHIÊM NGẶT:
+1. BẮT BUỘC LOẠI BỎ (không đưa vào mảng kết quả):
+   - Tin khuyến mãi/mã giảm giá Shopee, Lazada, Tiki, Black Friday, Flash Sale, Freeship, livestream bán hàng.
+   - Tin tuyển dụng, tuyển creator/affiliate/IPMATE, mời vào group TikTok Shop, minigame, giveaway.
+   - Tin nghỉ lễ, chúc mừng, bảo trì, cảm ơn chung chung, trích dẫn sách vu vơ không gắn phát hành.
+2. CHỈ GIỮ LẠI bài viết thực sự nói về:
+   - "new": Ra mắt sách/truyện mới, tập mới, lịch phát hành tháng, mở đặt trước (pre-order).
    - "reprint": Tái bản, in nối bản, bản bìa mới/boxset tái bản.
-   - "gift": Bản đặc biệt (ĐB/Limited), quà tặng kèm (obi, bookmark, standee, postcard, shikishi, poster, booklet...), merch bán rời.
+   - "gift": Bản đặc biệt (ĐB/Limited), quà tặng kèm (obi, bookmark, standee, postcard, shikishi, poster, booklet...), merch.
    - "fes": Hội sách, Festival manga/anime, sự kiện ký tặng, booth NXB có quà.
-3. Với mỗi tin hợp lệ, trả về JSON array các object theo đúng cấu trúc:
+3. Trả về JSON array các object đúng định dạng (KHÔNG DÙNG EMOJI trong title/summary):
 [
   {
     "id": "giữ nguyên id đầu vào",
     "publisher": "Trẻ | Kim Đồng | IPM | Nhã Nam",
     "type": "new | reprint | gift | fes",
     "channel": "Web | FB | IG | TikTok",
-    "title": "Tiêu đề ngắn gọn, rõ ràng, không dùng emoji, tối đa 95 ký tự",
-    "series": "Tên bộ truyện/đầu sách chính (nếu xác định được, không thì chuỗi rỗng)",
-    "summary": "Tóm tắt 1-2 câu trọng tâm: tập mấy, giá bìa (nếu có), ngày ra, điều kiện lấy quà",
-    "gift": "Liệt kê quà kèm/merch nếu có, không có để chuỗi rỗng",
-    "releaseDate": "YYYY-MM-DD nếu bài có ghi ngày phát hành/sự kiện, không rõ để chuỗi rỗng",
+    "title": "Tiêu đề ngắn gọn, rõ tên sách/sự kiện, không emoji, tối đa 95 ký tự",
+    "series": "Tên bộ truyện/đầu sách chính (nếu là bài Lịch phát hành nhiều bộ thì liệt kê các tên bộ nổi bật cách nhau bởi dấu phẩy, kèm cả tên tiếng Anh & tiếng Việt nếu bài có ghi)",
+    "summary": "Tóm tắt 1-2 câu ngắn gọn, không emoji, không chứa 'Mua ngay'. Nếu là lịch phát hành thì nêu các mốc ngày nổi bật.",
+    "gift": "Quà kèm/merch nếu có, không thì để chuỗi rỗng",
+    "releaseDate": "YYYY-MM-DD nếu xác định được ngày ra mắt/Fes, không rõ để chuỗi rỗng",
     "price": 0,
     "url": "giữ nguyên url đầu vào",
     "image": "giữ nguyên image đầu vào",
     "publishedAt": "giữ nguyên published_at đầu vào"
   }
 ]
-Chỉ trả về JSON hợp lệ, không giải thích thêm.
+Chỉ trả về JSON array hợp lệ.
 """.strip()
 
 
@@ -404,86 +520,175 @@ def normalize_item(it: dict, fallback_raw: dict = None) -> dict:
     if ch not in VALID_CHANNELS:
         ch = "Web"
     price = parse_price(it.get("price", 0)) or parse_price(fb.get("price_hint", 0))
+
+    raw_title = strip_emojis(str(it.get("title") or fb.get("raw_title") or ""))[:110]
+    raw_summary = strip_emojis(str(it.get("summary") or fb.get("raw_text") or ""))
+    raw_summary = re.sub(r"\b(mua ngay|thêm vào giỏ|xem nhanh)\b", "", raw_summary, flags=re.IGNORECASE)
+    raw_summary = re.sub(r"\s+", " ", raw_summary).strip()[:240]
+
+    # Lưu thêm searchBlob (tối đa 1200 ký tự đã bỏ emoji) để app trên iPhone đối chiếu chính xác
+    # ngay cả khi 1 bài Lịch phát hành nhắc tên 10-20 bộ truyện ở phần thân bài!
+    search_blob = strip_emojis(f"{raw_title} {it.get('series', '')} {fb.get('raw_text', '')}")[:1200]
+
     return {
-        "id": str(it.get("id") or fb.get("id") or make_id(it.get("url", ""), it.get("title", ""))),
+        "id": str(it.get("id") or fb.get("id") or make_id(it.get("url", ""), raw_title)),
         "publisher": pub,
         "type": typ,
         "channel": ch,
-        "title": str(it.get("title") or fb.get("raw_title") or "")[:110].strip(),
-        "series": str(it.get("series") or "").strip(),
-        "summary": str(it.get("summary") or fb.get("raw_text") or "")[:240].strip(),
-        "gift": str(it.get("gift") or "").strip(),
+        "title": raw_title,
+        "series": strip_emojis(str(it.get("series") or ""))[:300],
+        "summary": raw_summary,
+        "gift": strip_emojis(str(it.get("gift") or ""))[:180],
         "releaseDate": str(it.get("releaseDate") or "").strip()[:10],
         "price": price,
         "url": str(it.get("url") or fb.get("url") or "").strip(),
         "image": str(it.get("image") or fb.get("image") or "").strip(),
         "publishedAt": str(it.get("publishedAt") or fb.get("published_at") or NOW.isoformat(timespec="seconds")),
+        "searchText": search_blob,
     }
 
 
 def fallback_keyword_filter(items: list):
-    spam_words = ["tuyển dụng", "nghỉ lễ", "bảo trì", "thông báo nghỉ", "chúc mừng năm mới"]
+    """Bộ lọc dự phòng chặt chẽ nếu Gemini API chưa gắn key hoặc lỗi."""
     out = []
     for it in items:
-        txt = (it["raw_title"] + " " + it["raw_text"]).lower()
-        if any(s in txt for s in spam_words):
+        title = strip_emojis(it.get("raw_title", ""))
+        text = strip_emojis(it.get("raw_text", ""))
+        if is_spam_post(title, text, it.get("channel", "Web")):
             continue
-        if any(k in txt for k in ["fes", "hội sách", "festival", "booth", "ký tặng", "triển lãm"]):
+
+        # Với bài MXH (FB/IG/TikTok), chỉ giữ nếu có tín hiệu xuất bản rõ ràng
+        if it.get("channel") in ("FB", "IG", "TikTok"):
+            low_all = f"{title} {text}".lower()
+            if not any(k in low_all for k in RELEASE_SIGNAL_KEYWORDS):
+                continue
+
+        low_title = title.lower()
+        low_head = f"{title} {text[:260]}".lower()
+        if any(k in low_head for k in ["fes", "hội sách", "festival", "booth", "ký tặng", "triển lãm"]):
             t = "fes"
-        elif any(k in txt for k in ["tái bản", "in nối bản"]):
+        elif any(k in low_head for k in ["tái bản", "in nối bản"]):
             t = "reprint"
-        elif any(k in txt for k in ["bản đặc biệt", "limited", "standee", "postcard", "shikishi", "bookmark", "quà tặng", "obi", "boxset"]):
+        elif any(
+            k in low_head
+            for k in ["bản đặc biệt", "bản giới hạn", "limited", "standee", "postcard", "shikishi", "bookmark", "obi", "boxset"]
+        ):
             t = "gift"
         else:
             t = "new"
-        out.append(normalize_item({"type": t}, it))
+
+        clean_snip, hint_p = clean_web_snippet(title, text) if it.get("channel") == "Web" else (text[:220], 0)
+        out.append(
+            normalize_item(
+                {
+                    "type": t,
+                    "title": title,
+                    "summary": clean_snip,
+                    "price": it.get("price_hint") or hint_p,
+                },
+                it,
+            )
+        )
     return out
 
 
-def classify_with_gemini(new_raw_items: list):
-    if not new_raw_items:
-        return []
-    if not GEMINI_API_KEY:
-        print("[Gemini] Chưa gắn GEMINI_API_KEY -> dùng bộ lọc từ khoá cơ bản.")
-        return fallback_keyword_filter(new_raw_items)
+def extract_json_array(raw_text: str):
+    txt = (raw_text or "").strip()
+    if txt.startswith("```"):
+        txt = re.sub(r"^```(?:json)?\s*", "", txt)
+        txt = re.sub(r"\s*```$", "", txt)
+    try:
+        parsed = json.loads(txt)
+        return parsed if isinstance(parsed, list) else None
+    except Exception:
+        m = re.search(r"\[[\s\S]*\]", txt)
+        if m:
+            try:
+                parsed = json.loads(m.group(0))
+                return parsed if isinstance(parsed, list) else None
+            except Exception:
+                return None
+    return None
 
-    raw_by_id = {x["id"]: x for x in new_raw_items}
-    cleaned = []
-    for i in range(0, len(new_raw_items), 20):
-        batch = new_raw_items[i : i + 20]
+
+def call_gemini_batch(batch: list):
+    # Gửi phiên bản rút gọn cho Gemini để tiết kiệm token và tránh bị cắt JSON
+    slim_batch = [
+        {
+            "id": x["id"],
+            "publisher": x["publisher"],
+            "channel": x["channel"],
+            "raw_title": x["raw_title"],
+            "raw_text": x["raw_text"][:1000],
+            "price_hint": x.get("price_hint", 0),
+            "url": x["url"],
+            "image": x["image"],
+            "published_at": x["published_at"],
+        }
+        for x in batch
+    ]
+
+    models_to_try = [
+        ("gemini-2.5-flash", {"responseMimeType": "application/json", "temperature": 0.1, "thinkingConfig": {"thinkingBudget": 0}}),
+        ("gemini-2.0-flash", {"responseMimeType": "application/json", "temperature": 0.1}),
+    ]
+
+    for model_name, gen_cfg in models_to_try:
         endpoint = (
             "https://generativelanguage.googleapis.com/v1beta/models/"
-            f"gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+            f"{model_name}:generateContent?key={GEMINI_API_KEY}"
         )
         payload = {
             "contents": [
                 {
                     "parts": [
                         {"text": GEMINI_PROMPT},
-                        {"text": json.dumps(batch, ensure_ascii=False)},
+                        {"text": json.dumps(slim_batch, ensure_ascii=False)},
                     ]
                 }
             ],
-            "generationConfig": {
-                "responseMimeType": "application/json",
-                "temperature": 0.1,
-            },
+            "generationConfig": gen_cfg,
         }
         try:
-            r = requests.post(endpoint, json=payload, timeout=60)
+            r = requests.post(endpoint, json=payload, timeout=50)
             if r.status_code != 200:
-                print(f"[Gemini error {r.status_code}]: {r.text[:200]}")
-                cleaned.extend(fallback_keyword_filter(batch))
+                print(f"[Gemini {model_name} HTTP {r.status_code}]: {r.text[:220]}")
                 continue
-            text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
-            parsed = json.loads(text)
-            if isinstance(parsed, list):
-                for item in parsed:
-                    if isinstance(item, dict):
-                        cleaned.append(normalize_item(item, raw_by_id.get(item.get("id"))))
+            cand = r.json().get("candidates", [{}])[0]
+            text = cand.get("content", {}).get("parts", [{}])[0].get("text", "")
+            parsed = extract_json_array(text)
+            if parsed is not None:
+                print(f"[Gemini {model_name}] OK: {len(batch)} bài thô -> giữ {len(parsed)} tin sạch.")
+                return parsed
+            print(f"[Gemini {model_name}] Không parse được JSON: {text[:160]}")
         except Exception as e:
-            print(f"[Gemini exception]: {e}")
+            print(f"[Gemini {model_name} exception]: {e}")
+    return None
+
+
+def classify_with_gemini(new_raw_items: list):
+    if not new_raw_items:
+        return []
+    if not GEMINI_API_KEY:
+        print("[Gemini] Chưa gắn GEMINI_API_KEY -> dùng bộ lọc từ khoá chặt.")
+        return fallback_keyword_filter(new_raw_items)
+
+    raw_by_id = {x["id"]: x for x in new_raw_items}
+    cleaned = []
+    # Batch 10 bài/lần để đảm bảo phản hồi nhanh, không bị cắt JSON
+    for i in range(0, len(new_raw_items), 10):
+        batch = new_raw_items[i : i + 10]
+        parsed = call_gemini_batch(batch)
+        if parsed is None:
             cleaned.extend(fallback_keyword_filter(batch))
+            continue
+        for item in parsed:
+            if not isinstance(item, dict):
+                continue
+            fb = raw_by_id.get(item.get("id"))
+            norm = normalize_item(item, fb)
+            if not is_spam_post(norm["title"], norm["summary"], norm["channel"]):
+                cleaned.append(norm)
     return cleaned
 
 
@@ -497,7 +702,11 @@ def main():
 
     deduped_new = []
     seen_now = set()
+    spam_dropped = 0
     for item in raw:
+        if is_spam_post(item.get("raw_title", ""), item.get("raw_text", ""), item.get("channel", "Web")):
+            spam_dropped += 1
+            continue
         uid = make_id(item.get("url", ""), item.get("raw_title", ""))
         if uid in existing_ids or (item.get("url") and item.get("url") in existing_urls) or uid in seen_now:
             continue
@@ -505,7 +714,7 @@ def main():
         item["id"] = uid
         deduped_new.append(item)
 
-    print(f"[Dedup] Có {len(deduped_new)} bài mới cần xử lý.")
+    print(f"[Pre-filter] Loại cứng {spam_dropped} tin rác · Còn {len(deduped_new)} bài mới cần xử lý.")
     processed_new = classify_with_gemini(deduped_new)
 
     cutoff = NOW - timedelta(days=45)
@@ -516,6 +725,8 @@ def main():
         uid = it.get("id")
         if not uid or uid in seen_final or not it.get("title"):
             continue
+        if is_spam_post(it.get("title", ""), it.get("summary", ""), it.get("channel", "Web")):
+            continue
         dt = parse_iso_safe(it.get("publishedAt", ""))
         if dt and dt < cutoff:
             continue
@@ -525,13 +736,14 @@ def main():
             break
 
     payload = {
+        "version": SCHEMA_VERSION,
         "updatedAt": NOW.isoformat(timespec="seconds"),
         "count": len(final_items),
         "publishers": ["Trẻ", "Kim Đồng", "IPM", "Nhã Nam"],
         "items": final_items,
     }
     OUTPUT_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"[Done] Đã ghi {len(final_items)} tin vào {OUTPUT_FILE}.")
+    print(f"[Done] Đã ghi {len(final_items)} tin sạch (v{SCHEMA_VERSION}) vào {OUTPUT_FILE}.")
 
 
 if __name__ == "__main__":
