@@ -1180,6 +1180,233 @@
       margin: 0 auto 10px;
     }
 
+    /* Sections inside a Series */
+    .section-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .section-card {
+      width: 100%;
+      text-align: left;
+      background: var(--surface);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-card:active {
+      background: var(--surface-2);
+    }
+
+    .section-card-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-card-sub {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .section-arrow {
+      font-size: 13px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .preset-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .preset-chip {
+      height: 26px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      color: var(--ink);
+      font-size: 11.5px;
+      font-weight: 500;
+    }
+
+    .preset-chip:active {
+      background: var(--ink);
+      color: var(--bg);
+    }
+
+    /* Volume Cards (supports photo + price per volume) */
+    .vol-card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px;
+      margin: 12px 0;
+    }
+
+    @media (min-width: 520px) {
+      .vol-card-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    .vol-card {
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      padding: 0;
+    }
+
+    .vol-card:active {
+      background: var(--surface-2);
+    }
+
+    .vol-card-media {
+      position: relative;
+      aspect-ratio: 2 / 3;
+      width: 100%;
+      background: var(--surface-2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .vol-card-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .vol-card-num-big {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .vol-card-badge {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      background: rgba(20, 19, 18, 0.85);
+      color: #F6F5F1;
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 1px;
+    }
+
+    .vol-card-body {
+      padding: 5px 6px;
+      width: 100%;
+    }
+
+    .vol-card-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .vol-card-price {
+      font-size: 10.5px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    /* Gift Groups (Tab Quà & Đồ) */
+    .gift-kpi-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    .gift-kpi {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 9px 10px;
+    }
+
+    .gift-kpi-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .gift-kpi-val {
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 3px;
+    }
+
+    .gift-group-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      cursor: pointer;
+    }
+
+    .gift-group-card:active {
+      background: var(--surface-2);
+    }
+
+    .gift-group-thumb {
+      width: 44px;
+      height: 62px;
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .gift-group-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .crumb-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
     .boxset-hint {
       padding: 8px 10px;
       border: 1px solid var(--line);
@@ -1279,28 +1506,25 @@
 
       <!-- TAB 2: QUÀ & ĐỒ -->
       <section class="view" id="view-merch">
+        <div class="gift-kpi-row" id="giftSummaryKpis"></div>
+
         <div class="toolbar">
-          <input type="search" class="search-input" id="merchSearch" placeholder="Tìm standee, bookmark, shikishi..." />
-          <button class="btn btn-primary" id="addMerchBtn">+ Thêm món</button>
+          <input type="search" class="search-input" id="merchSearch" placeholder="Tìm truyện/sách có quà hoặc tên quà..." />
+          <button class="btn btn-primary" id="addGiftGroupBtn">+ Truyện có quà</button>
         </div>
 
-        <div class="chip-row" id="merchStatusChips">
-          <button class="chip active" data-status="Tất cả">Tất cả</button>
-          <button class="chip" data-status="Đã có">Đã có</button>
-          <button class="chip" data-status="Đang ship">Đang ship</button>
-          <button class="chip" data-status="Đang săn">Đang săn</button>
-        </div>
-
-        <div class="chip-row" id="merchSourceChips">
-          <button class="chip active" data-source="Tất cả">Mọi nguồn</button>
-          <button class="chip" data-source="Kèm bản ĐB">Kèm bản ĐB</button>
-          <button class="chip" data-source="Mua thêm / Pass">Mua thêm / Pass</button>
-          <button class="chip" data-source="Săn tại Fes">Săn tại Fes</button>
+        <div class="chip-row" id="merchPubChips">
+          <button class="chip active" data-pub="Tất cả">Mọi NXB</button>
+          <button class="chip" data-pub="Trẻ">Trẻ</button>
+          <button class="chip" data-pub="Kim Đồng">Kim Đồng</button>
+          <button class="chip" data-pub="IPM">IPM</button>
+          <button class="chip" data-pub="Nhã Nam">Nhã Nam</button>
+          <button class="chip" data-pub="Khác">Khác</button>
         </div>
 
         <div class="subbar">
-          <span class="mono" id="merchCountLabel">0 món · 0đ</span>
-          <span class="small-muted">Chạm nhãn trạng thái để đổi nhanh</span>
+          <span class="mono" id="merchCountLabel">0 bộ có quà · 0 quà</span>
+          <span class="small-muted" id="merchStatusSummary">Đã có 0 · Đang ship 0 · Đang săn 0</span>
         </div>
 
         <div id="merchContainer"></div>
@@ -1449,61 +1673,158 @@
         bookView: "grid",
         budgetLimit: 1000000,
         newsUrl: "./news.json",
-        series: [],
-        merch: [],
-        pinned: [], // { id, title, publisher, type, channel, releaseDate, estPrice, gift, url, manual }
+        series: [],     // { id, title, publisher, category, status, aliases, note, cover, createdAt, sections: [{ id, name, note, volumes: [...] }] }
+        giftGroups: [], // { id, title, publisher, cover, note, createdAt, gifts: [{ id, name, quantity, price, source, status, date, image, note }] }
+        pinned: [],     // { id, title, publisher, type, channel, releaseDate, estPrice, gift, url, manual }
       };
-
-      let state = loadState();
-      let newsItems = [];
-      let newsMeta = { updatedAt: "", loaded: false, error: "" };
-
-      const filters = {
-        bookSearch: "",
-        bookCat: "Tất cả",
-        bookPub: "Tất cả",
-        merchSearch: "",
-        merchStatus: "Tất cả",
-        merchSource: "Tất cả",
-        newsPub: "Tất cả",
-        newsType: "Tất cả",
-        newsChan: "Tất cả",
-        newsScope: "shelf", // Mặc định CHỈ hiện tin liên quan sách/truyện đang có trong tủ
-      };
-
-      function loadState() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) return structuredClone(DEFAULT_STATE);
-          const parsed = JSON.parse(raw);
-          return {
-            ...structuredClone(DEFAULT_STATE),
-            ...parsed,
-            series: Array.isArray(parsed.series) ? parsed.series : [],
-            merch: Array.isArray(parsed.merch) ? parsed.merch : [],
-            pinned: Array.isArray(parsed.pinned) ? parsed.pinned : [],
-          };
-        } catch {
-          return structuredClone(DEFAULT_STATE);
-        }
-      }
-
-      function saveState() {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        } catch (e) {
-          showToast("Bộ nhớ đầy — hãy nén ảnh bìa hoặc xuất file sao lưu.");
-        }
-        updateHeaderSummary();
-      }
 
       function uid() {
         return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
       }
 
-      function fmtMoney(n) {
-        const val = Math.round(Number(n) || 0);
-        return val.toLocaleString("vi-VN") + "đ";
+      function migrateStateData(rawObj) {
+        const merged = {
+          ...structuredClone(DEFAULT_STATE),
+          ...(rawObj || {}),
+          series: Array.isArray(rawObj?.series) ? rawObj.series : [],
+          giftGroups: Array.isArray(rawObj?.giftGroups) ? rawObj.giftGroups : [],
+          pinned: Array.isArray(rawObj?.pinned) ? rawObj.pinned : [],
+        };
+
+        // 1. Migrate legacy series.volumes -> series.sections
+        const edNameMap = {
+          "Thường": "Manga — Bản thường",
+          "ĐB / Limited": "Limited",
+          "Tái bản": "Tái bản",
+          "Boxset": "Boxset",
+        };
+        merged.series = merged.series.map((s) => {
+          const copy = { ...s };
+          if (!Array.isArray(copy.sections)) {
+            const legacyVols = Array.isArray(copy.volumes) ? copy.volumes : [];
+            const byEd = new Map();
+            legacyVols.forEach((v) => {
+              const secName = edNameMap[v.edition] || v.edition || "Bản thường";
+              if (!byEd.has(secName)) byEd.set(secName, []);
+              byEd.get(secName).push({
+                id: v.id || uid(),
+                number: Number(v.number) || 1,
+                coverPrice: Math.max(0, Number(v.coverPrice) || 0),
+                paidPrice: Math.max(0, Number(v.paidPrice) || 0),
+                date: v.date || todayISO(),
+                image: v.image || "",
+                note: v.note || "",
+                groupId: v.boxsetId || v.groupId || "",
+                groupLabel: v.boxsetLabel || v.groupLabel || "",
+              });
+            });
+            copy.sections = [...byEd.entries()].map(([name, vols]) => ({
+              id: uid(),
+              name,
+              note: "",
+              volumes: vols,
+            }));
+          } else {
+            copy.sections = copy.sections.map((sec) => ({
+              id: sec.id || uid(),
+              name: sec.name || "Mục chưa đặt tên",
+              note: sec.note || "",
+              volumes: Array.isArray(sec.volumes)
+                ? sec.volumes.map((v) => ({
+                    id: v.id || uid(),
+                    number: Number(v.number) || 1,
+                    coverPrice: Math.max(0, Number(v.coverPrice) || 0),
+                    paidPrice: Math.max(0, Number(v.paidPrice) || 0),
+                    date: v.date || todayISO(),
+                    image: v.image || "",
+                    note: v.note || "",
+                    groupId: v.groupId || v.boxsetId || "",
+                    groupLabel: v.groupLabel || v.boxsetLabel || "",
+                  }))
+                : [],
+            }));
+          }
+          delete copy.volumes;
+          return copy;
+        });
+
+        // 2. Migrate legacy state.merch -> state.giftGroups
+        if (Array.isArray(rawObj?.merch) && rawObj.merch.length > 0 && merged.giftGroups.length === 0) {
+          const byBook = new Map();
+          rawObj.merch.forEach((m) => {
+            const bookTitle = (m.seriesName || "").trim() || "Quà lẻ / Chưa gắn bộ";
+            if (!byBook.has(bookTitle)) {
+              const matchedS = merged.series.find((s) => normVN(s.title) === normVN(bookTitle));
+              byBook.set(bookTitle, {
+                id: uid(),
+                title: bookTitle,
+                publisher: m.publisher || matchedS?.publisher || "Khác",
+                cover: matchedS?.cover || "",
+                note: "",
+                createdAt: m.date || todayISO(),
+                gifts: [],
+              });
+            }
+            byBook.get(bookTitle).gifts.push({
+              id: m.id || uid(),
+              name: m.name || "Quà tặng",
+              quantity: Math.max(1, Number(m.quantity) || 1),
+              price: Math.max(0, Number(m.price) || 0),
+              source: m.source || "Kèm bản ĐB",
+              status: m.status || "Đã có",
+              date: m.date || todayISO(),
+              image: m.image || "",
+              note: m.note || "",
+            });
+          });
+          merged.giftGroups = [...byBook.values()];
+        } else {
+          merged.giftGroups = merged.giftGroups.map((g) => ({
+            id: g.id || uid(),
+            title: g.title || "Chưa đặt tên",
+            publisher: g.publisher || "Khác",
+            cover: g.cover || "",
+            note: g.note || "",
+            createdAt: g.createdAt || todayISO(),
+            gifts: Array.isArray(g.gifts)
+              ? g.gifts.map((it) => ({
+                  id: it.id || uid(),
+                  name: it.name || "Quà tặng",
+                  quantity: Math.max(1, Number(it.quantity) || 1),
+                  price: Math.max(0, Number(it.price) || 0),
+                  source: it.source || "Kèm bản ĐB",
+                  status: it.status || "Đã có",
+                  date: it.date || todayISO(),
+                  image: it.image || "",
+                  note: it.note || "",
+                }))
+              : [],
+          }));
+        }
+        delete merged.merch;
+        return merged;
+      }
+
+      function getAllSeriesVolumes(s) {
+        return (s.sections || []).flatMap((sec) => sec.volumes || []);
+      }
+
+      function getGroupGiftStats(g) {
+        const gifts = g.gifts || [];
+        let qty = 0;
+        let spent = 0;
+        let owned = 0;
+        let shipping = 0;
+        let hunting = 0;
+        gifts.forEach((it) => {
+          const q = Math.max(1, Number(it.quantity) || 1);
+          qty += q;
+          spent += Math.max(0, Number(it.price) || 0);
+          if (it.status === "Đã có") owned += q;
+          else if (it.status === "Đang ship") shipping += q;
+          else if (it.status === "Đang săn") hunting += q;
+        });
+        return { itemCount: gifts.length, qty, spent, owned, shipping, hunting };
       }
 
       function todayISO() {
@@ -1521,6 +1842,46 @@
           .replace(/[^a-z0-9\s]/g, " ")
           .replace(/\s+/g, " ")
           .trim();
+      }
+
+      let state = loadState();
+      let newsItems = [];
+      let newsMeta = { updatedAt: "", loaded: false, error: "" };
+
+      const filters = {
+        bookSearch: "",
+        bookCat: "Tất cả",
+        bookPub: "Tất cả",
+        merchSearch: "",
+        merchPub: "Tất cả",
+        newsPub: "Tất cả",
+        newsType: "Tất cả",
+        newsChan: "Tất cả",
+        newsScope: "shelf", // Mặc định CHỈ hiện tin liên quan sách/truyện đang có trong tủ
+      };
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return structuredClone(DEFAULT_STATE);
+          return migrateStateData(JSON.parse(raw));
+        } catch {
+          return structuredClone(DEFAULT_STATE);
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {
+          showToast("Bộ nhớ đầy — hãy giảm bớt ảnh hoặc xuất file sao lưu.");
+        }
+        updateHeaderSummary();
+      }
+
+      function fmtMoney(n) {
+        const val = Math.round(Number(n) || 0);
+        return val.toLocaleString("vi-VN") + "đ";
       }
 
       function esc(str) {
@@ -1605,7 +1966,7 @@
       // Header Summary
       function updateHeaderSummary() {
         const seriesCount = state.series.length;
-        const volCount = state.series.reduce((sum, s) => sum + (s.volumes?.length || 0), 0);
+        const volCount = state.series.reduce((sum, s) => sum + getAllSeriesVolumes(s).length, 0);
         document.getElementById("headerSummary").textContent = `${seriesCount} đầu sách · ${volCount} tập`;
       }
 
@@ -1644,34 +2005,43 @@
         return Array.from({ length: count }, (_, idx) => base + (idx < rem ? 1 : 0));
       }
 
-      function addBoxsetVolumes(series, { from, to, totalCover, totalPaid, date, note }) {
+      function addBatchVolumesToSection(section, { from, to, priceMode, coverInput, paidInput, discount, date, image, note }) {
         const f = Math.round(Number(from));
         const t = Math.round(Number(to));
         const count = t - f + 1;
-        const coverParts = splitTotalExact(totalCover, count);
-        const paidParts = splitTotalExact(totalPaid, count);
-        const boxsetId = "box_" + uid();
-        const rangeLabel = `Boxset tập ${f}–${t}`;
-        const finalNote = note ? `${rangeLabel} · ${note}` : rangeLabel;
-        series.volumes = series.volumes || [];
+        let coverParts = [];
+        let paidParts = [];
+        if (priceMode === "total") {
+          coverParts = splitTotalExact(coverInput, count);
+          paidParts = splitTotalExact(paidInput, count);
+        } else {
+          const cp = Math.max(0, Math.round(Number(coverInput) || 0));
+          const disc = Math.min(100, Math.max(0, Number(discount) || 0));
+          const paid = Math.round(cp * (1 - disc / 100));
+          coverParts = Array(count).fill(cp);
+          paidParts = Array(count).fill(paid);
+        }
+        const groupId = count > 1 ? "grp_" + uid() : "";
+        const groupLabel = count > 1 ? `Đợt tập ${f}–${t}` : "";
+        section.volumes = section.volumes || [];
         for (let i = 0; i < count; i++) {
-          series.volumes.push({
+          section.volumes.push({
             id: uid(),
             number: f + i,
-            edition: "Boxset",
             coverPrice: coverParts[i],
             paidPrice: paidParts[i],
             date: date || todayISO(),
-            boxsetId,
-            boxsetLabel: rangeLabel,
-            note: finalNote,
+            image: image || "",
+            note: note || "",
+            groupId,
+            groupLabel,
           });
         }
         return count;
       }
 
       // ============================
-      // TAB 1: TỦ SÁCH
+      // TAB 1: TỦ SÁCH (Đầu sách -> Các mục -> Tập + Ảnh + Giá)
       // ============================
       function renderBooks() {
         const container = document.getElementById("booksContainer");
@@ -1688,13 +2058,14 @@
             }
           }
           if (q) {
-            const hay = normVN(`${s.title} ${s.publisher} ${s.category} ${s.note || ""}`);
+            const secNames = (s.sections || []).map((sec) => sec.name).join(" ");
+            const hay = normVN(`${s.title} ${s.publisher} ${s.category} ${s.aliases || ""} ${secNames} ${s.note || ""}`);
             if (!hay.includes(q)) return false;
           }
           return true;
         });
 
-        const totalVols = list.reduce((a, s) => a + (s.volumes?.length || 0), 0);
+        const totalVols = list.reduce((a, s) => a + getAllSeriesVolumes(s).length, 0);
         document.getElementById("bookCountLabel").textContent = `${list.length} đầu sách · ${totalVols} tập`;
 
         if (!list.length) {
@@ -1704,7 +2075,7 @@
               <div class="empty-desc">${
                 state.series.length
                   ? "Thử bỏ bớt bộ lọc hoặc đổi từ khoá tìm kiếm."
-                  : "Bấm + Thêm bộ để nhập manga, light novel hay sách đầu tiên của bạn."
+                  : "Bấm + Thêm bộ để tạo đầu manga hoặc sách, sau đó tạo các mục (bản thường, boxset, limit, tái bản...) bên trong."
               }</div>
               ${
                 state.series.length
@@ -1720,7 +2091,8 @@
         if (state.bookView === "grid") {
           container.innerHTML = `<div class="book-grid">${list
             .map((s) => {
-              const vols = s.volumes || [];
+              const vols = getAllSeriesVolumes(s);
+              const secCount = (s.sections || []).length;
               const spent = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
               const coverHtml = s.cover
                 ? `<img src="${esc(s.cover)}" alt="${esc(s.title)}" loading="lazy" referrerpolicy="no-referrer" />`
@@ -1738,7 +2110,7 @@
                   <div class="book-info">
                     <div class="book-name">${esc(s.title)}</div>
                     <div class="book-meta">
-                      <span>${esc(s.publisher)}</span>
+                      <span>${secCount ? `${secCount} mục` : esc(s.publisher)}</span>
                       <span class="mono">${fmtMoney(spent)}</span>
                     </div>
                   </div>
@@ -1748,7 +2120,8 @@
         } else {
           container.innerHTML = `<div class="book-list">${list
             .map((s) => {
-              const vols = s.volumes || [];
+              const vols = getAllSeriesVolumes(s);
+              const secCount = (s.sections || []).length;
               const spent = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
               return `
                 <div class="book-row" data-id="${s.id}">
@@ -1757,7 +2130,7 @@
                   </div>
                   <div style="min-width:0;">
                     <div style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(s.title)}</div>
-                    <div class="small-muted" style="margin-top:2px;">${esc(s.publisher)} · ${esc(s.category)} · ${esc(s.status || "Đang theo")}</div>
+                    <div class="small-muted" style="margin-top:2px;">${esc(s.publisher)} · ${esc(s.category)} · ${secCount} mục · ${esc(s.status || "Đang theo")}</div>
                   </div>
                   <div style="text-align:right;">
                     <div class="mono" style="font-size:12.5px; font-weight:600;">${vols.length} tập</div>
@@ -1810,7 +2183,7 @@
               </select>
             </div>
             <div class="field">
-              <label>Ảnh bìa (tuỳ chọn — không chọn sẽ dùng bìa chữ tối giản)</label>
+              <label>Ảnh bìa đại diện (tuỳ chọn)</label>
               <div class="cover-preview-wrap">
                 <div class="cover-preview" id="coverPreviewBox">
                   ${currentCover ? `<img src="${esc(currentCover)}" alt="" referrerpolicy="no-referrer" />` : "Bìa chữ"}
@@ -1834,7 +2207,7 @@
             </div>
             <div class="modal-actions">
               <button type="button" class="btn" id="cancelSeriesBtn">Huỷ</button>
-              <button type="submit" class="btn btn-primary">${s ? "Lưu thay đổi" : "Thêm vào tủ"}</button>
+              <button type="submit" class="btn btn-primary">${s ? "Lưu thay đổi" : "Tạo đầu sách"}</button>
             </div>
           </form>`;
 
@@ -1880,6 +2253,11 @@
               s.aliases = (fd.get("aliases") || "").trim();
               s.note = fd.get("note").trim();
               s.cover = currentCover;
+              saveState();
+              renderBooks();
+              renderNews();
+              renderSpending();
+              openSeriesDetail(s.id);
               showToast("Đã cập nhật đầu sách.");
             } else {
               const newS = {
@@ -1891,53 +2269,61 @@
                 aliases: (fd.get("aliases") || "").trim(),
                 note: fd.get("note").trim(),
                 cover: currentCover,
-                volumes: [],
+                sections: [],
                 createdAt: todayISO(),
               };
               state.series.unshift(newS);
-              showToast("Đã thêm vào tủ sách.");
+              saveState();
+              renderBooks();
+              renderNews();
+              renderSpending();
+              openSeriesDetail(newS.id);
+              showToast("Đã thêm vào tủ — giờ tạo các mục bên trong nhé.");
             }
-            saveState();
-            renderBooks();
-            renderNews();
-            renderSpending();
-            closeModal();
           });
         });
       }
 
+      // Cấp 1 bên trong Manga / Sách: Quản lý CÁC MỤC (Manga, Boxset, Limited, Tái bản...)
       function openSeriesDetail(seriesId) {
         const s = state.series.find((x) => x.id === seriesId);
         if (!s) return;
-        const vols = [...(s.volumes || [])].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0));
-        const totalCover = vols.reduce((a, v) => a + (Number(v.coverPrice) || 0), 0);
-        const totalPaid = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
+        const sections = s.sections || [];
+        const allVols = getAllSeriesVolumes(s);
+        const totalCover = allVols.reduce((a, v) => a + (Number(v.coverPrice) || 0), 0);
+        const totalPaid = allVols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
         const diff = totalCover - totalPaid;
 
-        const matrixHtml = vols.length
-          ? `<div class="vol-matrix">${vols
-              .map((v) => {
-                const edClass =
-                  v.edition === "ĐB / Limited"
-                    ? "ed-special"
-                    : v.edition === "Tái bản"
-                    ? "ed-reprint"
-                    : v.edition === "Boxset"
-                    ? "ed-boxset"
-                    : "";
-                const numStr = String(v.number).padStart(2, "0");
-                const sub = v.edition === "ĐB / Limited" ? "ĐB" : v.edition === "Tái bản" ? "TB" : v.edition === "Boxset" ? "BOX" : "";
-                return `<button class="vol-cell mono ${edClass}" data-vol="${v.id}" title="Tập ${esc(v.number)}">
-                          <span>${esc(numStr)}</span>
-                          ${sub ? `<span class="vol-sub">${sub}</span>` : ""}
-                        </button>`;
+        const sectionsHtml = sections.length
+          ? `<div class="section-list">${sections
+              .map((sec) => {
+                const vols = sec.volumes || [];
+                const secPaid = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
+                const imgCount = vols.filter((v) => v.image).length;
+                return `
+                  <button type="button" class="section-card" data-open-sec="${sec.id}">
+                    <div style="min-width:0; flex:1;">
+                      <div class="section-card-title">
+                        <span>${esc(sec.name)}</span>
+                        <span class="tag mono">${vols.length} tập</span>
+                      </div>
+                      <div class="section-card-sub mono">
+                        Thực chi ${fmtMoney(secPaid)}${imgCount ? ` · ${imgCount} ảnh` : ""}${sec.note ? ` · ${esc(sec.note)}` : ""}
+                      </div>
+                    </div>
+                    <span class="section-arrow">Mở →</span>
+                  </button>`;
               })
               .join("")}</div>`
-          : `<div class="empty" style="padding:18px; margin:10px 0;">Chưa nhập tập nào. Dùng nút bên dưới để thêm tập lẻ, loạt tập hoặc Boxset nhiều quyển.</div>`;
+          : `<div class="empty" style="padding:20px 14px; margin:10px 0;">
+               <div class="empty-title" style="font-size:13px;">Chưa có mục nào</div>
+               <div class="empty-desc" style="margin-bottom:10px;">Tạo các mục như <strong>Manga</strong>, <strong>Boxset</strong>, <strong>Limited</strong>, <strong>Tái bản</strong>... rồi bấm vào từng mục để thêm số tập, ảnh và giá.</div>
+               <button type="button" class="btn btn-sm btn-primary" id="emptyCreateSecBtn">+ Tạo mục đầu tiên</button>
+             </div>`;
 
         const html = `
           <div style="display:flex; gap:12px; align-items:flex-start;">
-            <div class="cover-preview" style="width:68px; height:102px; border-left:3px solid ${pubColorVar(s.publisher)}">
+            <div class="cover-preview" style="width:66px; height:99px; border-left:3px solid ${pubColorVar(s.publisher)}">
               ${s.cover ? `<img src="${esc(s.cover)}" alt="" referrerpolicy="no-referrer" />` : `<span class="mono" style="text-align:center; padding:4px;">${esc(s.publisher)}</span>`}
             </div>
             <div style="flex:1; min-width:0;">
@@ -1948,7 +2334,7 @@
                 <span class="tag">${esc(s.status || "Đang theo")}</span>
               </div>
               <div class="mono small-muted" style="margin-top:8px;">
-                ${vols.length} tập · Thực chi ${fmtMoney(totalPaid)}<br/>
+                ${sections.length} mục · ${allVols.length} tập · Thực chi ${fmtMoney(totalPaid)}<br/>
                 Giá bìa ${fmtMoney(totalCover)} (${diff >= 0 ? `tiết kiệm ${fmtMoney(diff)}` : `chênh +${fmtMoney(-diff)}`})
               </div>
             </div>
@@ -1956,29 +2342,24 @@
           ${s.note ? `<div class="small-muted" style="margin-top:8px; padding:7px 9px; background:var(--surface); border:1px solid var(--line);">${esc(s.note)}</div>` : ""}
 
           <div class="divider"></div>
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
-            <span class="panel-title">Ma trận tập (chạm để sửa)</span>
-            <div style="display:flex; flex-wrap:wrap; gap:5px;">
-              <button class="btn btn-sm" id="addBoxsetBtn">+ Boxset</button>
-              <button class="btn btn-sm" id="addBulkVolBtn">+ Loạt tập</button>
-              <button class="btn btn-sm btn-primary" id="addOneVolBtn">+ 1 tập</button>
-            </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <span class="panel-title">Các mục (${sections.length})</span>
+            <button type="button" class="btn btn-sm btn-primary" id="addSectionBtn">+ Tạo mục</button>
           </div>
-          <div class="small-muted" style="margin-top:4px;">Góc cam: Bản ĐB/Limited · Chấm xanh: Tái bản · Viền đậm: Boxset</div>
-          ${matrixHtml}
+          ${sectionsHtml}
 
           <div class="modal-actions" style="justify-content:space-between;">
-            <button class="btn btn-sm btn-danger" id="delSeriesBtn">Xoá bộ này</button>
-            <button class="btn btn-sm" id="editSeriesBtn">Sửa thông tin bộ</button>
+            <button type="button" class="btn btn-sm btn-danger" id="delSeriesBtn">Xoá bộ này</button>
+            <button type="button" class="btn btn-sm" id="editSeriesBtn">Sửa thông tin bộ</button>
           </div>`;
 
-        openModal("Chi tiết đầu sách", html, (body) => {
-          body.querySelector("#addOneVolBtn").addEventListener("click", () => openVolumeForm(seriesId));
-          body.querySelector("#addBulkVolBtn").addEventListener("click", () => openBulkVolumeForm(seriesId));
-          body.querySelector("#addBoxsetBtn").addEventListener("click", () => openBoxsetForm(seriesId));
+        openModal(s.title, html, (body) => {
+          body.querySelector("#addSectionBtn").addEventListener("click", () => openSectionForm(seriesId));
+          const emptyBtn = body.querySelector("#emptyCreateSecBtn");
+          if (emptyBtn) emptyBtn.addEventListener("click", () => openSectionForm(seriesId));
           body.querySelector("#editSeriesBtn").addEventListener("click", () => openSeriesForm(seriesId));
           body.querySelector("#delSeriesBtn").addEventListener("click", () => {
-            if (!confirm(`Xoá bộ "${s.title}" cùng toàn bộ ${vols.length} tập?`)) return;
+            if (!confirm(`Xoá bộ "${s.title}" cùng toàn bộ ${sections.length} mục và ${allVols.length} tập?`)) return;
             state.series = state.series.filter((x) => x.id !== seriesId);
             saveState();
             renderBooks();
@@ -1987,20 +2368,342 @@
             closeModal();
             showToast("Đã xoá đầu sách.");
           });
-          body.querySelectorAll("[data-vol]").forEach((btn) => {
-            btn.addEventListener("click", () => openVolumeForm(seriesId, btn.dataset.vol));
+          body.querySelectorAll("[data-open-sec]").forEach((btn) => {
+            btn.addEventListener("click", () => openSectionDetail(seriesId, btn.dataset.openSec));
           });
         });
       }
 
-      function openBoxsetForm(seriesId) {
+      // Form tạo / sửa Mục bên trong đầu sách
+      function openSectionForm(seriesId, sectionId = null) {
         const s = state.series.find((x) => x.id === seriesId);
         if (!s) return;
-        const maxNum = (s.volumes || []).reduce((m, x) => Math.max(m, Number(x.number) || 0), 0);
+        const sec = sectionId ? (s.sections || []).find((x) => x.id === sectionId) : null;
+        const presets = ["Manga", "Bản thường", "Boxset", "Limited", "Tái bản", "Bìa cứng", "Artbook", "Sách chữ"];
 
         const html = `
-          <form id="boxsetForm" class="form-grid">
-            <div class="small-muted">Nhập 1 lần cho cả hộp Boxset nhiều quyển. Tổng giá bìa & thực chi sẽ tự chia đều vào từng tập để thống kê chi tiêu khớp từng đồng.</div>
+          <form id="sectionForm" class="form-grid">
+            <div class="field">
+              <label>Tên mục *</label>
+              <input name="name" id="secNameInput" required value="${esc(sec?.name || "")}" placeholder="VD: Manga, Boxset, Limited, Tái bản..." />
+              <div class="preset-chips">
+                ${presets.map((p) => `<button type="button" class="preset-chip" data-preset="${esc(p)}">${esc(p)}</button>`).join("")}
+              </div>
+            </div>
+            <div class="field">
+              <label>Ghi chú mục (tuỳ chọn)</label>
+              <input name="note" value="${esc(sec?.note || "")}" placeholder="VD: Bản có áo bọc, hộp cứng, in lần đầu..." />
+            </div>
+            <div class="modal-actions" style="justify-content:space-between;">
+              <button type="button" class="btn btn-sm" id="backFromSecFormBtn">Quay lại</button>
+              <button type="submit" class="btn btn-sm btn-primary">${sec ? "Lưu mục" : "Tạo mục"}</button>
+            </div>
+          </form>`;
+
+        openModal(`${s.title} — ${sec ? "Sửa mục" : "Tạo mục mới"}`, html, (body) => {
+          const nameInput = body.querySelector("#secNameInput");
+          body.querySelectorAll("[data-preset]").forEach((chip) => {
+            chip.addEventListener("click", () => {
+              nameInput.value = chip.dataset.preset;
+              nameInput.focus();
+            });
+          });
+          body.querySelector("#backFromSecFormBtn").addEventListener("click", () => {
+            if (sec) openSectionDetail(seriesId, sec.id);
+            else openSeriesDetail(seriesId);
+          });
+          body.querySelector("#sectionForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const name = fd.get("name").trim();
+            if (!name) return;
+            s.sections = s.sections || [];
+            if (sec) {
+              sec.name = name;
+              sec.note = fd.get("note").trim();
+              saveState();
+              renderBooks();
+              openSectionDetail(seriesId, sec.id);
+              showToast("Đã cập nhật mục.");
+            } else {
+              const newSec = {
+                id: uid(),
+                name,
+                note: fd.get("note").trim(),
+                volumes: [],
+              };
+              s.sections.push(newSec);
+              saveState();
+              renderBooks();
+              openSectionDetail(seriesId, newSec.id);
+              showToast(`Đã tạo mục "${name}".`);
+            }
+          });
+        });
+      }
+
+      // Cấp 2: Bên trong 1 Mục -> xem các tập (kèm ảnh + giá) và thêm tập
+      function openSectionDetail(seriesId, sectionId) {
+        const s = state.series.find((x) => x.id === seriesId);
+        if (!s) return;
+        const sec = (s.sections || []).find((x) => x.id === sectionId);
+        if (!sec) return openSeriesDetail(seriesId);
+
+        const vols = [...(sec.volumes || [])].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0));
+        const totalCover = vols.reduce((a, v) => a + (Number(v.coverPrice) || 0), 0);
+        const totalPaid = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
+        const diff = totalCover - totalPaid;
+
+        const volsHtml = vols.length
+          ? `<div class="vol-card-grid">${vols
+              .map((v) => {
+                const numStr = String(v.number).padStart(2, "0");
+                const mediaHtml = v.image
+                  ? `<img src="${esc(v.image)}" alt="Tập ${esc(v.number)}" loading="lazy" />
+                     <span class="vol-card-badge mono">T.${esc(numStr)}</span>`
+                  : `<span class="vol-card-num-big mono">${esc(numStr)}</span>
+                     <span class="small-muted" style="font-size:10px; margin-top:2px;">Tập ${esc(v.number)}</span>`;
+                return `
+                  <button type="button" class="vol-card" data-vol-id="${v.id}">
+                    <div class="vol-card-media">${mediaHtml}</div>
+                    <div class="vol-card-body">
+                      <div class="vol-card-label">Tập ${esc(v.number)}</div>
+                      <div class="vol-card-price mono">${fmtMoney(v.paidPrice)}</div>
+                    </div>
+                  </button>`;
+              })
+              .join("")}</div>`
+          : `<div class="empty" style="padding:20px 14px; margin:10px 0;">
+               <div class="empty-title" style="font-size:13px;">Mục "${esc(sec.name)}" chưa có tập nào</div>
+               <div class="empty-desc">Bấm <strong>+ 1 tập</strong> để nhập tập kèm ảnh riêng, hoặc <strong>+ Nhiều tập</strong> cho loạt tập / Boxset.</div>
+             </div>`;
+
+        const html = `
+          <div class="crumb-bar">
+            <button type="button" class="btn btn-sm" id="backToSeriesBtn">← ${esc(s.title.slice(0, 24))}</button>
+            <div style="display:flex; gap:5px;">
+              <button type="button" class="btn btn-sm" id="editSecBtn">Sửa mục</button>
+              <button type="button" class="btn btn-sm btn-danger" id="delSecBtn">Xoá mục</button>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+            <div>
+              <div style="font-size:15px; font-weight:700;">${esc(sec.name)}</div>
+              <div class="mono small-muted" style="margin-top:3px;">
+                ${vols.length} tập · Thực chi ${fmtMoney(totalPaid)} · Giá bìa ${fmtMoney(totalCover)}
+                ${diff > 0 ? ` (tiết kiệm ${fmtMoney(diff)})` : ""}
+              </div>
+              ${sec.note ? `<div class="small-muted" style="margin-top:3px;">${esc(sec.note)}</div>` : ""}
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span class="panel-title">Danh sách tập (chạm để sửa / xem ảnh)</span>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn btn-sm" id="addBulkVolBtn">+ Nhiều tập</button>
+              <button type="button" class="btn btn-sm btn-primary" id="addOneVolBtn">+ 1 tập</button>
+            </div>
+          </div>
+
+          ${volsHtml}`;
+
+        openModal(`${s.title} / ${sec.name}`, html, (body) => {
+          body.querySelector("#backToSeriesBtn").addEventListener("click", () => openSeriesDetail(seriesId));
+          body.querySelector("#editSecBtn").addEventListener("click", () => openSectionForm(seriesId, sectionId));
+          body.querySelector("#delSecBtn").addEventListener("click", () => {
+            if (!confirm(`Xoá mục "${sec.name}" cùng ${vols.length} tập bên trong?`)) return;
+            s.sections = (s.sections || []).filter((x) => x.id !== sectionId);
+            saveState();
+            renderBooks();
+            renderSpending();
+            openSeriesDetail(seriesId);
+            showToast(`Đã xoá mục "${sec.name}".`);
+          });
+          body.querySelector("#addOneVolBtn").addEventListener("click", () => openVolumeForm(seriesId, sectionId));
+          body.querySelector("#addBulkVolBtn").addEventListener("click", () => openBulkVolumeForm(seriesId, sectionId));
+          body.querySelectorAll("[data-vol-id]").forEach((btn) => {
+            btn.addEventListener("click", () => openVolumeForm(seriesId, sectionId, btn.dataset.volId));
+          });
+        });
+      }
+
+      // Thêm / sửa 1 tập trong Mục (hỗ trợ Ảnh riêng từng tập + Giá bìa + Thực chi)
+      function openVolumeForm(seriesId, sectionId, volId = null) {
+        const s = state.series.find((x) => x.id === seriesId);
+        const sec = s ? (s.sections || []).find((x) => x.id === sectionId) : null;
+        if (!s || !sec) return;
+        const v = volId ? (sec.volumes || []).find((x) => x.id === volId) : null;
+        const maxNum = (sec.volumes || []).reduce((m, x) => Math.max(m, Number(x.number) || 0), 0);
+        const lastVol = (sec.volumes || [])[(sec.volumes || []).length - 1];
+        const groupSiblings = v?.groupId
+          ? (sec.volumes || []).filter((x) => x.groupId === v.groupId)
+          : [];
+        let currentImg = v?.image || "";
+
+        const html = `
+          <form id="volForm" class="form-grid">
+            <div class="field">
+              <label>Số tập *</label>
+              <input name="number" type="number" step="0.5" required value="${esc(v ? v.number : maxNum + 1)}" />
+            </div>
+
+            <div class="field">
+              <label>Ảnh tập truyện / sách (tuỳ chọn)</label>
+              <div class="cover-preview-wrap">
+                <div class="cover-preview" id="volImgPreview" style="cursor:${currentImg ? "zoom-in" : "default"};">
+                  ${currentImg ? `<img src="${esc(currentImg)}" alt="" />` : "Chưa có"}
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                  <label class="btn btn-sm" style="margin:0;">
+                    ${currentImg ? "Đổi ảnh" : "Chọn ảnh"}
+                    <input type="file" id="volImgInput" accept="image/*" style="display:none;" />
+                  </label>
+                  <button type="button" class="btn btn-sm btn-danger" id="clearVolImgBtn" style="${currentImg ? "" : "display:none;"}">Xoá ảnh</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="field">
+                <label>Giá bìa (VNĐ)</label>
+                <input name="coverPrice" type="number" min="0" value="${v ? v.coverPrice : lastVol?.coverPrice ?? 35000}" />
+              </div>
+              <div class="field">
+                <label>Thực chi (VNĐ)</label>
+                <input name="paidPrice" type="number" min="0" value="${v ? v.paidPrice : lastVol?.paidPrice ?? 30000}" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Ngày mua</label>
+              <input name="date" type="date" value="${esc(v?.date || todayISO())}" />
+            </div>
+
+            <div class="field">
+              <label>Ghi chú (Obi, bookmark, nơi mua...)</label>
+              <input name="note" value="${esc(v?.note || "")}" placeholder="VD: Kèm obi + postcard, mua Shopee" />
+            </div>
+
+            <div class="modal-actions" style="justify-content:space-between; flex-wrap:wrap;">
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                ${v ? `<button type="button" class="btn btn-sm btn-danger" id="delVolBtn">Xoá tập</button>` : ""}
+                ${
+                  groupSiblings.length > 1
+                    ? `<button type="button" class="btn btn-sm btn-danger" id="delVolGroupBtn">Xoá cả đợt (${groupSiblings.length} tập)</button>`
+                    : ""
+                }
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn btn-sm" id="backSecBtn">Quay lại</button>
+                <button type="submit" class="btn btn-sm btn-primary">${v ? "Lưu" : "Thêm tập"}</button>
+              </div>
+            </div>
+          </form>`;
+
+        openModal(`${sec.name} — ${v ? `Tập ${v.number}` : "Thêm 1 tập"}`, html, (body) => {
+          const previewEl = body.querySelector("#volImgPreview");
+          const clearBtn = body.querySelector("#clearVolImgBtn");
+
+          const setVolPreview = (url) => {
+            currentImg = url || "";
+            previewEl.innerHTML = currentImg ? `<img src="${esc(currentImg)}" alt="" />` : "Chưa có";
+            previewEl.style.cursor = currentImg ? "zoom-in" : "default";
+            clearBtn.style.display = currentImg ? "" : "none";
+          };
+
+          previewEl.addEventListener("click", () => {
+            if (!currentImg) return;
+            openImageLightbox(currentImg, `${s.title} — ${sec.name} (Tập ${v ? v.number : ""})`, () =>
+              openVolumeForm(seriesId, sectionId, volId)
+            );
+          });
+
+          clearBtn.addEventListener("click", () => {
+            setVolPreview("");
+            showToast("Đã xoá ảnh tập.");
+          });
+
+          body.querySelector("#volImgInput").addEventListener("change", async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+              const compressed = await compressImageFile(file, 360, 540, 0.74);
+              setVolPreview(compressed);
+            } catch {
+              showToast("Không đọc được ảnh này.");
+            }
+          });
+
+          body.querySelector("#backSecBtn").addEventListener("click", () => openSectionDetail(seriesId, sectionId));
+
+          const delBtn = body.querySelector("#delVolBtn");
+          if (delBtn) {
+            delBtn.addEventListener("click", () => {
+              sec.volumes = (sec.volumes || []).filter((x) => x.id !== volId);
+              saveState();
+              renderBooks();
+              renderSpending();
+              openSectionDetail(seriesId, sectionId);
+              showToast("Đã xoá tập.");
+            });
+          }
+
+          const delGrpBtn = body.querySelector("#delVolGroupBtn");
+          if (delGrpBtn && v?.groupId) {
+            delGrpBtn.addEventListener("click", () => {
+              if (!confirm(`Xoá toàn bộ ${groupSiblings.length} tập thuộc ${v.groupLabel || "đợt này"}?`)) return;
+              sec.volumes = (sec.volumes || []).filter((x) => x.groupId !== v.groupId);
+              saveState();
+              renderBooks();
+              renderSpending();
+              openSectionDetail(seriesId, sectionId);
+              showToast(`Đã xoá ${groupSiblings.length} tập.`);
+            });
+          }
+
+          body.querySelector("#volForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const rec = {
+              id: v?.id || uid(),
+              number: Number(fd.get("number")),
+              coverPrice: Math.max(0, Number(fd.get("coverPrice")) || 0),
+              paidPrice: Math.max(0, Number(fd.get("paidPrice")) || 0),
+              date: fd.get("date") || todayISO(),
+              image: currentImg,
+              note: fd.get("note").trim(),
+              groupId: v?.groupId || "",
+              groupLabel: v?.groupLabel || "",
+            };
+            sec.volumes = sec.volumes || [];
+            if (v) {
+              const idx = sec.volumes.findIndex((x) => x.id === volId);
+              sec.volumes[idx] = rec;
+            } else {
+              sec.volumes.push(rec);
+            }
+            saveState();
+            renderBooks();
+            renderSpending();
+            openSectionDetail(seriesId, sectionId);
+            showToast(v ? "Đã lưu tập." : `Đã thêm tập ${rec.number}.`);
+          });
+        });
+      }
+
+      // Thêm nhiều tập / Boxset vào trong 1 Mục
+      function openBulkVolumeForm(seriesId, sectionId) {
+        const s = state.series.find((x) => x.id === seriesId);
+        const sec = s ? (s.sections || []).find((x) => x.id === sectionId) : null;
+        if (!s || !sec) return;
+        const maxNum = (sec.volumes || []).reduce((m, x) => Math.max(m, Number(x.number) || 0), 0);
+        const looksLikeBox = /box|set|combo|hộp/i.test(sec.name);
+        let sharedImg = "";
+
+        const html = `
+          <form id="bulkVolForm" class="form-grid">
             <div class="form-row-2">
               <div class="field">
                 <label>Từ tập *</label>
@@ -2008,629 +2711,712 @@
               </div>
               <div class="field">
                 <label>Đến tập *</label>
-                <input name="to" type="number" min="1" required value="${maxNum + 5}" />
+                <input name="to" type="number" min="1" required value="${maxNum + (looksLikeBox ? 5 : 10)}" />
               </div>
             </div>
-            <div class="form-row-2">
-              <div class="field">
-                <label>Tổng giá bìa cả Box (VNĐ)</label>
-                <input name="totalCover" type="number" min="0" value="250000" />
-              </div>
-              <div class="field">
-                <label>Tổng thực chi cả Box (VNĐ)</label>
-                <input name="totalPaid" type="number" min="0" value="210000" />
-              </div>
-            </div>
-            <div class="boxset-hint mono" id="boxsetPreview"></div>
+
             <div class="field">
-              <label>Ngày mua</label>
-              <input name="date" type="date" value="${todayISO()}" />
-            </div>
-            <div class="field">
-              <label>Quà kèm hộp / Ghi chú Boxset</label>
-              <input name="note" placeholder="VD: Hộp cứng + standee + bộ postcard..." />
-            </div>
-            <div class="modal-actions">
-              <button type="button" class="btn btn-sm" id="backBoxsetBtn">Quay lại</button>
-              <button type="submit" class="btn btn-sm btn-primary">Thêm cả Boxset</button>
-            </div>
-          </form>`;
-
-        openModal(`${s.title} — Thêm Boxset`, html, (body) => {
-          const form = body.querySelector("#boxsetForm");
-          const prevEl = body.querySelector("#boxsetPreview");
-          const updatePreview = () => {
-            const f = Math.round(Number(form.from.value) || 0);
-            const t = Math.round(Number(form.to.value) || 0);
-            const tc = Math.max(0, Number(form.totalCover.value) || 0);
-            const tp = Math.max(0, Number(form.totalPaid.value) || 0);
-            const count = t - f + 1;
-            if (count < 2) {
-              prevEl.textContent = "Boxset nên gồm từ 2 quyển trở lên (kiểm tra lại Từ tập -> Đến tập).";
-              return;
-            }
-            const avgPaid = Math.round(tp / count);
-            const saved = tc - tp;
-            prevEl.textContent = `Boxset ${count} quyển (Tập ${f}–${t}) · ~${fmtMoney(avgPaid)}/quyển` +
-              (saved > 0 ? ` · Tiết kiệm ${fmtMoney(saved)}` : "");
-          };
-          form.addEventListener("input", updatePreview);
-          updatePreview();
-
-          body.querySelector("#backBoxsetBtn").addEventListener("click", () => openSeriesDetail(seriesId));
-          form.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const f = Math.round(Number(form.from.value));
-            const t = Math.round(Number(form.to.value));
-            if (t < f || t - f > 150) {
-              showToast("Khoảng tập không hợp lệ (tối đa 150 quyển/box).");
-              return;
-            }
-            const count = addBoxsetVolumes(s, {
-              from: f,
-              to: t,
-              totalCover: form.totalCover.value,
-              totalPaid: form.totalPaid.value,
-              date: form.date.value || todayISO(),
-              note: form.note.value.trim(),
-            });
-            saveState();
-            renderBooks();
-            renderSpending();
-            openSeriesDetail(seriesId);
-            showToast(`Đã thêm Boxset ${count} quyển (Tập ${f}–${t}).`);
-          });
-        });
-      }
-
-      function openVolumeForm(seriesId, volId = null) {
-        const s = state.series.find((x) => x.id === seriesId);
-        if (!s) return;
-        const v = volId ? (s.volumes || []).find((x) => x.id === volId) : null;
-        const maxNum = (s.volumes || []).reduce((m, x) => Math.max(m, Number(x.number) || 0), 0);
-        const lastVol = (s.volumes || [])[(s.volumes || []).length - 1];
-        const boxSiblings = v?.boxsetId
-          ? (s.volumes || []).filter((x) => x.boxsetId === v.boxsetId)
-          : [];
-
-        const html = `
-          <form id="volForm" class="form-grid">
-            <div class="field">
-              <label>Phiên bản</label>
-              <select name="edition" id="volEditionSel">
-                ${["Thường", "ĐB / Limited", "Tái bản", "Boxset"]
-                  .map((ed) => `<option value="${ed}" ${v?.edition === ed ? "selected" : ""}>${ed}</option>`)
-                  .join("")}
+              <label>Cách nhập giá</label>
+              <select name="priceMode" id="bulkPriceModeSel">
+                <option value="total" ${looksLikeBox ? "selected" : ""}>Tổng giá cả đợt / Boxset (tự chia đều)</option>
+                <option value="unit" ${!looksLikeBox ? "selected" : ""}>Giá từng tập + % chiết khấu</option>
               </select>
             </div>
 
-            <div class="form-row-2" id="volNumRow">
+            <div class="form-row-2" id="bulkTotalPrices" style="${looksLikeBox ? "" : "display:none;"}">
               <div class="field">
-                <label id="volNumLabel">${v ? "Số tập *" : "Số tập *"}</label>
-                <input name="number" id="volFromInput" type="number" step="0.5" required value="${esc(v ? v.number : maxNum + 1)}" />
-              </div>
-              <div class="field" id="volToWrap" style="display:none;">
-                <label>Đến tập (Boxset) *</label>
-                <input name="toNumber" id="volToInput" type="number" min="1" value="${maxNum + 5}" />
-              </div>
-            </div>
-
-            <div class="form-row-2">
-              <div class="field">
-                <label id="volCoverLabel">Giá bìa (VNĐ)</label>
-                <input name="coverPrice" id="volCoverInput" type="number" min="0" value="${v ? v.coverPrice : lastVol?.coverPrice ?? 35000}" />
+                <label>Tổng giá bìa cả bộ (VNĐ)</label>
+                <input name="totalCover" type="number" min="0" value="250000" />
               </div>
               <div class="field">
-                <label id="volPaidLabel">Thực chi (VNĐ)</label>
-                <input name="paidPrice" id="volPaidInput" type="number" min="0" value="${v ? v.paidPrice : lastVol?.paidPrice ?? 30000}" />
+                <label>Tổng thực chi (VNĐ)</label>
+                <input name="totalPaid" type="number" min="0" value="210000" />
               </div>
             </div>
 
-            <div class="boxset-hint mono" id="volBoxPreview" style="display:none;"></div>
-
-            <div class="field">
-              <label>Ngày mua</label>
-              <input name="date" type="date" value="${esc(v?.date || todayISO())}" />
-            </div>
-            <div class="field">
-              <label>Ghi chú (Obi, bookmark, nơi mua...)</label>
-              <input name="note" value="${esc(v?.note || "")}" placeholder="VD: Kèm obi + postcard, mua Shopee" />
-            </div>
-            <div class="modal-actions" style="justify-content:space-between; flex-wrap:wrap;">
-              <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                ${v ? `<button type="button" class="btn btn-sm btn-danger" id="delVolBtn">Xoá tập</button>` : ""}
-                ${
-                  boxSiblings.length > 1
-                    ? `<button type="button" class="btn btn-sm btn-danger" id="delBoxGroupBtn">Xoá cả Box (${boxSiblings.length} tập)</button>`
-                    : ""
-                }
-              </div>
-              <div style="display:flex; gap:8px;">
-                <button type="button" class="btn btn-sm" id="backSeriesBtn">Quay lại</button>
-                <button type="submit" class="btn btn-sm btn-primary" id="volSubmitBtn">${v ? "Lưu" : "Thêm tập"}</button>
-              </div>
-            </div>
-          </form>`;
-
-        openModal(`${s.title} — ${v ? `Tập ${v.number}` : "Thêm tập"}`, html, (body) => {
-          const form = body.querySelector("#volForm");
-          const edSel = body.querySelector("#volEditionSel");
-          const volNumLabel = body.querySelector("#volNumLabel");
-          const volFromInput = body.querySelector("#volFromInput");
-          const volToWrap = body.querySelector("#volToWrap");
-          const volToInput = body.querySelector("#volToInput");
-          const volCoverLabel = body.querySelector("#volCoverLabel");
-          const volPaidLabel = body.querySelector("#volPaidLabel");
-          const volCoverInput = body.querySelector("#volCoverInput");
-          const volPaidInput = body.querySelector("#volPaidInput");
-          const volBoxPreview = body.querySelector("#volBoxPreview");
-          const submitBtn = body.querySelector("#volSubmitBtn");
-
-          const syncBoxMode = () => {
-            // Chỉ bung chế độ nhiều quyển khi đang THÊM MỚI và chọn Boxset
-            const isNewBox = !v && edSel.value === "Boxset";
-            volToWrap.style.display = isNewBox ? "" : "none";
-            volNumLabel.textContent = isNewBox ? "Từ tập *" : "Số tập *";
-            volFromInput.step = isNewBox ? "1" : "0.5";
-            volCoverLabel.textContent = isNewBox ? "Tổng giá bìa cả Box (VNĐ)" : "Giá bìa (VNĐ)";
-            volPaidLabel.textContent = isNewBox ? "Tổng thực chi cả Box (VNĐ)" : "Thực chi (VNĐ)";
-            submitBtn.textContent = isNewBox ? "Thêm cả Boxset" : v ? "Lưu" : "Thêm tập";
-            volBoxPreview.style.display = isNewBox ? "" : "none";
-            if (isNewBox) {
-              const f = Math.round(Number(volFromInput.value) || 0);
-              const t = Math.round(Number(volToInput.value) || 0);
-              const count = t - f + 1;
-              const tp = Math.max(0, Number(volPaidInput.value) || 0);
-              volBoxPreview.textContent =
-                count >= 1
-                  ? `Sẽ thêm ${count} quyển Boxset (Tập ${f}–${t}) · ~${fmtMoney(Math.round(tp / count))}/quyển`
-                  : "Số tập kết thúc phải lớn hơn hoặc bằng tập bắt đầu.";
-            }
-          };
-
-          edSel.addEventListener("change", syncBoxMode);
-          form.addEventListener("input", syncBoxMode);
-          syncBoxMode();
-
-          body.querySelector("#backSeriesBtn").addEventListener("click", () => openSeriesDetail(seriesId));
-          const delBtn = body.querySelector("#delVolBtn");
-          if (delBtn) {
-            delBtn.addEventListener("click", () => {
-              s.volumes = (s.volumes || []).filter((x) => x.id !== volId);
-              saveState();
-              renderBooks();
-              renderSpending();
-              openSeriesDetail(seriesId);
-              showToast("Đã xoá tập.");
-            });
-          }
-          const delBoxBtn = body.querySelector("#delBoxGroupBtn");
-          if (delBoxBtn && v?.boxsetId) {
-            delBoxBtn.addEventListener("click", () => {
-              if (!confirm(`Xoá toàn bộ ${boxSiblings.length} tập trong ${v.boxsetLabel || "Boxset này"}?`)) return;
-              s.volumes = (s.volumes || []).filter((x) => x.boxsetId !== v.boxsetId);
-              saveState();
-              renderBooks();
-              renderSpending();
-              openSeriesDetail(seriesId);
-              showToast(`Đã xoá cả Boxset (${boxSiblings.length} tập).`);
-            });
-          }
-          form.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            const edition = fd.get("edition");
-
-            if (!v && edition === "Boxset") {
-              const f = Math.round(Number(fd.get("number")));
-              const t = Math.round(Number(fd.get("toNumber")));
-              if (t < f || t - f > 150) {
-                showToast("Khoảng tập Boxset không hợp lệ (tối đa 150 quyển).");
-                return;
-              }
-              const count = addBoxsetVolumes(s, {
-                from: f,
-                to: t,
-                totalCover: fd.get("coverPrice"),
-                totalPaid: fd.get("paidPrice"),
-                date: fd.get("date") || todayISO(),
-                note: fd.get("note").trim(),
-              });
-              saveState();
-              renderBooks();
-              renderSpending();
-              openSeriesDetail(seriesId);
-              showToast(`Đã thêm Boxset ${count} quyển (Tập ${f}–${t}).`);
-              return;
-            }
-
-            const rec = {
-              id: v?.id || uid(),
-              number: Number(fd.get("number")),
-              edition,
-              coverPrice: Math.max(0, Number(fd.get("coverPrice")) || 0),
-              paidPrice: Math.max(0, Number(fd.get("paidPrice")) || 0),
-              date: fd.get("date") || todayISO(),
-              boxsetId: v?.boxsetId || "",
-              boxsetLabel: v?.boxsetLabel || "",
-              note: fd.get("note").trim(),
-            };
-            s.volumes = s.volumes || [];
-            if (v) {
-              const idx = s.volumes.findIndex((x) => x.id === volId);
-              s.volumes[idx] = rec;
-            } else {
-              s.volumes.push(rec);
-            }
-            saveState();
-            renderBooks();
-            renderSpending();
-            openSeriesDetail(seriesId);
-            showToast(v ? "Đã cập nhật tập." : `Đã thêm tập ${rec.number}.`);
-          });
-        });
-      }
-
-      function openBulkVolumeForm(seriesId) {
-        const s = state.series.find((x) => x.id === seriesId);
-        if (!s) return;
-        const maxNum = (s.volumes || []).reduce((m, x) => Math.max(m, Number(x.number) || 0), 0);
-
-        const html = `
-          <form id="bulkVolForm" class="form-grid">
-            <div class="form-row-2">
-              <div class="field">
-                <label>Từ tập</label>
-                <input name="from" type="number" min="1" required value="${maxNum + 1}" />
-              </div>
-              <div class="field">
-                <label>Đến tập</label>
-                <input name="to" type="number" min="1" required value="${maxNum + 10}" />
-              </div>
-            </div>
-            <div class="form-row-2">
+            <div class="form-row-2" id="bulkUnitPrices" style="${!looksLikeBox ? "" : "display:none;"}">
               <div class="field">
                 <label>Giá bìa / tập (VNĐ)</label>
-                <input name="coverPrice" type="number" min="0" value="35000" />
+                <input name="unitCover" type="number" min="0" value="35000" />
               </div>
               <div class="field">
                 <label>Chiết khấu (%)</label>
                 <input name="discount" type="number" min="0" max="100" value="15" />
               </div>
             </div>
-            <div class="form-row-2">
-              <div class="field">
-                <label>Phiên bản</label>
-                <select name="edition">
-                  <option value="Thường">Thường</option>
-                  <option value="Tái bản">Tái bản</option>
-                  <option value="ĐB / Limited">ĐB / Limited</option>
-                  <option value="Boxset">Boxset</option>
-                </select>
+
+            <div class="boxset-hint mono" id="bulkPreview"></div>
+
+            <div class="field">
+              <label>Ảnh chung cho đợt / hộp Boxset (tuỳ chọn)</label>
+              <div class="cover-preview-wrap">
+                <div class="cover-preview" id="bulkImgPreview">Chưa có</div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                  <label class="btn btn-sm" style="margin:0;">
+                    Chọn ảnh
+                    <input type="file" id="bulkImgInput" accept="image/*" style="display:none;" />
+                  </label>
+                  <button type="button" class="btn btn-sm btn-danger" id="clearBulkImgBtn" style="display:none;">Xoá ảnh</button>
+                </div>
               </div>
+            </div>
+
+            <div class="form-row-2">
               <div class="field">
                 <label>Ngày mua</label>
                 <input name="date" type="date" value="${todayISO()}" />
               </div>
+              <div class="field">
+                <label>Ghi chú</label>
+                <input name="note" placeholder="VD: Box cứng + postcard..." />
+              </div>
             </div>
-            <div class="small-muted mono" id="bulkPreview"></div>
+
             <div class="modal-actions">
               <button type="button" class="btn btn-sm" id="backBulkBtn">Quay lại</button>
               <button type="submit" class="btn btn-sm btn-primary">Thêm hàng loạt</button>
             </div>
           </form>`;
 
-        openModal(`${s.title} — Thêm loạt tập`, html, (body) => {
+        openModal(`${sec.name} — Thêm nhiều tập`, html, (body) => {
           const form = body.querySelector("#bulkVolForm");
+          const modeSel = body.querySelector("#bulkPriceModeSel");
+          const totalWrap = body.querySelector("#bulkTotalPrices");
+          const unitWrap = body.querySelector("#bulkUnitPrices");
           const preview = body.querySelector("#bulkPreview");
-          const updatePrev = () => {
-            const f = Number(form.from.value) || 0;
-            const t = Number(form.to.value) || 0;
-            const cp = Number(form.coverPrice.value) || 0;
-            const d = Number(form.discount.value) || 0;
-            const count = Math.max(0, t - f + 1);
-            const paid = Math.round(cp * (1 - d / 100));
-            preview.textContent = `Sẽ thêm ${count} tập · Thực chi ${fmtMoney(paid)}/tập (Tổng ${fmtMoney(paid * count)})`;
-          };
-          form.addEventListener("input", updatePrev);
-          updatePrev();
-          body.querySelector("#backBulkBtn").addEventListener("click", () => openSeriesDetail(seriesId));
-          form.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const f = Number(form.from.value);
-            const t = Number(form.to.value);
-            if (t < f || t - f > 150) {
-              showToast("Khoảng tập không hợp lệ (tối đa 150 tập/lần).");
+          const imgPrev = body.querySelector("#bulkImgPreview");
+          const clearImgBtn = body.querySelector("#clearBulkImgBtn");
+
+          const updateUI = () => {
+            const isTotal = modeSel.value === "total";
+            totalWrap.style.display = isTotal ? "grid" : "none";
+            unitWrap.style.display = isTotal ? "none" : "grid";
+            const f = Math.round(Number(form.from.value) || 0);
+            const t = Math.round(Number(form.to.value) || 0);
+            const count = t - f + 1;
+            if (count < 1) {
+              preview.textContent = "Đến tập phải lớn hơn hoặc bằng Từ tập.";
               return;
             }
-            const cp = Math.max(0, Number(form.coverPrice.value) || 0);
-            const disc = Math.min(100, Math.max(0, Number(form.discount.value) || 0));
-            const paid = Math.round(cp * (1 - disc / 100));
-            if (form.edition.value === "Boxset") {
-              const count = t - f + 1;
-              addBoxsetVolumes(s, {
-                from: f,
-                to: t,
-                totalCover: cp * count,
-                totalPaid: paid * count,
-                date: form.date.value || todayISO(),
-                note: "",
-              });
+            if (isTotal) {
+              const tc = Math.max(0, Number(form.totalCover.value) || 0);
+              const tp = Math.max(0, Number(form.totalPaid.value) || 0);
+              const avg = Math.round(tp / count);
+              preview.textContent = `${count} tập (Tập ${f}–${t}) · Tổng ${fmtMoney(tp)} (~${fmtMoney(avg)}/tập)` +
+                (tc > tp ? ` · Tiết kiệm ${fmtMoney(tc - tp)}` : "");
             } else {
-              s.volumes = s.volumes || [];
-              for (let n = f; n <= t; n++) {
-                s.volumes.push({
-                  id: uid(),
-                  number: n,
-                  edition: form.edition.value,
-                  coverPrice: cp,
-                  paidPrice: paid,
-                  date: form.date.value || todayISO(),
-                  note: "",
-                });
-              }
+              const cp = Math.max(0, Number(form.unitCover.value) || 0);
+              const d = Math.min(100, Math.max(0, Number(form.discount.value) || 0));
+              const paid = Math.round(cp * (1 - d / 100));
+              preview.textContent = `${count} tập (Tập ${f}–${t}) · ${fmtMoney(paid)}/tập (Tổng ${fmtMoney(paid * count)})`;
             }
-            saveState();
-            renderBooks();
-            renderSpending();
-            openSeriesDetail(seriesId);
-            showToast(`Đã thêm ${t - f + 1} tập.`);
-          });
-        });
-      }
-
-      // ============================
-      // TAB 2: QUÀ & ĐỒ (Kèm ảnh minh họa)
-      // ============================
-      const MERCH_STATUSES = ["Đã có", "Đang ship", "Đang săn"];
-
-      function openMerchPhotoZoom(merchId) {
-        const m = state.merch.find((x) => x.id === merchId);
-        if (!m || !m.image) return;
-        const html = `
-          <div class="img-zoom-wrap">
-            <img src="${esc(m.image)}" alt="${esc(m.name)}" />
-            <div style="font-weight:600; font-size:14px;">${esc(m.name)}</div>
-            <div class="small-muted" style="margin-top:3px;">${esc(m.seriesName || "Không gắn bộ")} · ${esc(m.source)} · ${fmtMoney(m.price)}</div>
-            <div class="modal-actions" style="justify-content:space-between;">
-              <button type="button" class="btn btn-sm" id="zoomEditMerchBtn">Sửa món này</button>
-              <button type="button" class="btn btn-sm btn-primary" id="zoomCloseBtn">Đóng</button>
-            </div>
-          </div>`;
-        openModal("Ảnh minh họa", html, (body) => {
-          body.querySelector("#zoomCloseBtn").addEventListener("click", closeModal);
-          body.querySelector("#zoomEditMerchBtn").addEventListener("click", () => openMerchForm(merchId));
-        });
-      }
-
-      function renderMerch() {
-        const container = document.getElementById("merchContainer");
-        const q = normVN(filters.merchSearch);
-        const list = state.merch.filter((m) => {
-          if (filters.merchStatus !== "Tất cả" && m.status !== filters.merchStatus) return false;
-          if (filters.merchSource !== "Tất cả" && m.source !== filters.merchSource) return false;
-          if (q) {
-            const hay = normVN(`${m.name} ${m.seriesName || ""} ${m.publisher || ""} ${m.note || ""}`);
-            if (!hay.includes(q)) return false;
-          }
-          return true;
-        });
-
-        const sumPaid = list.reduce((a, m) => a + (Number(m.price) || 0), 0);
-        document.getElementById("merchCountLabel").textContent = `${list.length} món · ${fmtMoney(sumPaid)}`;
-
-        if (!list.length) {
-          container.innerHTML = `
-            <div class="empty">
-              <div class="empty-title">${state.merch.length ? "Không có món phù hợp" : "Chưa có quà hay merch nào"}</div>
-              <div class="empty-desc">Lưu lại standee, shikishi, bookmark, postcard kèm ảnh minh họa từ máy.</div>
-              ${state.merch.length ? "" : `<button class="btn btn-primary" id="emptyAddMerchBtn">+ Thêm món đầu tiên</button>`}
-            </div>`;
-          const btn = document.getElementById("emptyAddMerchBtn");
-          if (btn) btn.addEventListener("click", () => openMerchForm());
-          return;
-        }
-
-        container.innerHTML = `<div class="merch-list">${list
-          .map(
-            (m) => `
-          <div class="merch-card">
-            ${
-              m.image
-                ? `<button type="button" class="merch-thumb" data-zoom-merch="${m.id}" title="Xem ảnh lớn">
-                     <img src="${esc(m.image)}" alt="${esc(m.name)}" loading="lazy" />
-                   </button>`
-                : ""
-            }
-            <div class="merch-main" data-edit-merch="${m.id}" style="cursor:pointer;">
-              <div class="merch-title">${esc(m.name)}</div>
-              <div class="merch-sub">${esc(m.seriesName || "Không gắn bộ")}${m.note ? ` · ${esc(m.note)}` : ""}</div>
-              <div class="merch-meta">
-                <span class="tag">${esc(m.publisher || "Khác")}</span>
-                <span class="tag">${esc(m.source)}</span>
-                <span class="small-muted mono">${esc(m.date || "")}</span>
-              </div>
-            </div>
-            <div class="merch-right">
-              <button class="status-cycle" data-cycle-merch="${m.id}" data-status="${esc(m.status)}">${esc(m.status)}</button>
-              <div class="mono" style="font-size:13px; font-weight:600;">${fmtMoney(m.price)}</div>
-            </div>
-          </div>`
-          )
-          .join("")}</div>`;
-
-        container.querySelectorAll("[data-zoom-merch]").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            openMerchPhotoZoom(btn.dataset.zoomMerch);
-          });
-        });
-
-        container.querySelectorAll("[data-cycle-merch]").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const item = state.merch.find((x) => x.id === btn.dataset.cycleMerch);
-            if (!item) return;
-            const nextIdx = (MERCH_STATUSES.indexOf(item.status) + 1) % MERCH_STATUSES.length;
-            item.status = MERCH_STATUSES[nextIdx];
-            saveState();
-            renderMerch();
-            showToast(`Đổi trạng thái -> ${item.status}`);
-          });
-        });
-
-        container.querySelectorAll("[data-edit-merch]").forEach((el) => {
-          el.addEventListener("click", () => openMerchForm(el.dataset.editMerch));
-        });
-      }
-
-      function openMerchForm(existingId = null, prefill = null) {
-        const m = existingId ? state.merch.find((x) => x.id === existingId) : prefill;
-        const seriesNames = state.series.map((s) => s.title);
-        let currentImage = m?.image || "";
-
-        const html = `
-          <form id="merchForm" class="form-grid">
-            <div class="field">
-              <label>Tên quà / món đồ *</label>
-              <input name="name" required value="${esc(m?.name || "")}" placeholder="VD: Standee Acrylic Laios, Shikishi Fes..." />
-            </div>
-            <div class="field">
-              <label>Ảnh minh họa (chọn từ ảnh iPhone — tự nén nhẹ)</label>
-              <div class="cover-preview-wrap">
-                <div class="merch-preview" id="merchPreviewBox">
-                  ${currentImage ? `<img src="${esc(currentImage)}" alt="" />` : "Chưa có"}
-                </div>
-                <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                  <label class="btn btn-sm" style="margin:0;">
-                    ${currentImage ? "Đổi ảnh" : "Chọn ảnh"}
-                    <input type="file" id="merchPhotoInput" accept="image/*" style="display:none;" />
-                  </label>
-                  <button type="button" class="btn btn-sm btn-danger" id="clearMerchImgBtn" style="${currentImage ? "" : "display:none;"}">Xoá ảnh</button>
-                </div>
-              </div>
-            </div>
-            <div class="field">
-              <label>Gắn với bộ truyện / sách</label>
-              <input name="seriesName" list="seriesNameList" value="${esc(m?.seriesName || "")}" placeholder="Gõ tên bộ hoặc chọn từ tủ" />
-              <datalist id="seriesNameList">
-                ${seriesNames.map((n) => `<option value="${esc(n)}"></option>`).join("")}
-              </datalist>
-            </div>
-            <div class="form-row-2">
-              <div class="field">
-                <label>Nhà xuất bản</label>
-                <select name="publisher">
-                  ${["Trẻ", "Kim Đồng", "IPM", "Nhã Nam", "Khác"]
-                    .map((p) => `<option value="${p}" ${m?.publisher === p ? "selected" : ""}>${p}</option>`)
-                    .join("")}
-                </select>
-              </div>
-              <div class="field">
-                <label>Nguồn gốc</label>
-                <select name="source">
-                  ${["Kèm bản ĐB", "Mua thêm / Pass", "Săn tại Fes"]
-                    .map((sc) => `<option value="${sc}" ${m?.source === sc ? "selected" : ""}>${sc}</option>`)
-                    .join("")}
-                </select>
-              </div>
-            </div>
-            <div class="form-row-2">
-              <div class="field">
-                <label>Trạng thái</label>
-                <select name="status">
-                  ${MERCH_STATUSES.map((st) => `<option value="${st}" ${m?.status === st ? "selected" : ""}>${st}</option>`).join("")}
-                </select>
-              </div>
-              <div class="field">
-                <label>Tiền bỏ ra (VNĐ, 0 nếu kèm sách)</label>
-                <input name="price" type="number" min="0" value="${m?.price ?? 0}" />
-              </div>
-            </div>
-            <div class="field">
-              <label>Ngày mua / nhận</label>
-              <input name="date" type="date" value="${esc(m?.date || todayISO())}" />
-            </div>
-            <div class="field">
-              <label>Ghi chú</label>
-              <input name="note" value="${esc(m?.note || "")}" placeholder="Tình trạng, shop mua, sự kiện Fes..." />
-            </div>
-            <div class="modal-actions" style="justify-content:space-between;">
-              <div>
-                ${existingId ? `<button type="button" class="btn btn-sm btn-danger" id="delMerchBtn">Xoá</button>` : ""}
-              </div>
-              <div style="display:flex; gap:8px;">
-                <button type="button" class="btn btn-sm" id="cancelMerchBtn">Huỷ</button>
-                <button type="submit" class="btn btn-sm btn-primary">${existingId ? "Lưu" : "Thêm món"}</button>
-              </div>
-            </div>
-          </form>`;
-
-        openModal(existingId ? "Sửa Quà & Đồ" : "Thêm Quà & Đồ", html, (body) => {
-          const previewBox = body.querySelector("#merchPreviewBox");
-          const clearImgBtn = body.querySelector("#clearMerchImgBtn");
-
-          const setMerchPreview = (url) => {
-            currentImage = url || "";
-            previewBox.innerHTML = currentImage ? `<img src="${esc(currentImage)}" alt="" />` : "Chưa có";
-            clearImgBtn.style.display = currentImage ? "" : "none";
           };
 
+          modeSel.addEventListener("change", updateUI);
+          form.addEventListener("input", updateUI);
+          updateUI();
+
           clearImgBtn.addEventListener("click", () => {
-            setMerchPreview("");
-            showToast("Đã xoá ảnh minh họa.");
+            sharedImg = "";
+            imgPrev.innerHTML = "Chưa có";
+            clearImgBtn.style.display = "none";
           });
 
-          body.querySelector("#merchPhotoInput").addEventListener("change", async (e) => {
+          body.querySelector("#bulkImgInput").addEventListener("change", async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
             try {
-              const compressed = await compressImageFile(file, 420, 420, 0.75);
-              setMerchPreview(compressed);
+              sharedImg = await compressImageFile(file, 320, 480, 0.72);
+              imgPrev.innerHTML = `<img src="${esc(sharedImg)}" alt="" />`;
+              clearImgBtn.style.display = "";
             } catch {
               showToast("Không đọc được ảnh này.");
             }
           });
 
-          body.querySelector("#cancelMerchBtn").addEventListener("click", closeModal);
-          const delBtn = body.querySelector("#delMerchBtn");
-          if (delBtn) {
-            delBtn.addEventListener("click", () => {
-              state.merch = state.merch.filter((x) => x.id !== existingId);
+          body.querySelector("#backBulkBtn").addEventListener("click", () => openSectionDetail(seriesId, sectionId));
+
+          form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const f = Math.round(Number(form.from.value));
+            const t = Math.round(Number(form.to.value));
+            if (t < f || t - f > 150) {
+              showToast("Khoảng tập không hợp lệ (tối đa 150 tập/lần).");
+              return;
+            }
+            const isTotal = modeSel.value === "total";
+            const count = addBatchVolumesToSection(sec, {
+              from: f,
+              to: t,
+              priceMode: isTotal ? "total" : "unit",
+              coverInput: isTotal ? form.totalCover.value : form.unitCover.value,
+              paidInput: form.totalPaid.value,
+              discount: form.discount.value,
+              date: form.date.value || todayISO(),
+              image: sharedImg,
+              note: form.note.value.trim(),
+            });
+            saveState();
+            renderBooks();
+            renderSpending();
+            openSectionDetail(seriesId, sectionId);
+            showToast(`Đã thêm ${count} tập vào "${sec.name}".`);
+          });
+        });
+      }
+
+      // Lightbox xem ảnh to chung cho Tập & Quà
+      function openImageLightbox(imgSrc, caption, onBack = null) {
+        const html = `
+          <div class="img-zoom-wrap">
+            <img src="${esc(imgSrc)}" alt="${esc(caption)}" />
+            <div style="font-weight:600; font-size:13.5px;">${esc(caption)}</div>
+            <div class="modal-actions" style="justify-content:flex-end;">
+              <button type="button" class="btn btn-sm btn-primary" id="lbDoneBtn">${onBack ? "Quay lại" : "Đóng"}</button>
+            </div>
+          </div>`;
+        openModal("Xem ảnh", html, (body) => {
+          body.querySelector("#lbDoneBtn").addEventListener("click", () => {
+            if (typeof onBack === "function") onBack();
+            else closeModal();
+          });
+        });
+      }
+
+      // ============================
+      // TAB 2: QUÀ & ĐỒ (Manga/Sách có quà -> Thống kê số lượng quà -> Tên, ảnh, giá...)
+      // ============================
+      const MERCH_STATUSES = ["Đã có", "Đang ship", "Đang săn"];
+
+      function renderMerch() {
+        const kpiEl = document.getElementById("giftSummaryKpis");
+        const container = document.getElementById("merchContainer");
+        const q = normVN(filters.merchSearch);
+
+        // Thống kê tổng toàn bộ quà
+        let totalQtyAll = 0;
+        let totalTypesAll = 0;
+        let totalSpentAll = 0;
+        let totalOwnedAll = 0;
+        let totalShipAll = 0;
+        let totalHuntAll = 0;
+
+        state.giftGroups.forEach((g) => {
+          const st = getGroupGiftStats(g);
+          totalQtyAll += st.qty;
+          totalTypesAll += st.itemCount;
+          totalSpentAll += st.spent;
+          totalOwnedAll += st.owned;
+          totalShipAll += st.shipping;
+          totalHuntAll += st.hunting;
+        });
+
+        kpiEl.innerHTML = `
+          <div class="gift-kpi">
+            <div class="gift-kpi-label">Tổng số quà</div>
+            <div class="gift-kpi-val mono">${totalQtyAll}</div>
+            <div class="small-muted" style="font-size:10.5px;">${totalTypesAll} loại món</div>
+          </div>
+          <div class="gift-kpi">
+            <div class="gift-kpi-label">Bộ có quà</div>
+            <div class="gift-kpi-val mono">${state.giftGroups.length}</div>
+            <div class="small-muted" style="font-size:10.5px;">Truyện & sách</div>
+          </div>
+          <div class="gift-kpi">
+            <div class="gift-kpi-label">Tiền quà</div>
+            <div class="gift-kpi-val mono">${fmtMoney(totalSpentAll)}</div>
+            <div class="small-muted" style="font-size:10.5px;">Tổng đã chi</div>
+          </div>`;
+
+        document.getElementById("merchStatusSummary").textContent =
+          `Đã có ${totalOwnedAll} · Ship ${totalShipAll} · Săn ${totalHuntAll}`;
+
+        const list = state.giftGroups.filter((g) => {
+          if (filters.merchPub !== "Tất cả") {
+            const known = ["Trẻ", "Kim Đồng", "IPM", "Nhã Nam"];
+            if (filters.merchPub === "Khác") {
+              if (known.includes(g.publisher)) return false;
+            } else if (g.publisher !== filters.merchPub) {
+              return false;
+            }
+          }
+          if (q) {
+            const giftNames = (g.gifts || []).map((it) => `${it.name} ${it.note || ""}`).join(" ");
+            const hay = normVN(`${g.title} ${g.publisher} ${g.note || ""} ${giftNames}`);
+            if (!hay.includes(q)) return false;
+          }
+          return true;
+        });
+
+        const filteredQty = list.reduce((a, g) => a + getGroupGiftStats(g).qty, 0);
+        document.getElementById("merchCountLabel").textContent = `${list.length} bộ có quà · ${filteredQty} quà`;
+
+        if (!list.length) {
+          container.innerHTML = `
+            <div class="empty">
+              <div class="empty-title">${state.giftGroups.length ? "Không tìm thấy truyện/quà phù hợp" : "Chưa có manga hay sách có quà nào"}</div>
+              <div class="empty-desc">Tạo từng đầu manga/sách có quà, rồi bấm vào để thêm tên quà, ảnh quà, số lượng và giá tiền.</div>
+              ${state.giftGroups.length ? "" : `<button class="btn btn-primary" id="emptyAddGiftGroupBtn">+ Tạo truyện có quà đầu tiên</button>`}
+            </div>`;
+          const btn = document.getElementById("emptyAddGiftGroupBtn");
+          if (btn) btn.addEventListener("click", () => openGiftGroupForm());
+          return;
+        }
+
+        container.innerHTML = `<div class="merch-list">${list
+          .map((g) => {
+            const st = getGroupGiftStats(g);
+            const firstGiftImg = (g.gifts || []).find((x) => x.image)?.image || "";
+            const thumbSrc = g.cover || firstGiftImg;
+            return `
+              <div class="gift-group-card" data-open-group="${g.id}">
+                <div class="gift-group-thumb" style="border-left:2px solid ${pubColorVar(g.publisher)}">
+                  ${thumbSrc ? `<img src="${esc(thumbSrc)}" alt="" loading="lazy" />` : `<span class="mono">${esc(g.publisher.slice(0, 3))}</span>`}
+                </div>
+                <div style="flex:1; min-width:0;">
+                  <div style="font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(g.title)}</div>
+                  <div class="merch-meta" style="margin-top:5px;">
+                    <span class="tag">${esc(g.publisher)}</span>
+                    <span class="tag tag-accent mono">${st.qty} quà</span>
+                    ${st.hunting ? `<span class="tag mono">Đang săn ${st.hunting}</span>` : ""}
+                  </div>
+                </div>
+                <div style="text-align:right; flex-shrink:0;">
+                  <div class="mono" style="font-size:13px; font-weight:600;">${fmtMoney(st.spent)}</div>
+                  <div class="small-muted" style="margin-top:2px;">Mở →</div>
+                </div>
+              </div>`;
+          })
+          .join("")}</div>`;
+
+        container.querySelectorAll("[data-open-group]").forEach((el) => {
+          el.addEventListener("click", () => openGiftGroupDetail(el.dataset.openGroup));
+        });
+      }
+
+      // Tạo / Sửa đầu Manga / Sách có quà
+      function openGiftGroupForm(groupId = null) {
+        const g = groupId ? state.giftGroups.find((x) => x.id === groupId) : null;
+        let currentCover = g?.cover || "";
+
+        // Gợi ý nhanh các đầu sách đang có trong Tủ sách (chưa tạo bên tab Quà)
+        const existingTitles = new Set(state.giftGroups.map((x) => normVN(x.title)));
+        const shelfSuggestions = !g
+          ? state.series.filter((s) => !existingTitles.has(normVN(s.title))).slice(0, 8)
+          : [];
+
+        const html = `
+          <form id="giftGroupForm" class="form-grid">
+            ${
+              shelfSuggestions.length
+                ? `<div class="field">
+                     <label>Chọn nhanh từ Tủ sách của bạn</label>
+                     <div class="preset-chips">
+                       ${shelfSuggestions
+                         .map((s) => `<button type="button" class="preset-chip" data-pick-shelf="${s.id}">${esc(s.title.slice(0, 26))}</button>`)
+                         .join("")}
+                     </div>
+                   </div>`
+                : ""
+            }
+            <div class="field">
+              <label>Tên manga / sách có quà *</label>
+              <input name="title" id="ggTitleInput" required value="${esc(g?.title || "")}" placeholder="VD: Dungeon Meshi, Chainsaw Man, Rừng Na Uy..." />
+            </div>
+            <div class="field">
+              <label>Nhà xuất bản</label>
+              <select name="publisher" id="ggPubSelect">
+                ${["Trẻ", "Kim Đồng", "IPM", "Nhã Nam", "Khác"]
+                  .map((p) => `<option value="${p}" ${g?.publisher === p ? "selected" : ""}>${p}</option>`)
+                  .join("")}
+              </select>
+            </div>
+            <div class="field">
+              <label>Ảnh đại diện bộ (tuỳ chọn)</label>
+              <div class="cover-preview-wrap">
+                <div class="cover-preview" id="ggCoverPreview">
+                  ${currentCover ? `<img src="${esc(currentCover)}" alt="" />` : "Chưa có"}
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                  <label class="btn btn-sm" style="margin:0;">
+                    ${currentCover ? "Đổi ảnh" : "Chọn ảnh"}
+                    <input type="file" id="ggCoverInput" accept="image/*" style="display:none;" />
+                  </label>
+                  <button type="button" class="btn btn-sm btn-danger" id="clearGgCoverBtn" style="${currentCover ? "" : "display:none;"}">Xoá ảnh</button>
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <label>Ghi chú</label>
+              <input name="note" value="${esc(g?.note || "")}" placeholder="VD: Bộ săn nhiều standee & postcard Fes..." />
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn btn-sm" id="cancelGgBtn">Huỷ</button>
+              <button type="submit" class="btn btn-sm btn-primary">${g ? "Lưu thay đổi" : "Tạo & thêm quà"}</button>
+            </div>
+          </form>`;
+
+        openModal(g ? "Sửa truyện/sách có quà" : "Tạo manga / sách có quà", html, (body) => {
+          const titleInput = body.querySelector("#ggTitleInput");
+          const pubSel = body.querySelector("#ggPubSelect");
+          const previewEl = body.querySelector("#ggCoverPreview");
+          const clearBtn = body.querySelector("#clearGgCoverBtn");
+
+          const setGgPreview = (url) => {
+            currentCover = url || "";
+            previewEl.innerHTML = currentCover ? `<img src="${esc(currentCover)}" alt="" />` : "Chưa có";
+            clearBtn.style.display = currentCover ? "" : "none";
+          };
+
+          body.querySelectorAll("[data-pick-shelf]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const s = state.series.find((x) => x.id === btn.dataset.pickShelf);
+              if (!s) return;
+              titleInput.value = s.title;
+              pubSel.value = s.publisher || "Khác";
+              if (s.cover) setGgPreview(s.cover);
+              showToast(`Đã điền từ Tủ sách: ${s.title}`);
+            });
+          });
+
+          clearBtn.addEventListener("click", () => {
+            setGgPreview("");
+            showToast("Đã xoá ảnh.");
+          });
+
+          body.querySelector("#ggCoverInput").addEventListener("change", async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+              const compressed = await compressImageFile(file, 320, 480, 0.74);
+              setGgPreview(compressed);
+            } catch {
+              showToast("Không đọc được ảnh này.");
+            }
+          });
+
+          body.querySelector("#cancelGgBtn").addEventListener("click", () => {
+            if (g) openGiftGroupDetail(g.id);
+            else closeModal();
+          });
+
+          body.querySelector("#giftGroupForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const title = fd.get("title").trim();
+            if (!title) return;
+            if (g) {
+              g.title = title;
+              g.publisher = fd.get("publisher");
+              g.note = fd.get("note").trim();
+              g.cover = currentCover;
               saveState();
               renderMerch();
               renderSpending();
-              closeModal();
-              showToast("Đã xoá món đồ.");
-            });
-          }
-          body.querySelector("#merchForm").addEventListener("submit", (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            const rec = {
-              id: existingId || uid(),
-              name: fd.get("name").trim(),
-              seriesName: fd.get("seriesName").trim(),
-              publisher: fd.get("publisher"),
-              source: fd.get("source"),
-              status: fd.get("status"),
-              price: Math.max(0, Number(fd.get("price")) || 0),
-              date: fd.get("date") || todayISO(),
-              note: fd.get("note").trim(),
-              image: currentImage,
-            };
-            if (!rec.name) return;
-            if (existingId) {
-              const idx = state.merch.findIndex((x) => x.id === existingId);
-              state.merch[idx] = rec;
+              openGiftGroupDetail(g.id);
+              showToast("Đã cập nhật.");
             } else {
-              state.merch.unshift(rec);
+              const newG = {
+                id: uid(),
+                title,
+                publisher: fd.get("publisher"),
+                cover: currentCover,
+                note: fd.get("note").trim(),
+                createdAt: todayISO(),
+                gifts: [],
+              };
+              state.giftGroups.unshift(newG);
+              saveState();
+              renderMerch();
+              openGiftGroupDetail(newG.id);
+              showToast(`Đã tạo "${title}" — thêm các món quà vào đây nhé.`);
             }
+          });
+        });
+      }
+
+      // Chi tiết 1 Manga / Sách có quà: Thống kê số lượng quà + danh sách quà + thêm/sửa quà
+      function openGiftGroupDetail(groupId, filterStatus = "Tất cả") {
+        const g = state.giftGroups.find((x) => x.id === groupId);
+        if (!g) return;
+        const st = getGroupGiftStats(g);
+        const shownGifts = (g.gifts || []).filter((it) => filterStatus === "Tất cả" || it.status === filterStatus);
+
+        const listHtml = shownGifts.length
+          ? `<div class="merch-list" style="margin-top:8px;">${shownGifts
+              .map((it) => {
+                const qty = Math.max(1, Number(it.quantity) || 1);
+                return `
+                  <div class="merch-card">
+                    ${
+                      it.image
+                        ? `<button type="button" class="merch-thumb" data-zoom-gift="${it.id}" title="Xem ảnh lớn">
+                             <img src="${esc(it.image)}" alt="${esc(it.name)}" loading="lazy" />
+                           </button>`
+                        : ""
+                    }
+                    <div class="merch-main" data-edit-gift="${it.id}" style="cursor:pointer;">
+                      <div class="merch-title">
+                        ${esc(it.name)}
+                        ${qty > 1 ? `<span class="tag tag-accent mono" style="margin-left:4px;">x${qty}</span>` : ""}
+                      </div>
+                      ${it.note ? `<div class="merch-sub">${esc(it.note)}</div>` : ""}
+                      <div class="merch-meta">
+                        <span class="tag">${esc(it.source)}</span>
+                        <span class="small-muted mono">${esc(it.date || "")}</span>
+                      </div>
+                    </div>
+                    <div class="merch-right">
+                      <button type="button" class="status-cycle" data-cycle-gift="${it.id}" data-status="${esc(it.status)}">${esc(it.status)}</button>
+                      <div class="mono" style="font-size:13px; font-weight:600;">${fmtMoney(it.price)}</div>
+                    </div>
+                  </div>`;
+              })
+              .join("")}</div>`
+          : `<div class="empty" style="padding:18px; margin-top:8px;">
+               <div class="empty-title" style="font-size:13px;">${(g.gifts || []).length ? "Không có quà ở trạng thái này" : "Chưa thêm món quà nào"}</div>
+               <div class="empty-desc" style="margin-bottom:0;">Bấm <strong>+ Thêm quà</strong> để lưu tên quà, ảnh quà, số lượng và giá tiền.</div>
+             </div>`;
+
+        const html = `
+          <div style="display:flex; gap:12px; align-items:flex-start;">
+            <div class="cover-preview" style="width:56px; height:82px; border-left:3px solid ${pubColorVar(g.publisher)}">
+              ${g.cover ? `<img src="${esc(g.cover)}" alt="" />` : `<span class="mono" style="text-align:center; padding:3px;">${esc(g.publisher)}</span>`}
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:15px; font-weight:700; line-height:1.3;">${esc(g.title)}</div>
+              <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">
+                <span class="tag">${esc(g.publisher)}</span>
+                <span class="tag tag-accent mono">${st.qty} quà (${st.itemCount} loại)</span>
+              </div>
+              <div class="mono small-muted" style="margin-top:6px;">
+                Tổng tiền quà: <strong>${fmtMoney(st.spent)}</strong><br/>
+                Đã có ${st.owned} · Đang ship ${st.shipping} · Đang săn ${st.hunting}
+              </div>
+            </div>
+          </div>
+          ${g.note ? `<div class="small-muted" style="margin-top:8px; padding:7px 9px; background:var(--surface); border:1px solid var(--line);">${esc(g.note)}</div>` : ""}
+
+          <div class="divider"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
+            <span class="panel-title">Danh sách quà</span>
+            <button type="button" class="btn btn-sm btn-primary" id="addGiftItemBtn">+ Thêm quà</button>
+          </div>
+
+          <div class="chip-row" id="groupStatusChips">
+            ${["Tất cả", "Đã có", "Đang ship", "Đang săn"]
+              .map((stLabel) => `<button type="button" class="chip ${filterStatus === stLabel ? "active" : ""}" data-gs="${stLabel}">${stLabel}</button>`)
+              .join("")}
+          </div>
+
+          ${listHtml}
+
+          <div class="modal-actions" style="justify-content:space-between;">
+            <button type="button" class="btn btn-sm btn-danger" id="delGiftGroupBtn">Xoá bộ này</button>
+            <button type="button" class="btn btn-sm" id="editGiftGroupBtn">Sửa thông tin bộ</button>
+          </div>`;
+
+        openModal(`Quà — ${g.title}`, html, (body) => {
+          body.querySelector("#addGiftItemBtn").addEventListener("click", () => openGiftItemForm(groupId));
+          body.querySelector("#editGiftGroupBtn").addEventListener("click", () => openGiftGroupForm(groupId));
+          body.querySelector("#delGiftGroupBtn").addEventListener("click", () => {
+            if (!confirm(`Xoá "${g.title}" cùng toàn bộ ${st.qty} quà bên trong?`)) return;
+            state.giftGroups = state.giftGroups.filter((x) => x.id !== groupId);
             saveState();
             renderMerch();
             renderSpending();
             closeModal();
-            showToast(existingId ? "Đã lưu thay đổi." : "Đã thêm vào Quà & Đồ.");
+            showToast("Đã xoá bộ quà.");
+          });
+
+          body.querySelectorAll("#groupStatusChips [data-gs]").forEach((chip) => {
+            chip.addEventListener("click", () => openGiftGroupDetail(groupId, chip.dataset.gs));
+          });
+
+          body.querySelectorAll("[data-zoom-gift]").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const it = (g.gifts || []).find((x) => x.id === btn.dataset.zoomGift);
+              if (it?.image) {
+                openImageLightbox(it.image, `${it.name} (${g.title}) · ${fmtMoney(it.price)}`, () =>
+                  openGiftGroupDetail(groupId, filterStatus)
+                );
+              }
+            });
+          });
+
+          body.querySelectorAll("[data-cycle-gift]").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const it = (g.gifts || []).find((x) => x.id === btn.dataset.cycleGift);
+              if (!it) return;
+              const nextIdx = (MERCH_STATUSES.indexOf(it.status) + 1) % MERCH_STATUSES.length;
+              it.status = MERCH_STATUSES[nextIdx];
+              saveState();
+              renderMerch();
+              openGiftGroupDetail(groupId, filterStatus);
+              showToast(`Đổi trạng thái -> ${it.status}`);
+            });
+          });
+
+          body.querySelectorAll("[data-edit-gift]").forEach((el) => {
+            el.addEventListener("click", () => openGiftItemForm(groupId, el.dataset.editGift));
+          });
+        });
+      }
+
+      // Thêm / Sửa từng món quà trong Manga/Sách có quà
+      function openGiftItemForm(groupId, giftId = null) {
+        const g = state.giftGroups.find((x) => x.id === groupId);
+        if (!g) return;
+        const it = giftId ? (g.gifts || []).find((x) => x.id === giftId) : null;
+        let currentImage = it?.image || "";
+
+        const html = `
+          <form id="giftItemForm" class="form-grid">
+            <div class="field">
+              <label>Tên quà *</label>
+              <input name="name" required value="${esc(it?.name || "")}" placeholder="VD: Standee Acrylic Laios, Shikishi Fes, Bookmark PVC..." />
+            </div>
+
+            <div class="field">
+              <label>Ảnh quà (chọn từ ảnh iPhone — tự nén nhẹ)</label>
+              <div class="cover-preview-wrap">
+                <div class="merch-preview" id="giftImgPreview" style="cursor:${currentImage ? "zoom-in" : "default"};">
+                  ${currentImage ? `<img src="${esc(currentImage)}" alt="" />` : "Chưa có"}
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                  <label class="btn btn-sm" style="margin:0;">
+                    ${currentImage ? "Đổi ảnh" : "Chọn ảnh"}
+                    <input type="file" id="giftImgInput" accept="image/*" style="display:none;" />
+                  </label>
+                  <button type="button" class="btn btn-sm btn-danger" id="clearGiftImgBtn" style="${currentImage ? "" : "display:none;"}">Xoá ảnh</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="field">
+                <label>Số lượng *</label>
+                <input name="quantity" type="number" min="1" required value="${it?.quantity ?? 1}" />
+              </div>
+              <div class="field">
+                <label>Giá tiền (VNĐ, 0 nếu kèm sách)</label>
+                <input name="price" type="number" min="0" value="${it?.price ?? 0}" />
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="field">
+                <label>Nguồn gốc</label>
+                <select name="source">
+                  ${["Kèm bản ĐB", "Mua thêm / Pass", "Săn tại Fes"]
+                    .map((sc) => `<option value="${sc}" ${it?.source === sc ? "selected" : ""}>${sc}</option>`)
+                    .join("")}
+                </select>
+              </div>
+              <div class="field">
+                <label>Trạng thái</label>
+                <select name="status">
+                  ${MERCH_STATUSES.map((st) => `<option value="${st}" ${it?.status === st ? "selected" : ""}>${st}</option>`).join("")}
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Ngày mua / nhận</label>
+              <input name="date" type="date" value="${esc(it?.date || todayISO())}" />
+            </div>
+
+            <div class="field">
+              <label>Ghi chú</label>
+              <input name="note" value="${esc(it?.note || "")}" placeholder="Tình trạng, shop mua, kèm tập mấy, sự kiện Fes..." />
+            </div>
+
+            <div class="modal-actions" style="justify-content:space-between;">
+              <div>
+                ${it ? `<button type="button" class="btn btn-sm btn-danger" id="delGiftItemBtn">Xoá quà</button>` : ""}
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn btn-sm" id="backGiftGroupBtn">Quay lại</button>
+                <button type="submit" class="btn btn-sm btn-primary">${it ? "Lưu" : "Thêm quà"}</button>
+              </div>
+            </div>
+          </form>`;
+
+        openModal(`${g.title} — ${it ? "Sửa quà" : "Thêm quà mới"}`, html, (body) => {
+          const previewEl = body.querySelector("#giftImgPreview");
+          const clearBtn = body.querySelector("#clearGiftImgBtn");
+
+          const setGiftPreview = (url) => {
+            currentImage = url || "";
+            previewEl.innerHTML = currentImage ? `<img src="${esc(currentImage)}" alt="" />` : "Chưa có";
+            previewEl.style.cursor = currentImage ? "zoom-in" : "default";
+            clearBtn.style.display = currentImage ? "" : "none";
+          };
+
+          previewEl.addEventListener("click", () => {
+            if (!currentImage) return;
+            openImageLightbox(currentImage, it ? it.name : g.title, () => openGiftItemForm(groupId, giftId));
+          });
+
+          clearBtn.addEventListener("click", () => {
+            setGiftPreview("");
+            showToast("Đã xoá ảnh quà.");
+          });
+
+          body.querySelector("#giftImgInput").addEventListener("change", async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+              const compressed = await compressImageFile(file, 420, 420, 0.75);
+              setGiftPreview(compressed);
+            } catch {
+              showToast("Không đọc được ảnh này.");
+            }
+          });
+
+          body.querySelector("#backGiftGroupBtn").addEventListener("click", () => openGiftGroupDetail(groupId));
+
+          const delBtn = body.querySelector("#delGiftItemBtn");
+          if (delBtn) {
+            delBtn.addEventListener("click", () => {
+              g.gifts = (g.gifts || []).filter((x) => x.id !== giftId);
+              saveState();
+              renderMerch();
+              renderSpending();
+              openGiftGroupDetail(groupId);
+              showToast("Đã xoá món quà.");
+            });
+          }
+
+          body.querySelector("#giftItemForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const rec = {
+              id: it?.id || uid(),
+              name: fd.get("name").trim(),
+              quantity: Math.max(1, Math.round(Number(fd.get("quantity")) || 1)),
+              price: Math.max(0, Number(fd.get("price")) || 0),
+              source: fd.get("source"),
+              status: fd.get("status"),
+              date: fd.get("date") || todayISO(),
+              image: currentImage,
+              note: fd.get("note").trim(),
+            };
+            if (!rec.name) return;
+            g.gifts = g.gifts || [];
+            if (it) {
+              const idx = g.gifts.findIndex((x) => x.id === giftId);
+              g.gifts[idx] = rec;
+            } else {
+              g.gifts.unshift(rec);
+            }
+            saveState();
+            renderMerch();
+            renderSpending();
+            openGiftGroupDetail(groupId);
+            showToast(it ? "Đã cập nhật quà." : `Đã thêm "${rec.name}".`);
           });
         });
       }
@@ -3028,18 +3814,25 @@
 
       function openQuickImportFromNews(item) {
         const defaultTarget = item.type === "gift" || item.type === "fes" ? "merch" : "book";
+        const defaultSecName =
+          item.type === "reprint" ? "Tái bản" : item.type === "gift" ? "Limited" : "Bản thường";
+
         const html = `
           <form id="quickImportForm" class="form-grid">
             <div class="field">
               <label>Nhập vào mục</label>
               <select name="target" id="qiTarget">
                 <option value="book" ${defaultTarget === "book" ? "selected" : ""}>Tủ sách (Sách / Truyện)</option>
-                <option value="merch" ${defaultTarget === "merch" ? "selected" : ""}>Quà & Đồ (Merch / Quà Fes)</option>
+                <option value="merch" ${defaultTarget === "merch" ? "selected" : ""}>Quà & Đồ (Quà kèm / Fes)</option>
               </select>
             </div>
             <div class="field">
-              <label>Tên bộ / Tên món *</label>
+              <label id="qiNameLabel">Tên bộ truyện / sách *</label>
               <input name="name" required value="${esc(item.series || item.title)}" />
+            </div>
+            <div class="field" id="qiGiftNameWrap" style="display:none;">
+              <label>Tên món quà *</label>
+              <input name="giftName" value="${esc(item.gift || item.title)}" />
             </div>
             <div class="form-row-2">
               <div class="field">
@@ -3051,46 +3844,41 @@
                 <input name="paidPrice" type="number" min="0" value="${Number(item.price) || 0}" />
               </div>
             </div>
-            <div class="form-row-2" id="qiBookExtra">
+            <div id="qiBookExtra" class="form-grid">
               <div class="field">
-                <label id="qiVolFromLabel">Số tập</label>
-                <input name="volNum" type="number" step="0.5" value="1" />
+                <label>Tên mục trong bộ (VD: Bản thường, Boxset, Limited, Tái bản)</label>
+                <input name="sectionName" id="qiSecNameInput" value="${esc(defaultSecName)}" />
               </div>
-              <div class="field">
-                <label>Phiên bản</label>
-                <select name="edition" id="qiEditionSel">
-                  <option value="Thường" ${item.type === "new" ? "selected" : ""}>Thường</option>
-                  <option value="ĐB / Limited" ${item.type === "gift" ? "selected" : ""}>ĐB / Limited</option>
-                  <option value="Tái bản" ${item.type === "reprint" ? "selected" : ""}>Tái bản</option>
-                  <option value="Boxset">Boxset (nhiều quyển)</option>
-                </select>
+              <div class="form-row-2">
+                <div class="field">
+                  <label>Từ tập</label>
+                  <input name="volFrom" type="number" step="0.5" value="1" />
+                </div>
+                <div class="field">
+                  <label>Đến tập (để trống nếu 1 tập)</label>
+                  <input name="volTo" type="number" min="1" placeholder="1 tập thì bỏ trống" />
+                </div>
               </div>
-            </div>
-            <div class="field" id="qiBoxToWrap" style="display:none;">
-              <label>Đến tập (Boxset)</label>
-              <input name="volTo" type="number" min="1" value="5" />
             </div>
             <div class="modal-actions">
               <button type="button" class="btn btn-sm" id="qiCancel">Huỷ</button>
-              <button type="submit" class="btn btn-sm btn-primary">Xác nhận nhập tủ</button>
+              <button type="submit" class="btn btn-sm btn-primary">Xác nhận nhập kho</button>
             </div>
           </form>`;
 
         openModal("Đã mua → Nhập kho nhanh", html, (body) => {
           const targetSel = body.querySelector("#qiTarget");
           const bookExtra = body.querySelector("#qiBookExtra");
-          const edSel = body.querySelector("#qiEditionSel");
-          const boxToWrap = body.querySelector("#qiBoxToWrap");
-          const volFromLabel = body.querySelector("#qiVolFromLabel");
+          const giftNameWrap = body.querySelector("#qiGiftNameWrap");
+          const nameLabel = body.querySelector("#qiNameLabel");
+
           const toggleExtra = () => {
             const isBook = targetSel.value === "book";
-            const isBox = isBook && edSel.value === "Boxset";
             bookExtra.style.display = isBook ? "grid" : "none";
-            boxToWrap.style.display = isBox ? "" : "none";
-            volFromLabel.textContent = isBox ? "Từ tập" : "Số tập";
+            giftNameWrap.style.display = isBook ? "none" : "";
+            nameLabel.textContent = isBook ? "Tên bộ truyện / sách *" : "Thuộc truyện / sách có quà *";
           };
           targetSel.addEventListener("change", toggleExtra);
-          edSel.addEventListener("change", toggleExtra);
           toggleExtra();
 
           body.querySelector("#qiCancel").addEventListener("click", closeModal);
@@ -3110,51 +3898,76 @@
                   publisher: item.publisher || "Khác",
                   category: "Manga",
                   status: "Đang theo",
+                  aliases: "",
                   note: "",
                   cover: "",
-                  volumes: [],
+                  sections: [],
                   createdAt: todayISO(),
                 };
                 state.series.unshift(existing);
               }
-              if (fd.get("edition") === "Boxset") {
-                const f = Math.round(Number(fd.get("volNum")) || 1);
-                const t = Math.max(f, Math.round(Number(fd.get("volTo")) || f));
-                addBoxsetVolumes(existing, {
+              const secName = (fd.get("sectionName") || "Bản thường").trim();
+              existing.sections = existing.sections || [];
+              let sec = existing.sections.find((x) => normVN(x.name) === normVN(secName));
+              if (!sec) {
+                sec = { id: uid(), name: secName, note: "", volumes: [] };
+                existing.sections.push(sec);
+              }
+              const f = Number(fd.get("volFrom")) || 1;
+              const rawTo = (fd.get("volTo") || "").trim();
+              if (rawTo && Number(rawTo) > f) {
+                addBatchVolumesToSection(sec, {
                   from: f,
-                  to: t,
-                  totalCover: coverPrice,
-                  totalPaid: paidPrice,
+                  to: Number(rawTo),
+                  priceMode: "total",
+                  coverInput: coverPrice,
+                  paidInput: paidPrice,
+                  discount: 0,
                   date: todayISO(),
+                  image: "",
                   note: item.gift ? `Quà: ${item.gift}` : "",
                 });
               } else {
-                existing.volumes.push({
+                sec.volumes.push({
                   id: uid(),
-                  number: Number(fd.get("volNum")) || 1,
-                  edition: fd.get("edition"),
+                  number: f,
                   coverPrice,
                   paidPrice,
                   date: todayISO(),
+                  image: "",
                   note: item.gift ? `Quà: ${item.gift}` : "",
                 });
               }
-              showToast(`Đã nhập "${name}" vào Tủ sách.`);
+              showToast(`Đã nhập "${name}" (${secName}) vào Tủ sách.`);
             } else {
-              state.merch.unshift({
+              let group = state.giftGroups.find((g) => normVN(g.title) === normVN(name));
+              if (!group) {
+                const matchedS = state.series.find((s) => normVN(s.title) === normVN(name));
+                group = {
+                  id: uid(),
+                  title: name,
+                  publisher: item.publisher || matchedS?.publisher || "Khác",
+                  cover: matchedS?.cover || "",
+                  note: "",
+                  createdAt: todayISO(),
+                  gifts: [],
+                };
+                state.giftGroups.unshift(group);
+              }
+              const gName = (fd.get("giftName") || item.gift || item.title).trim();
+              group.gifts.unshift({
                 id: uid(),
-                name,
-                seriesName: item.series || "",
-                publisher: item.publisher || "Khác",
+                name: gName,
+                quantity: 1,
+                price: paidPrice,
                 source: item.type === "fes" ? "Săn tại Fes" : "Kèm bản ĐB",
                 status: "Đã có",
-                price: paidPrice,
                 date: todayISO(),
-                note: item.gift || "",
+                image: "",
+                note: "",
               });
-              showToast(`Đã nhập "${name}" vào Quà & Đồ.`);
+              showToast(`Đã nhập quà "${gName}" vào "${name}".`);
             }
-            // Remove from pinned if it was pinned
             state.pinned = state.pinned.filter((p) => p.id !== item.id);
             saveState();
             renderBooks();
@@ -3190,7 +4003,7 @@
         state.series.forEach((s) => {
           const pubKey = pubTotals.hasOwnProperty(s.publisher) ? s.publisher : "Khác";
           const catKey = catTotals.hasOwnProperty(s.category) ? s.category : "Sách";
-          (s.volumes || []).forEach((v) => {
+          getAllSeriesVolumes(s).forEach((v) => {
             const p = Number(v.paidPrice) || 0;
             const c = Number(v.coverPrice) || 0;
             bookPaid += p;
@@ -3202,14 +4015,16 @@
           });
         });
 
-        state.merch.forEach((m) => {
-          const p = Number(m.price) || 0;
-          merchPaid += p;
-          const pubKey = pubTotals.hasOwnProperty(m.publisher) ? m.publisher : "Khác";
-          pubTotals[pubKey] += p;
-          catTotals["Quà & Đồ"] += p;
-          const ym = (m.date || "").slice(0, 7);
-          if (monthTotals.hasOwnProperty(ym)) monthTotals[ym] += p;
+        state.giftGroups.forEach((g) => {
+          const pubKey = pubTotals.hasOwnProperty(g.publisher) ? g.publisher : "Khác";
+          (g.gifts || []).forEach((m) => {
+            const p = Number(m.price) || 0;
+            merchPaid += p;
+            pubTotals[pubKey] += p;
+            catTotals["Quà & Đồ"] += p;
+            const ym = (m.date || "").slice(0, 7);
+            if (monthTotals.hasOwnProperty(ym)) monthTotals[ym] += p;
+          });
         });
 
         const totalPaid = bookPaid + merchPaid;
@@ -3389,18 +4204,34 @@
                 publisher: "Kim Đồng",
                 category: "Manga",
                 status: "Đã full",
+                aliases: "Dungeon Meshi, Mỹ Vị Hầm Ngục",
                 note: "Bản in có áo bọc",
                 cover: "",
                 createdAt: d,
-                volumes: [1, 2, 3, 4].map((n) => ({
-                  id: uid(),
-                  number: n,
-                  edition: n === 4 ? "ĐB / Limited" : "Thường",
-                  coverPrice: n === 4 ? 75000 : 40000,
-                  paidPrice: n === 4 ? 75000 : 34000,
-                  date: d,
-                  note: n === 4 ? "Kèm postcard" : "",
-                })),
+                sections: [
+                  {
+                    id: uid(),
+                    name: "Manga — Bản thường",
+                    note: "",
+                    volumes: [1, 2, 3].map((n) => ({
+                      id: uid(),
+                      number: n,
+                      coverPrice: 40000,
+                      paidPrice: 34000,
+                      date: d,
+                      image: "",
+                      note: "",
+                    })),
+                  },
+                  {
+                    id: uid(),
+                    name: "Limited",
+                    note: "Bản đặc biệt kèm postcard",
+                    volumes: [
+                      { id: uid(), number: 4, coverPrice: 75000, paidPrice: 75000, date: d, image: "", note: "Kèm postcard" },
+                    ],
+                  },
+                ],
               },
               {
                 id: uid(),
@@ -3408,18 +4239,26 @@
                 publisher: "Kim Đồng",
                 category: "Manga",
                 status: "Đang theo",
+                aliases: "JoJo, Phantom Blood",
                 note: "Bìa cứng",
                 cover: "",
                 createdAt: d,
-                volumes: [1, 2, 3].map((n) => ({
-                  id: uid(),
-                  number: n,
-                  edition: "Thường",
-                  coverPrice: 120000,
-                  paidPrice: 102000,
-                  date: d,
-                  note: "",
-                })),
+                sections: [
+                  {
+                    id: uid(),
+                    name: "Boxset",
+                    note: "Hộp cứng 3 tập",
+                    volumes: [1, 2, 3].map((n) => ({
+                      id: uid(),
+                      number: n,
+                      coverPrice: 120000,
+                      paidPrice: 102000,
+                      date: d,
+                      image: "",
+                      note: "Boxset tập 1–3",
+                    })),
+                  },
+                ],
               },
               {
                 id: uid(),
@@ -3427,29 +4266,58 @@
                 publisher: "Nhã Nam",
                 category: "Sách",
                 status: "Đã full",
+                aliases: "Norwegian Wood",
                 note: "",
                 cover: "",
                 createdAt: d,
-                volumes: [
-                  { id: uid(), number: 1, edition: "Tái bản", coverPrice: 149000, paidPrice: 118000, date: d, note: "Kèm bookmark" },
+                sections: [
+                  {
+                    id: uid(),
+                    name: "Tái bản",
+                    note: "Bìa mới",
+                    volumes: [
+                      { id: uid(), number: 1, coverPrice: 149000, paidPrice: 118000, date: d, image: "", note: "Kèm bookmark" },
+                    ],
+                  },
                 ],
               }
             );
-            state.merch.push({
+            state.giftGroups.push({
               id: uid(),
-              name: "Standee Acrylic Marcille",
-              seriesName: "Dungeon Meshi — Mỹ Vị Hầm Ngục",
+              title: "Dungeon Meshi — Mỹ Vị Hầm Ngục",
               publisher: "Kim Đồng",
-              source: "Săn tại Fes",
-              status: "Đã có",
-              price: 95000,
-              date: d,
-              note: "Mua tại booth Fes",
+              cover: "",
+              note: "Săn tại Fes & kèm bản ĐB",
+              createdAt: d,
+              gifts: [
+                {
+                  id: uid(),
+                  name: "Standee Acrylic Marcille",
+                  quantity: 1,
+                  price: 95000,
+                  source: "Săn tại Fes",
+                  status: "Đã có",
+                  date: d,
+                  image: "",
+                  note: "Mua tại booth Kim Đồng",
+                },
+                {
+                  id: uid(),
+                  name: "Bộ Postcard bản ĐB tập 4",
+                  quantity: 2,
+                  price: 0,
+                  source: "Kèm bản ĐB",
+                  status: "Đã có",
+                  date: d,
+                  image: "",
+                  note: "Kèm sách",
+                },
+              ],
             });
             saveState();
             renderAll();
             closeModal();
-            showToast("Đã nạp 3 bộ mẫu.");
+            showToast("Đã nạp 3 bộ mẫu + bộ quà mẫu.");
           });
           body.querySelector("#wipeAllBtn").addEventListener("click", () => {
             if (!confirm("Xoá sạch toàn bộ sách, quà và mục đã ghim?")) return;
@@ -3471,7 +4339,7 @@
           try {
             const parsed = JSON.parse(reader.result);
             if (!Array.isArray(parsed.series)) throw new Error("Sai định dạng");
-            state = { ...structuredClone(DEFAULT_STATE), ...parsed };
+            state = migrateStateData(parsed);
             saveState();
             applyTheme();
             renderAll();
@@ -3506,7 +4374,7 @@
 
       document.getElementById("settingsBtn").addEventListener("click", openSettingsModal);
       document.getElementById("addSeriesBtn").addEventListener("click", () => openSeriesForm());
-      document.getElementById("addMerchBtn").addEventListener("click", () => openMerchForm());
+      document.getElementById("addGiftGroupBtn").addEventListener("click", () => openGiftGroupForm());
       document.getElementById("manualPinBtn").addEventListener("click", openManualPinForm);
       document.getElementById("refreshNewsBtn").addEventListener("click", () => fetchNews(true));
 
@@ -3557,19 +4425,11 @@
         renderMerch();
       });
 
-      document.getElementById("merchStatusChips").addEventListener("click", (e) => {
+      document.getElementById("merchPubChips").addEventListener("click", (e) => {
         const btn = e.target.closest(".chip");
         if (!btn) return;
-        filters.merchStatus = btn.dataset.status;
-        document.querySelectorAll("#merchStatusChips .chip").forEach((c) => c.classList.toggle("active", c === btn));
-        renderMerch();
-      });
-
-      document.getElementById("merchSourceChips").addEventListener("click", (e) => {
-        const btn = e.target.closest(".chip");
-        if (!btn) return;
-        filters.merchSource = btn.dataset.source;
-        document.querySelectorAll("#merchSourceChips .chip").forEach((c) => c.classList.toggle("active", c === btn));
+        filters.merchPub = btn.dataset.pub;
+        document.querySelectorAll("#merchPubChips .chip").forEach((c) => c.classList.toggle("active", c === btn));
         renderMerch();
       });
 
