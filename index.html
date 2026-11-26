@@ -2328,6 +2328,364 @@
       stroke-width: 1.75;
     }
 
+
+    /* ============================
+       1. VÂN GIẤY MỸ THUẬT (PAPER GRAIN)
+       ============================ */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 99;
+      pointer-events: none;
+      opacity: 0.055;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+      mix-blend-mode: multiply;
+    }
+
+    [data-theme="dark"] body::before {
+      opacity: 0.045;
+      mix-blend-mode: screen;
+    }
+
+    [data-fx="minimal"] body::before {
+      display: none;
+    }
+
+    /* ============================
+       2. RÃNH GÁY SÁCH + BÓNG IN THẬT (BOOK CREASE) + 3D TILT + HOLOGRAM FOIL
+       ============================ */
+    .book-cover,
+    .vol-card-media,
+    .ambient-cover {
+      box-shadow: 0 3px 10px rgba(24, 20, 16, 0.14), 0 1px 2px rgba(24, 20, 16, 0.08);
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    [data-theme="dark"] .book-cover,
+    [data-theme="dark"] .vol-card-media,
+    [data-theme="dark"] .ambient-cover {
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Rãnh gáy sách bên trái (creased gutter shadow + highlight ridge) */
+    .book-cover::before,
+    .vol-card-media::before,
+    .ambient-cover::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.28) 0px,
+        rgba(0, 0, 0, 0.10) 3px,
+        rgba(255, 255, 255, 0.24) 5px,
+        rgba(0, 0, 0, 0.14) 7px,
+        rgba(255, 255, 255, 0.08) 9px,
+        transparent 14px,
+        transparent calc(100% - 2px),
+        rgba(0, 0, 0, 0.12) 100%
+      );
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+    }
+
+    /* Vệt ánh kim Hologram cho bản Limited / ĐB / Boxset / Artbook */
+    .is-holo::after {
+      content: "" !important;
+      position: absolute !important;
+      inset: -25% !important;
+      z-index: 3 !important;
+      pointer-events: none !important;
+      background: linear-gradient(
+        118deg,
+        transparent 24%,
+        rgba(255, 110, 180, 0.26) 36%,
+        rgba(255, 232, 128, 0.34) 44%,
+        rgba(110, 245, 215, 0.32) 52%,
+        rgba(140, 170, 255, 0.28) 60%,
+        transparent 72%
+      ) !important;
+      mix-blend-mode: color-dodge;
+      opacity: 0.72;
+      transform: translateX(calc((var(--mx, 0.5) - 0.5) * 90%)) translateY(calc((var(--my, 0.5) - 0.5) * 40%)) !important;
+      transition: transform 0.16s ease-out, opacity 0.25s ease !important;
+      animation: holoIdleDrift 5.5s ease-in-out infinite;
+    }
+
+    .is-holo.tilting::after {
+      animation: none;
+      opacity: 0.95;
+    }
+
+    @keyframes holoIdleDrift {
+      0%, 100% { transform: translateX(-34%) translateY(-6%); opacity: 0.42; }
+      50% { transform: translateX(34%) translateY(6%); opacity: 0.78; }
+    }
+
+    .holo-pill {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      z-index: 4;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 1px 5px;
+      border-radius: 1px;
+      color: #1A1612;
+      background: linear-gradient(120deg, #F6E08E 0%, #FFEFC2 45%, #D9B762 100%);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+      pointer-events: none;
+    }
+
+    [data-fx="minimal"] .is-holo::after {
+      animation: none !important;
+      display: none !important;
+    }
+
+    /* ============================
+       3. AMBIENT GLOW HERO TRONG MODAL CHI TIẾT
+       ============================ */
+    .ambient-hero {
+      position: relative;
+      margin: -14px -16px 12px;
+      padding: 16px 16px 14px;
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+      background: radial-gradient(
+        ellipse 115% 110% at 18% 20%,
+        rgba(var(--amb-rgb, 158, 71, 42), 0.24) 0%,
+        rgba(var(--amb-rgb, 158, 71, 42), 0.08) 52%,
+        transparent 88%
+      );
+      transition: background 0.45s ease;
+    }
+
+    [data-theme="dark"] .ambient-hero {
+      background: radial-gradient(
+        ellipse 115% 110% at 18% 20%,
+        rgba(var(--amb-rgb, 206, 110, 78), 0.34) 0%,
+        rgba(var(--amb-rgb, 206, 110, 78), 0.11) 54%,
+        transparent 90%
+      );
+    }
+
+    .ambient-cover {
+      position: relative;
+      width: 74px;
+      height: 111px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--muted);
+      flex-shrink: 0;
+      box-shadow: 0 8px 22px rgba(var(--amb-rgb, 20, 18, 16), 0.34), 0 2px 5px rgba(0, 0, 0, 0.22);
+    }
+
+    .ambient-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ============================
+       4. CHẾ ĐỘ XEM KỆ GÁY SÁCH GỖ (BOOKSHELF VIEW)
+       ============================ */
+    .shelf-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding-top: 6px;
+    }
+
+    .shelf-unit {
+      position: relative;
+    }
+
+    .shelf-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      padding: 12px 10px 0;
+      min-height: 176px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.03) 100%);
+    }
+
+    [data-theme="dark"] .shelf-row {
+      background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.24) 100%);
+    }
+
+    .shelf-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .shelf-plank {
+      height: 14px;
+      border-radius: 2px;
+      background: linear-gradient(180deg, #C7A376 0%, #A98253 45%, #84613B 100%);
+      border-top: 1px solid rgba(255, 240, 215, 0.45);
+      box-shadow: 0 7px 14px rgba(40, 26, 12, 0.22), 0 2px 3px rgba(40, 26, 12, 0.25);
+      position: relative;
+    }
+
+    [data-theme="dark"] .shelf-plank {
+      background: linear-gradient(180deg, #5A4531 0%, #443324 50%, #2D2117 100%);
+      border-top: 1px solid rgba(255, 224, 184, 0.14);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.58), 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .shelf-spine {
+      position: relative;
+      flex: 0 0 auto;
+      border-radius: 2px 2px 0 0;
+      border: 1px solid rgba(0, 0, 0, 0.25);
+      border-bottom: none;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 3px 6px;
+      color: #FAF7F2;
+      cursor: pointer;
+      transform-origin: bottom center;
+      box-shadow:
+        inset 3px 0 4px rgba(255, 255, 255, 0.18),
+        inset -3px 0 5px rgba(0, 0, 0, 0.28),
+        2px 0 5px rgba(0, 0, 0, 0.18);
+      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.24s ease;
+    }
+
+    .shelf-spine:hover,
+    .shelf-spine.pulled {
+      transform: translateY(-12px) scale(1.03);
+      box-shadow:
+        inset 3px 0 5px rgba(255, 255, 255, 0.26),
+        inset -3px 0 6px rgba(0, 0, 0, 0.3),
+        0 10px 18px rgba(0, 0, 0, 0.34);
+      z-index: 5;
+    }
+
+    /* Các đường gân chia từng tập trên gáy bộ nhiều tập */
+    .spine-vol-lines {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.22;
+      background-image: repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        transparent 11px,
+        rgba(0, 0, 0, 0.5) 11px,
+        rgba(0, 0, 0, 0.5) 12px
+      );
+    }
+
+    .spine-holo-band {
+      position: absolute;
+      top: 16px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #F6E08E, #9BF6E3, #F5A3D0, #F6E08E);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .spine-pub-dot {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      opacity: 0.85;
+      z-index: 1;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    }
+
+    .spine-title {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.15;
+      max-height: 112px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      z-index: 1;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.52);
+      letter-spacing: 0.02em;
+    }
+
+    .spine-count {
+      font-size: 9px;
+      font-weight: 600;
+      padding: 1px 4px;
+      border-radius: 1px;
+      background: rgba(0, 0, 0, 0.34);
+      color: #FFFDF8;
+      z-index: 1;
+    }
+
+    /* ============================
+       5. QUY ĐỔI VẬT LÝ + HOÁ ĐƠN HIỆU SÁCH
+       ============================ */
+    .phys-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .phys-stat {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 8px 9px;
+      text-align: center;
+    }
+
+    .phys-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .phys-lbl {
+      font-size: 10.5px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .receipt-preview-box {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .receipt-preview-box img {
+      max-width: 100%;
+      max-height: 58dvh;
+      object-fit: contain;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+      border-radius: 1px;
+    }
+
     .divider {
       height: 1px;
       background: var(--line);
@@ -2412,6 +2770,7 @@
             <div class="seg" id="bookViewSeg">
               <button class="active" data-mode="grid">Lưới</button>
               <button data-mode="list">Dòng</button>
+              <button data-mode="shelf">Kệ</button>
             </div>
           </div>
         </div>
@@ -2493,6 +2852,15 @@
       <!-- TAB 4: CHI TIÊU -->
       <section class="view" id="view-spending">
         <div class="kpi-grid" id="spendingKpis"></div>
+
+        <div class="panel">
+          <div class="panel-head" style="flex-wrap:wrap;">
+            <div class="panel-title">Quy đổi kệ sách vật lý</div>
+            <button class="btn btn-sm btn-primary" id="exportReceiptBtn">Xuất Hoá đơn hiệu sách</button>
+          </div>
+          <div class="phys-grid" id="physicalStatsGrid"></div>
+          <div class="small-muted" id="physicalStatsNote"></div>
+        </div>
 
         <div class="panel">
           <div class="panel-head" style="flex-wrap:wrap;">
@@ -2633,6 +3001,7 @@
         budgetLimit: 1000000,
         newsUrl: "./news.json",
         geminiApiKey: "",
+        geminiModel: "",
         lastBackupAt: "",
         lastEntry: {
           publisher: "Kim Đồng",
@@ -3395,7 +3764,7 @@
       document.addEventListener("pointerup", releasePressedEl, { passive: true });
 
       // ============================
-      // HỆ THỐNG ÂM THANH CHẠM TƯƠNG TÁC (WEB AUDIO API — CHẠY OFFLINE 100% TRÊN IPHONE)
+      // HỆ THỐNG ÂM THANH GỖ ĐẦM & GỖ GÃY (THOCK + WOOD CRACK — WEB AUDIO OFFLINE)
       // ============================
       let audioCtx = null;
 
@@ -3418,48 +3787,160 @@
         }
       }
 
-      function playTone(freqStart, freqEnd, duration = 0.06, type = "triangle", gainPeak = 0.07, delay = 0) {
+      // Tiếng thock gỗ đặc trầm (gõ phím cơ trầm / gõ lên mặt kệ gỗ)
+      function playWoodThock(freqStart = 165, freqEnd = 52, duration = 0.055, gainPeak = 0.16, delay = 0, clickFreq = 680) {
         const ctx = ensureAudioCtx();
         if (!ctx) return;
         try {
           const now = ctx.currentTime + delay;
+          // 1. Thân gỗ trầm (bass body drop)
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
-          osc.type = type;
+          osc.type = "sine";
           osc.frequency.setValueAtTime(freqStart, now);
-          if (freqEnd && freqEnd !== freqStart) {
-            osc.frequency.exponentialRampToValueAtTime(Math.max(40, freqEnd), now + duration);
-          }
+          osc.frequency.exponentialRampToValueAtTime(Math.max(36, freqEnd), now + duration);
           gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(gainPeak, now + 0.008);
+          gain.gain.linearRampToValueAtTime(gainPeak, now + 0.003);
           gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(now);
           osc.stop(now + duration + 0.015);
+
+          // 2. Xung va chạm bề mặt gỗ (short muffled transient)
+          const nDur = 0.014;
+          const samples = Math.max(1, Math.floor(ctx.sampleRate * nDur));
+          const buf = ctx.createBuffer(1, samples, ctx.sampleRate);
+          const ch = buf.getChannelData(0);
+          for (let i = 0; i < samples; i++) {
+            const env = Math.pow(1 - i / samples, 2.2);
+            ch[i] = (Math.random() * 2 - 1) * env;
+          }
+          const src = ctx.createBufferSource();
+          src.buffer = buf;
+          const bp = ctx.createBiquadFilter();
+          bp.type = "bandpass";
+          bp.frequency.value = clickFreq;
+          bp.Q.value = 1.9;
+          const nGain = ctx.createGain();
+          nGain.gain.setValueAtTime(gainPeak * 0.58, now);
+          nGain.gain.exponentialRampToValueAtTime(0.0001, now + nDur);
+          src.connect(bp);
+          bp.connect(nGain);
+          nGain.connect(ctx.destination);
+          src.start(now);
         } catch {}
       }
 
-      function playNoiseBrush(duration = 0.045, gainPeak = 0.028, cutoff = 1800, delay = 0) {
+      // Tiếng gỗ khô gãy rắc nhỏ (multi-micro-transient wood snap/crack)
+      function playWoodCrack(gainPeak = 0.14, baseFreq = 1280, delay = 0, snaps = 2) {
         const ctx = ensureAudioCtx();
         if (!ctx) return;
         try {
-          const sampleCount = Math.max(1, Math.floor(ctx.sampleRate * duration));
-          const buf = ctx.createBuffer(1, sampleCount, ctx.sampleRate);
-          const data = buf.getChannelData(0);
-          for (let i = 0; i < sampleCount; i++) {
-            data[i] = (Math.random() * 2 - 1) * (1 - i / sampleCount);
+          for (let s = 0; s < snaps; s++) {
+            const offset = delay + s * (0.008 + s * 0.004);
+            const now = ctx.currentTime + offset;
+            const dur = 0.011 + s * 0.004;
+            const samples = Math.max(1, Math.floor(ctx.sampleRate * dur));
+            const buf = ctx.createBuffer(1, samples, ctx.sampleRate);
+            const ch = buf.getChannelData(0);
+            for (let i = 0; i < samples; i++) {
+              const t = i / samples;
+              ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.8);
+            }
+            const src = ctx.createBufferSource();
+            src.buffer = buf;
+
+            const bp = ctx.createBiquadFilter();
+            bp.type = "bandpass";
+            bp.frequency.value = baseFreq * (s === 0 ? 1.12 : 0.86);
+            bp.Q.value = 2.6;
+
+            const g = ctx.createGain();
+            const pk = gainPeak * (s === 0 ? 0.72 : 1.0);
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.linearRampToValueAtTime(pk, now + 0.0015);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+            src.connect(bp);
+            bp.connect(g);
+            g.connect(ctx.destination);
+            src.start(now);
+          }
+
+          // Thân gỗ rỗng nhẹ đi kèm vết gãy
+          const nowB = ctx.currentTime + delay;
+          const osc = ctx.createOscillator();
+          const bGain = ctx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(255, nowB);
+          osc.frequency.exponentialRampToValueAtTime(92, nowB + 0.028);
+          bGain.gain.setValueAtTime(0.0001, nowB);
+          bGain.gain.linearRampToValueAtTime(gainPeak * 0.45, nowB + 0.002);
+          bGain.gain.exponentialRampToValueAtTime(0.0001, nowB + 0.03);
+          osc.connect(bGain);
+          bGain.connect(ctx.destination);
+          osc.start(nowB);
+          osc.stop(nowB + 0.04);
+        } catch {}
+      }
+
+      // Tiếng mộc cầm gỗ trầm ấm (rosewood marimba — không bị chói điện tử)
+      function playWoodMarimba(freq = 261.6, duration = 0.14, gainPeak = 0.095, delay = 0) {
+        const ctx = ensureAudioCtx();
+        if (!ctx) return;
+        try {
+          const now = ctx.currentTime + delay;
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const g1 = ctx.createGain();
+          const g2 = ctx.createGain();
+          osc1.type = "sine";
+          osc2.type = "sine";
+          osc1.frequency.setValueAtTime(freq, now);
+          osc2.frequency.setValueAtTime(freq * 3.98, now); // Họa âm đặc trưng thanh gỗ mộc cầm
+
+          g1.gain.setValueAtTime(0.0001, now);
+          g1.gain.linearRampToValueAtTime(gainPeak, now + 0.004);
+          g1.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+          g2.gain.setValueAtTime(0.0001, now);
+          g2.gain.linearRampToValueAtTime(gainPeak * 0.24, now + 0.002);
+          g2.gain.exponentialRampToValueAtTime(0.0001, now + 0.026);
+
+          osc1.connect(g1);
+          osc2.connect(g2);
+          g1.connect(ctx.destination);
+          g2.connect(ctx.destination);
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + duration + 0.02);
+          osc2.stop(now + 0.04);
+        } catch {}
+      }
+
+      // Tiếng lướt giấy bìa dày (lọc trầm cho ấm)
+      function playPaperSlide(duration = 0.06, gainPeak = 0.045, cutoff = 950, delay = 0) {
+        const ctx = ensureAudioCtx();
+        if (!ctx) return;
+        try {
+          const samples = Math.max(1, Math.floor(ctx.sampleRate * duration));
+          const buf = ctx.createBuffer(1, samples, ctx.sampleRate);
+          const ch = buf.getChannelData(0);
+          for (let i = 0; i < samples; i++) {
+            const t = i / samples;
+            ch[i] = (Math.random() * 2 - 1) * Math.sin(t * Math.PI);
           }
           const src = ctx.createBufferSource();
           src.buffer = buf;
           const filter = ctx.createBiquadFilter();
           filter.type = "bandpass";
           filter.frequency.value = cutoff;
-          filter.Q.value = 1.2;
+          filter.Q.value = 0.9;
           const gain = ctx.createGain();
           const now = ctx.currentTime + delay;
           gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(gainPeak, now + 0.006);
+          gain.gain.linearRampToValueAtTime(gainPeak, now + duration * 0.25);
           gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
           src.connect(filter);
           filter.connect(gain);
@@ -3470,54 +3951,74 @@
 
       const SFX = {
         tap() {
-          playTone(540, 320, 0.032, "triangle", 0.052);
+          // Thock gỗ đặc đầm tay
+          playWoodThock(158, 52, 0.052, 0.15, 0, 620);
         },
         chip() {
-          playTone(620, 480, 0.036, "sine", 0.048);
+          // Gỗ khô gãy rắc siêu gọn
+          playWoodCrack(0.13, 1280, 0, 2);
         },
         tab() {
-          playNoiseBrush(0.042, 0.026, 2100, 0);
-          playTone(430, 580, 0.055, "sine", 0.052, 0.008);
+          // Lướt giấy bìa dày + bụp gỗ nhẹ
+          playPaperSlide(0.055, 0.042, 880, 0);
+          playWoodThock(132, 48, 0.048, 0.12, 0.018, 540);
+        },
+        shelfPull() {
+          // Rút cuốn sách khỏi kệ gỗ (ma sát giấy + khấc gỗ rắc nhẹ)
+          playPaperSlide(0.075, 0.05, 760, 0);
+          playWoodCrack(0.11, 1050, 0.032, 2);
         },
         open() {
-          playTone(320, 480, 0.068, "sine", 0.055);
+          // Kéo ngăn gỗ nhẹ
+          playWoodThock(126, 62, 0.055, 0.12, 0, 520);
+          playWoodCrack(0.075, 1120, 0.016, 1);
         },
         close() {
-          playTone(410, 260, 0.058, "sine", 0.045);
+          // Gập sách bìa cứng lại (bụp trầm)
+          playWoodThock(138, 46, 0.062, 0.14, 0, 440);
         },
         pop() {
-          playTone(420, 760, 0.075, "triangle", 0.068);
+          // Gài sách khớp vào kệ (thock + rắc giòn)
+          playWoodThock(185, 64, 0.05, 0.14, 0, 760);
+          playWoodCrack(0.12, 1380, 0.022, 2);
         },
         status(idx = 0) {
-          const freqs = [440, 554, 660];
-          const f = freqs[idx % freqs.length];
-          playTone(f * 0.85, f, 0.07, "triangle", 0.062);
+          // 3 bậc gỗ trầm ấm (không chói)
+          const notes = [196, 246.94, 293.66];
+          playWoodCrack(0.09, 1180, 0, 1);
+          playWoodMarimba(notes[idx % notes.length], 0.12, 0.09, 0.008);
         },
         success() {
-          playTone(523.25, 523.25, 0.09, "triangle", 0.065, 0);
-          playTone(659.25, 659.25, 0.1, "triangle", 0.065, 0.065);
-          playTone(783.99, 880, 0.16, "sine", 0.075, 0.13);
+          // Đặt sách lên kệ ("cộp") + 2 nốt mộc cầm gỗ trầm cực ấm
+          playWoodThock(150, 48, 0.065, 0.17, 0, 580);
+          playWoodMarimba(261.63, 0.15, 0.095, 0.045);
+          playWoodMarimba(329.63, 0.21, 0.105, 0.125);
         },
         del() {
-          playTone(320, 210, 0.085, "triangle", 0.06, 0);
-          playTone(210, 145, 0.1, "sine", 0.05, 0.055);
+          // Gỗ khô gãy đôi giòn rụm + tiếng rơi đầm
+          playWoodCrack(0.17, 1520, 0, 3);
+          playWoodThock(122, 42, 0.075, 0.15, 0.038, 460);
         },
         undo() {
-          playTone(310, 430, 0.06, "triangle", 0.058, 0);
-          playTone(430, 620, 0.08, "sine", 0.062, 0.05);
+          // Lẫy gỗ quay ngược
+          playWoodThock(140, 58, 0.042, 0.12, 0, 600);
+          playWoodCrack(0.12, 1360, 0.045, 2);
         },
         shutter() {
-          playNoiseBrush(0.03, 0.05, 3200, 0);
-          playTone(920, 380, 0.035, "triangle", 0.05, 0.005);
-          playNoiseBrush(0.025, 0.035, 2400, 0.045);
+          // Màn trập cơ học đầm khô
+          playWoodCrack(0.16, 1680, 0, 2);
+          playWoodThock(175, 56, 0.04, 0.14, 0.012, 820);
+          playWoodCrack(0.1, 1220, 0.046, 1);
         },
         lamp(toDark) {
-          playNoiseBrush(0.022, 0.045, toDark ? 1600 : 2800, 0);
-          playTone(toDark ? 420 : 560, toDark ? 240 : 720, 0.05, "triangle", 0.055, 0.005);
+          // Công tắc đèn gỗ cứng "cạch"
+          playWoodCrack(0.15, toDark ? 980 : 1420, 0, 2);
+          playWoodThock(toDark ? 128 : 172, 48, 0.055, 0.16, 0.01, toDark ? 480 : 720);
         },
         error() {
-          playTone(240, 190, 0.08, "sine", 0.065, 0);
-          playTone(190, 150, 0.1, "sine", 0.06, 0.09);
+          // Gõ đúp trầm lên gỗ rỗng
+          playWoodThock(125, 54, 0.058, 0.15, 0, 420);
+          playWoodThock(108, 44, 0.072, 0.15, 0.088, 360);
         },
       };
 
@@ -3542,6 +4043,158 @@
       // Hiệu ứng & Chuyển động
       function isRichFx() {
         return (state.fxLevel || "rich") !== "minimal";
+      }
+
+
+      // ============================
+      // MÀU CHỦ ĐẠO (AMBIENT GLOW) + NHẬN DIỆN BẢN ĐB (HOLO) + NGHIÊNG 3D
+      // ============================
+      const dominantColorCache = new Map();
+
+      function pubFallbackRGB(pub) {
+        if (pub === "Trẻ") return [168, 58, 47];
+        if (pub === "Kim Đồng") return [46, 82, 120];
+        if (pub === "IPM") return [47, 93, 80];
+        if (pub === "Nhã Nam") return [143, 100, 36];
+        return [122, 92, 68];
+      }
+
+      function extractDominantColor(imgSrc, fallbackPub = "Khác") {
+        const fb = pubFallbackRGB(fallbackPub);
+        if (!imgSrc) return Promise.resolve(fb);
+        const cacheKey = imgSrc.length > 120 ? hashStringFast(imgSrc) : imgSrc;
+        if (dominantColorCache.has(cacheKey)) {
+          return Promise.resolve(dominantColorCache.get(cacheKey));
+        }
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => {
+            try {
+              const c = document.createElement("canvas");
+              c.width = 16;
+              c.height = 16;
+              const ctx = c.getContext("2d", { willReadFrequently: true });
+              ctx.drawImage(img, 0, 0, 16, 16);
+              const data = ctx.getImageData(0, 0, 16, 16).data;
+              let rSum = 0, gSum = 0, bSum = 0, wSum = 0;
+              for (let i = 0; i < data.length; i += 4) {
+                const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+                if (a < 120) continue;
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                const lum = (max + min) / 510;
+                if (lum < 0.08 || lum > 0.94) continue;
+                const sat = max === min ? 0 : (max - min) / (1 - Math.abs(2 * lum - 1)) / 255;
+                const weight = 0.25 + sat * 2.2;
+                rSum += r * weight;
+                gSum += g * weight;
+                bSum += b * weight;
+                wSum += weight;
+              }
+              if (wSum > 0) {
+                const rgb = [Math.round(rSum / wSum), Math.round(gSum / wSum), Math.round(bSum / wSum)];
+                dominantColorCache.set(cacheKey, rgb);
+                resolve(rgb);
+                return;
+              }
+            } catch {}
+            dominantColorCache.set(cacheKey, fb);
+            resolve(fb);
+          };
+          img.onerror = () => resolve(fb);
+          img.src = imgSrc;
+        });
+      }
+
+      const HOLO_REGEX = /limited|đặc biệt|ban db|bản đb|boxset|box\b|artbook|bìa cứng|giới hạn|special|collector|deluxe|hologram/i;
+
+      function isSpecialSection(sec) {
+        return Boolean(sec && HOLO_REGEX.test(`${sec.name || ""} ${sec.note || ""}`));
+      }
+
+      function isSpecialSeries(s) {
+        if (!s) return false;
+        if (s.category === "Artbook") return true;
+        if (HOLO_REGEX.test(`${s.title || ""} ${s.note || ""}`)) return true;
+        return (s.sections || []).some((sec) => isSpecialSection(sec));
+      }
+
+      function rgbToSpineBg(rgb, seedStr = "") {
+        const [r, g, b] = rgb || [96, 82, 68];
+        // Giữ độ đậm dễ đọc chữ trắng trên gáy sách
+        const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        const scale = lum > 0.55 ? 0.55 / lum : lum < 0.18 ? 1.35 : 0.88;
+        const dr = Math.min(185, Math.max(36, Math.round(r * scale)));
+        const dg = Math.min(185, Math.max(36, Math.round(g * scale)));
+        const db = Math.min(185, Math.max(36, Math.round(b * scale)));
+        const darkR = Math.max(20, Math.round(dr * 0.72));
+        const darkG = Math.max(20, Math.round(dg * 0.72));
+        const darkB = Math.max(20, Math.round(db * 0.72));
+        return `linear-gradient(180deg, rgb(${dr},${dg},${db}) 0%, rgb(${darkR},${darkG},${darkB}) 100%)`;
+      }
+
+      // Hiệu ứng nghiêng bìa 3D + Hologram theo ngón tay (hoạt động mượt trên iPhone & chuột)
+      let activeTiltEl = null;
+
+      function resetTiltEl(el) {
+        if (!el) return;
+        el.classList.remove("tilting");
+        el.style.transform = "";
+      }
+
+      document.addEventListener(
+        "pointermove",
+        (e) => {
+          if (!isRichFx()) return;
+          const cover = e.target.closest(".book-cover, .vol-card-media, .ambient-cover");
+          if (activeTiltEl && activeTiltEl !== cover) {
+            resetTiltEl(activeTiltEl);
+            activeTiltEl = null;
+          }
+          if (!cover) return;
+          if (e.pointerType === "touch" && e.buttons === 0) return;
+          activeTiltEl = cover;
+          const rect = cover.getBoundingClientRect();
+          if (!rect.width || !rect.height) return;
+          const nx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+          const ny = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+          const rotY = (nx - 0.5) * 18;
+          const rotX = (0.5 - ny) * 14;
+          cover.classList.add("tilting");
+          cover.style.setProperty("--mx", nx.toFixed(3));
+          cover.style.setProperty("--my", ny.toFixed(3));
+          cover.style.transform = `perspective(520px) rotateX(${rotX.toFixed(1)}deg) rotateY(${rotY.toFixed(1)}deg) scale(1.02)`;
+        },
+        { passive: true }
+      );
+
+      ["pointerup", "pointercancel", "pointerleave"].forEach((evt) => {
+        document.addEventListener(
+          evt,
+          () => {
+            if (activeTiltEl) {
+              resetTiltEl(activeTiltEl);
+              activeTiltEl = null;
+            }
+          },
+          { passive: true }
+        );
+      });
+
+      // Nghiêng nhẹ ảnh bìa hero trong modal theo cảm biến con quay iPhone (nếu máy hỗ trợ)
+      function attachHeroGyroTilt(coverEl) {
+        if (!coverEl || !isRichFx() || !("DeviceOrientationEvent" in window)) return () => {};
+        const onOrient = (ev) => {
+          if (ev.gamma === null || ev.beta === null) return;
+          const gx = Math.max(-18, Math.min(18, ev.gamma)) / 18; // -1..1
+          const gy = Math.max(-18, Math.min(18, ev.beta - 42)) / 18;
+          coverEl.style.setProperty("--mx", (0.5 + gx * 0.45).toFixed(3));
+          coverEl.style.setProperty("--my", (0.5 + gy * 0.45).toFixed(3));
+          coverEl.style.transform = `perspective(520px) rotateX(${(-gy * 9).toFixed(1)}deg) rotateY(${(gx * 11).toFixed(1)}deg)`;
+        };
+        window.addEventListener("deviceorientation", onOrient, { passive: true });
+        return () => window.removeEventListener("deviceorientation", onOrient);
       }
 
       function applyFxLevel() {
@@ -4188,6 +4841,7 @@
               const secCount = (s.sections || []).length;
               const spent = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
               const coverSrc = resolveImg(s.cover);
+              const holo = isSpecialSeries(s);
               const coverHtml = coverSrc
                 ? `<img src="${esc(coverSrc)}" alt="${esc(s.title)}" loading="lazy" referrerpolicy="no-referrer" />`
                 : `<div class="typo-cover" style="border-left-color:${pubColorVar(s.publisher)}">
@@ -4197,8 +4851,9 @@
                    </div>`;
               return `
                 <article class="book-card fx-card-in" style="--stagger:${idx}" data-id="${s.id}">
-                  <div class="book-cover">
+                  <div class="book-cover ${holo ? "is-holo" : ""}">
                     ${coverHtml}
+                    ${holo ? `<span class="holo-pill mono">ĐB</span>` : ""}
                     <span class="cover-badge mono">${vols.length} tập</span>
                   </div>
                   <div class="book-info">
@@ -4211,6 +4866,69 @@
                 </article>`;
             })
             .join("")}</div>`;
+        } else if (state.bookView === "shelf") {
+          // Chia thành các tầng kệ gỗ (~6–7 bộ/tầng trên điện thoại, gọn gàng như kệ thật)
+          const perShelf = window.innerWidth >= 720 ? 11 : 7;
+          const rows = [];
+          for (let i = 0; i < list.length; i += perShelf) {
+            rows.push(list.slice(i, i + perShelf));
+          }
+          container.innerHTML = `<div class="shelf-wrap">${rows
+            .map(
+              (rowItems, rIdx) => `
+                <div class="shelf-unit">
+                  <div class="shelf-row">
+                    ${rowItems
+                      .map((s, idx) => {
+                        const vols = getAllSeriesVolumes(s);
+                        const vCount = vols.length;
+                        const holo = isSpecialSeries(s);
+                        // Độ dày gáy tỷ lệ theo số tập (34px -> 74px)
+                        const widthPx = Math.min(74, Math.max(34, 30 + Math.round(Math.sqrt(Math.max(1, vCount)) * 9.5)));
+                        // Chiều cao thay đổi tự nhiên theo loại sách + biến thiên nhẹ cố định theo tên
+                        const baseH =
+                          s.category === "Artbook" ? 166 : s.category === "Sách" ? 156 : s.category === "Light Novel" ? 150 : 142;
+                        const jitter = ((s.title || "").length * 7 + idx * 5) % 13 - 6;
+                        const heightPx = baseH + jitter;
+                        const pubShort =
+                          s.publisher === "Kim Đồng" ? "KĐ" : s.publisher === "Nhã Nam" ? "NN" : s.publisher.slice(0, 3);
+                        const bgInit = rgbToSpineBg(pubFallbackRGB(s.publisher), s.title);
+                        return `
+                          <button type="button" class="shelf-spine fx-card-in" style="--stagger:${rIdx * perShelf + idx}; width:${widthPx}px; height:${heightPx}px; background:${bgInit};" data-shelf-id="${s.id}" title="${esc(s.title)} (${vCount} tập)">
+                            ${vCount >= 3 ? `<span class="spine-vol-lines"></span>` : ""}
+                            ${holo ? `<span class="spine-holo-band"></span>` : ""}
+                            <span class="spine-pub-dot mono">${esc(pubShort)}</span>
+                            <span class="spine-title">${esc(s.title)}</span>
+                            <span class="spine-count mono">${vCount}</span>
+                          </button>`;
+                      })
+                      .join("")}
+                  </div>
+                  <div class="shelf-plank"></div>
+                </div>`
+            )
+            .join("")}</div>`;
+
+          // Hút màu chủ đạo từ bìa để nhuộm từng gáy sách cho giống kệ thật
+          container.querySelectorAll("[data-shelf-id]").forEach((el) => {
+            const s = list.find((x) => x.id === el.dataset.shelfId);
+            if (!s) return;
+            const cSrc = resolveImg(s.cover);
+            if (cSrc) {
+              extractDominantColor(cSrc, s.publisher).then((rgb) => {
+                if (el.isConnected) el.style.background = rgbToSpineBg(rgb, s.title);
+              });
+            }
+            el.addEventListener("click", () => {
+              SFX.shelfPull();
+              el.classList.add("pulled");
+              setTimeout(() => {
+                el.classList.remove("pulled");
+                openSeriesDetail(s.id);
+              }, 160);
+            });
+          });
+          return;
         } else {
           container.innerHTML = `<div class="book-list">${list
             .map((s, idx) => {
@@ -4937,26 +5655,33 @@
                <button type="button" class="btn btn-sm btn-primary" id="emptyCreateSecBtn">+ Tạo mục đầu tiên</button>
              </div>`;
 
+        const seriesCoverSrc = resolveImg(s.cover);
+        const seriesHolo = isSpecialSeries(s);
+        const fbRgb = pubFallbackRGB(s.publisher);
+
         const html = `
-          <div style="display:flex; gap:12px; align-items:flex-start;">
-            <div class="cover-preview" style="width:66px; height:99px; border-left:3px solid ${pubColorVar(s.publisher)}">
-              ${resolveImg(s.cover) ? `<img src="${esc(resolveImg(s.cover))}" alt="" referrerpolicy="no-referrer" />` : `<span class="mono" style="text-align:center; padding:4px;">${esc(s.publisher)}</span>`}
-            </div>
-            <div style="flex:1; min-width:0;">
-              <div style="font-size:15px; font-weight:700; line-height:1.3;">${esc(s.title)}</div>
-              ${s.author ? `<div class="small-muted" style="margin-top:2px;">Tác giả: ${esc(s.author)}</div>` : ""}
-              <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:6px;">
-                <span class="tag">${esc(s.publisher)}</span>
-                <span class="tag">${esc(s.category)}</span>
-                <span class="tag">${esc(s.status || "Đang theo")}</span>
+          <div class="ambient-hero" id="seriesAmbientHero" style="--amb-rgb:${fbRgb.join(",")}">
+            <div style="display:flex; gap:13px; align-items:flex-start;">
+              <div class="ambient-cover ${seriesHolo ? "is-holo" : ""}" id="seriesHeroCover" style="${seriesCoverSrc ? "" : `border-left:3px solid ${pubColorVar(s.publisher)}`}">
+                ${seriesCoverSrc ? `<img src="${esc(seriesCoverSrc)}" alt="" referrerpolicy="no-referrer" />` : `<span class="mono" style="text-align:center; padding:4px;">${esc(s.publisher)}</span>`}
+                ${seriesHolo ? `<span class="holo-pill mono">ĐB</span>` : ""}
               </div>
-              <div class="mono small-muted" style="margin-top:8px;">
-                ${sections.length} mục · ${allVols.length} tập · Thực chi ${fmtMoney(totalPaid)}<br/>
-                Giá bìa ${fmtMoney(totalCover)} (${diff >= 0 ? `tiết kiệm ${fmtMoney(diff)}` : `chênh +${fmtMoney(-diff)}`})
+              <div style="flex:1; min-width:0;">
+                <div style="font-size:15.5px; font-weight:700; line-height:1.3;">${esc(s.title)}</div>
+                ${s.author ? `<div class="small-muted" style="margin-top:2px;">Tác giả: ${esc(s.author)}</div>` : ""}
+                <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:6px;">
+                  <span class="tag">${esc(s.publisher)}</span>
+                  <span class="tag">${esc(s.category)}</span>
+                  <span class="tag">${esc(s.status || "Đang theo")}</span>
+                </div>
+                <div class="mono small-muted" style="margin-top:8px;">
+                  ${sections.length} mục · ${allVols.length} tập · Thực chi ${fmtMoney(totalPaid)}<br/>
+                  Giá bìa ${fmtMoney(totalCover)} (${diff >= 0 ? `tiết kiệm ${fmtMoney(diff)}` : `chênh +${fmtMoney(-diff)}`})
+                </div>
               </div>
             </div>
+            ${s.note ? `<div class="small-muted" style="margin-top:9px; padding:7px 9px; background:var(--surface); border:1px solid var(--line);">${esc(s.note)}</div>` : ""}
           </div>
-          ${s.note ? `<div class="small-muted" style="margin-top:8px; padding:7px 9px; background:var(--surface); border:1px solid var(--line);">${esc(s.note)}</div>` : ""}
 
           <div class="divider"></div>
           <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
@@ -4970,7 +5695,22 @@
             <button type="button" class="btn btn-sm" id="editSeriesBtn">Sửa thông tin bộ</button>
           </div>`;
 
+        let detachGyro = null;
         openModal(s.title, html, (body) => {
+          const heroEl = body.querySelector("#seriesAmbientHero");
+          const heroCov = body.querySelector("#seriesHeroCover");
+          if (heroEl && seriesCoverSrc) {
+            extractDominantColor(seriesCoverSrc, s.publisher).then((rgb) => {
+              if (heroEl.isConnected) heroEl.style.setProperty("--amb-rgb", rgb.join(","));
+            });
+          }
+          if (heroCov) {
+            detachGyro = attachHeroGyroTilt(heroCov);
+            if (seriesCoverSrc) {
+              heroCov.style.cursor = "zoom-in";
+              heroCov.addEventListener("click", () => openImageLightbox(seriesCoverSrc, s.title, () => openSeriesDetail(seriesId)));
+            }
+          }
           body.querySelector("#addSectionBtn").addEventListener("click", () => openSectionForm(seriesId));
           const emptyBtn = body.querySelector("#emptyCreateSecBtn");
           if (emptyBtn) emptyBtn.addEventListener("click", () => openSectionForm(seriesId));
@@ -5000,7 +5740,7 @@
           body.querySelectorAll("[data-open-sec]").forEach((el) => {
             el.addEventListener("click", () => openSectionDetail(seriesId, el.dataset.openSec));
           });
-        });
+        }, () => { if (typeof detachGyro === "function") detachGyro(); });
       }
 
       // Form tạo / sửa Mục bên trong đầu sách (có thêm Ảnh đại diện mục!)
@@ -5234,7 +5974,7 @@
                    <span class="small-muted" style="font-size:10px; margin-top:2px;">Tập ${esc(v.number)}</span>`;
               return `
                 <button type="button" class="vol-card fx-card-in" style="--stagger:${idx}" data-vol-id="${v.id}">
-                  <div class="vol-card-media">${mediaHtml}</div>
+                  <div class="vol-card-media ${isSpecialSection(sec) ? "is-holo" : ""}">${mediaHtml}</div>
                   <div class="vol-card-body">
                     <div class="vol-card-label">Tập ${esc(v.number)}</div>
                     <div class="vol-card-price mono">${fmtMoney(v.paidPrice)}</div>
@@ -5905,11 +6645,121 @@
       // ============================
       // TẠO BÌA NHANH BẰNG AI VISION (CHỤP BÌA TRƯỚC / BÌA SAU -> TỰ ĐIỀN TÊN, TÁC GIẢ, NXB & GIÁ)
       // ============================
-      const GEMINI_VISION_MODELS = [
+      const GEMINI_FALLBACK_MODELS = [
+        "gemini-flash-latest",
+        "gemini-3.0-flash",
+        "gemini-3-flash-preview",
         "gemini-2.5-flash",
         "gemini-2.5-flash-lite",
-        "gemini-2.0-flash",
       ];
+      let discoveredGeminiModelsCache = { keyHash: "", models: [], at: 0 };
+
+      function rankGeminiModelName(name) {
+        const low = name.toLowerCase();
+        // Loại bỏ các model không phải sinh text+ảnh nhanh hoặc đã ngừng hỗ trợ
+        if (
+          /embedding|aqa|imagen|veo|tts|audio|robotics|computer-use|deep-research|lyria|gemma|learnlm|vision-001|gemini-1\.|gemini-2\.0-flash(?:-001|-exp)?$/i.test(
+            low
+          )
+        ) {
+          return -1;
+        }
+        if (!low.startsWith("gemini-")) return -1;
+        let score = 100;
+        // Ưu tiên dòng flash (nhanh, hỗ trợ ảnh tốt, hạn mức miễn phí rộng)
+        if (low.includes("flash")) score += 500;
+        else if (low.includes("pro")) score += 200;
+        if (low.includes("flash-latest")) score += 220;
+        // Trích số phiên bản (VD: 3.8, 3.0, 2.5) -> bản mới nhất đứng đầu
+        const verMatch = low.match(/gemini-(\d+)(?:\.(\d+))?/);
+        if (verMatch) {
+          const maj = Number(verMatch[1]) || 0;
+          const min = Number(verMatch[2]) || 0;
+          score += maj * 100 + min * 10;
+        }
+        // Ưu tiên bản ổn định hơn preview/exp và full flash hơn lite
+        if (low.includes("lite")) score -= 35;
+        if (low.includes("preview") || low.includes("exp")) score -= 20;
+        if (low.includes("thinking")) score -= 40;
+        return score;
+      }
+
+      async function discoverActiveGeminiModels(apiKey, forceRefresh = false) {
+        const key = String(apiKey || "").trim();
+        const kHash = hashStringFast(key);
+        const now = Date.now();
+        if (
+          !forceRefresh &&
+          discoveredGeminiModelsCache.keyHash === kHash &&
+          discoveredGeminiModelsCache.models.length &&
+          now - discoveredGeminiModelsCache.at < 1000 * 60 * 30
+        ) {
+          return discoveredGeminiModelsCache.models;
+        }
+
+        const found = [];
+        try {
+          const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}&pageSize=100`,
+            { cache: "no-store" }
+          );
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            const msg = data?.error?.message || `HTTP ${res.status}`;
+            if (/API_KEY_INVALID|API key not valid|invalid api key/i.test(msg)) {
+              throw new Error("API Key không hợp lệ — kiểm tra lại Key đã dán trong Cài đặt.");
+            }
+          } else if (Array.isArray(data.models)) {
+            const scored = [];
+            for (const m of data.models) {
+              const methods = Array.isArray(m.supportedGenerationMethods) ? m.supportedGenerationMethods : [];
+              if (!methods.includes("generateContent")) continue;
+              const shortName = String(m.name || "").replace(/^models\//, "").trim();
+              const sc = rankGeminiModelName(shortName);
+              if (sc > 0) scored.push({ name: shortName, score: sc });
+            }
+            scored.sort((a, b) => b.score - a.score);
+            scored.forEach((x) => {
+              if (!found.includes(x.name)) found.push(x.name);
+            });
+          }
+        } catch (err) {
+          if (/API Key không hợp lệ/i.test(err?.message || "")) throw err;
+        }
+
+        // Gộp thêm model từng chạy ngon (nếu có) và danh sách dự phòng hiện đại
+        const ordered = [];
+        const savedModel = String(state.geminiModel || "").trim();
+        if (savedModel && rankGeminiModelName(savedModel) > 0 && (found.length === 0 || found.includes(savedModel))) {
+          ordered.push(savedModel);
+        }
+        found.forEach((m) => {
+          if (!ordered.includes(m)) ordered.push(m);
+        });
+        GEMINI_FALLBACK_MODELS.forEach((m) => {
+          if (!ordered.includes(m)) ordered.push(m);
+        });
+
+        const finalList = ordered.slice(0, 6);
+        discoveredGeminiModelsCache = { keyHash: kHash, models: finalList, at: now };
+        return finalList;
+      }
+
+      function extractJsonObjectFromText(rawText) {
+        const cleaned = String(rawText || "")
+          .replace(/^```(?:json)?\s*/i, "")
+          .replace(/\s*```$/i, "")
+          .trim();
+        try {
+          return JSON.parse(cleaned);
+        } catch {}
+        const start = cleaned.indexOf("{");
+        const end = cleaned.lastIndexOf("}");
+        if (start !== -1 && end > start) {
+          return JSON.parse(cleaned.slice(start, end + 1));
+        }
+        throw new Error("AI trả về định dạng không phải JSON.");
+      }
 
       async function prepareImageForAI(file, maxDim = 1080, quality = 0.82) {
         const dataUrl = await compressImageFile(file, maxDim, maxDim, quality);
@@ -5954,10 +6804,13 @@ Quy tắc bắt buộc:
           });
         });
 
+        const modelsToTry = await discoverActiveGeminiModels(key, false);
+        let firstMeaningfulErr = "";
         let lastErr = "Không kết nối được Gemini API.";
-        for (const model of GEMINI_VISION_MODELS) {
+
+        for (const model of modelsToTry) {
           try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
             const res = await fetch(url, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -5972,63 +6825,81 @@ Quy tắc bắt buộc:
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
               const msg = data?.error?.message || `HTTP ${res.status}`;
-              lastErr = msg;
-              // Nếu sai key -> dừng luôn không thử model khác
+              lastErr = `[${model}] ${msg}`;
               if (/API_KEY_INVALID|API key not valid|invalid api key/i.test(msg)) {
                 throw new Error("API Key không hợp lệ — kiểm tra lại Key đã dán trong Cài đặt.");
               }
+              if (res.status === 429 && !firstMeaningfulErr) {
+                firstMeaningfulErr = "API Key đang hết lượt tạm thời (429) — đợi ~1 phút thử lại hoặc kiểm tra quota AI Studio.";
+              } else if (!firstMeaningfulErr && !/no longer available|not found|not supported/i.test(msg)) {
+                firstMeaningfulErr = lastErr;
+              }
               continue;
             }
-            const rawText =
-              data?.candidates?.[0]?.content?.parts
-                ?.map((p) => p.text || "")
-                .join("\n")
-                .trim() || "";
-            if (!rawText) {
-              lastErr = "AI không trả về dữ liệu văn bản.";
-              continue;
-            }
-            const cleanedJson = rawText
-              .replace(/^```(?:json)?\s*/i, "")
-              .replace(/\s*```$/i, "")
+
+            const respParts = data?.candidates?.[0]?.content?.parts || [];
+            // Bỏ qua các thought parts của Gemini 2.5 / 3.x thinking models
+            const textParts = respParts.filter((p) => !p.thought && typeof p.text === "string");
+            const rawText = (textParts.length ? textParts : respParts)
+              .map((p) => p.text || "")
+              .join("\n")
               .trim();
-            const parsed = JSON.parse(cleanedJson);
+            if (!rawText) {
+              lastErr = `[${model}] AI không trả về dữ liệu.`;
+              continue;
+            }
+            const parsed = extractJsonObjectFromText(rawText);
+            if (state.geminiModel !== model) {
+              state.geminiModel = model;
+              saveState();
+            }
             return { ...parsed, _model: model };
           } catch (err) {
             lastErr = err?.message || String(err);
             if (/API Key không hợp lệ/i.test(lastErr)) throw err;
           }
         }
-        throw new Error(lastErr);
+        throw new Error(firstMeaningfulErr || lastErr);
       }
 
       async function testGeminiApiKey(apiKey) {
         const key = String(apiKey || "").trim();
         if (!key) throw new Error("Hãy dán API Key trước.");
+        const modelsToTry = await discoverActiveGeminiModels(key, true);
+        let firstMeaningfulErr = "";
         let lastErr = "Không kết nối được.";
-        for (const model of GEMINI_VISION_MODELS) {
+        for (const model of modelsToTry) {
           try {
             const res = await fetch(
-              `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
+              `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   contents: [{ parts: [{ text: "Trả lời đúng 1 chữ: OK" }] }],
-                  generationConfig: { maxOutputTokens: 10 },
+                  generationConfig: { maxOutputTokens: 16 },
                 }),
               }
             );
             const data = await res.json().catch(() => ({}));
-            if (res.ok) return { ok: true, model };
-            lastErr = data?.error?.message || `HTTP ${res.status}`;
-            if (/API_KEY_INVALID|API key not valid/i.test(lastErr)) throw new Error("API Key không đúng.");
+            if (res.ok) {
+              state.geminiModel = model;
+              return { ok: true, model };
+            }
+            const msg = data?.error?.message || `HTTP ${res.status}`;
+            lastErr = `[${model}] ${msg}`;
+            if (/API_KEY_INVALID|API key not valid|invalid api key/i.test(msg)) {
+              throw new Error("API Key không đúng.");
+            }
+            if (res.status === 429 && !firstMeaningfulErr) {
+              firstMeaningfulErr = "Key đúng nhưng đang chạm giới hạn miễn phí (429) — chờ 1 phút thử lại.";
+            }
           } catch (e) {
             lastErr = e?.message || String(e);
             if (/API Key không đúng/i.test(lastErr)) throw e;
           }
         }
-        throw new Error(lastErr);
+        throw new Error(firstMeaningfulErr || lastErr);
       }
 
       function openQuickCoverModal() {
@@ -7814,6 +8685,378 @@ Quy tắc bắt buộc:
       // ============================
       // TAB 4: CHI TIÊU
       // ============================
+
+      // ============================
+      // QUY ĐỔI VẬT LÝ & XUẤT ẢNH HOÁ ĐƠN HIỆU SÁCH (THERMAL RECEIPT PNG)
+      // ============================
+      function computePhysicalStats() {
+        let totalVols = 0;
+        let totalLengthCm = 0;
+        let totalWeightG = 0;
+        let fullSeriesCount = 0;
+        let totalGiftQty = 0;
+
+        state.series.forEach((s) => {
+          const vols = getAllSeriesVolumes(s);
+          const cnt = vols.length;
+          totalVols += cnt;
+          if (s.status === "Đã full") fullSeriesCount++;
+          const cmPerVol =
+            s.category === "Sách" ? 2.3 : s.category === "Light Novel" ? 2.0 : s.category === "Artbook" ? 1.8 : 1.5;
+          const gPerVol =
+            s.category === "Sách" ? 420 : s.category === "Light Novel" ? 310 : s.category === "Artbook" ? 560 : 205;
+          totalLengthCm += cnt * cmPerVol;
+          totalWeightG += cnt * gPerVol;
+        });
+
+        state.giftGroups.forEach((g) => {
+          totalGiftQty += getGroupGiftStats(g).qty;
+        });
+
+        const lengthText =
+          totalLengthCm >= 100
+            ? `${(totalLengthCm / 100).toFixed(2).replace(".", ",")} m`
+            : `${Math.round(totalLengthCm)} cm`;
+        const weightKg = totalWeightG / 1000;
+        const weightText =
+          weightKg >= 1 ? `${weightKg.toFixed(1).replace(".", ",")} kg` : `${Math.round(totalWeightG)} g`;
+
+        return {
+          totalVols,
+          totalLengthCm,
+          lengthText,
+          totalWeightG,
+          weightText,
+          fullSeriesCount,
+          totalGiftQty,
+        };
+      }
+
+      function generateReceiptPngDataUrl() {
+        const phys = computePhysicalStats();
+        let bookPaid = 0;
+        let bookCover = 0;
+        let merchPaid = 0;
+        const pubTotals = { Trẻ: 0, "Kim Đồng": 0, IPM: 0, "Nhã Nam": 0, Khác: 0 };
+
+        const seriesRows = state.series.map((s) => {
+          const vols = getAllSeriesVolumes(s);
+          const paid = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
+          const cover = vols.reduce((a, v) => a + (Number(v.coverPrice) || 0), 0);
+          bookPaid += paid;
+          bookCover += cover;
+          const pk = pubTotals.hasOwnProperty(s.publisher) ? s.publisher : "Khác";
+          pubTotals[pk] += paid;
+          return { title: s.title, vols: vols.length, paid, publisher: s.publisher };
+        });
+
+        state.giftGroups.forEach((g) => {
+          const st = getGroupGiftStats(g);
+          merchPaid += st.spent;
+          const pk = pubTotals.hasOwnProperty(g.publisher) ? g.publisher : "Khác";
+          pubTotals[pk] += st.spent;
+        });
+
+        seriesRows.sort((a, b) => b.paid - a.paid);
+        const topSeries = seriesRows.slice(0, 6);
+        const othersCount = Math.max(0, seriesRows.length - topSeries.length);
+        const othersPaid = seriesRows.slice(6).reduce((a, x) => a + x.paid, 0);
+        const totalPaid = bookPaid + merchPaid;
+        const savedDiff = bookCover - bookPaid;
+        const pubEntries = Object.entries(pubTotals).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+
+        const W = 720;
+        const padX = 48;
+        const rowH = 34;
+        const dynamicRows = topSeries.length + (othersCount ? 1 : 0) + (merchPaid > 0 || phys.totalGiftQty > 0 ? 1 : 0);
+        const pubRowsCount = Math.max(1, pubEntries.length);
+        const H = 640 + dynamicRows * rowH + pubRowsCount * 28;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext("2d");
+
+        // Nền ngoài tối nhẹ để nổi bật tờ giấy nhiệt
+        ctx.fillStyle = "#E5E0D5";
+        ctx.fillRect(0, 0, W, H);
+
+        // Vẽ tờ hoá đơn giấy nhiệt răng cưa trên & dưới
+        const mx = 22;
+        const my = 20;
+        const rw = W - mx * 2;
+        const rh = H - my * 2;
+        const toothW = 14;
+        const toothH = 9;
+
+        ctx.save();
+        ctx.shadowColor = "rgba(35, 28, 20, 0.18)";
+        ctx.shadowBlur = 16;
+        ctx.shadowOffsetY = 6;
+        ctx.fillStyle = "#FCFBF7";
+        ctx.beginPath();
+        ctx.moveTo(mx, my + toothH);
+        for (let x = mx; x < mx + rw; x += toothW) {
+          ctx.lineTo(Math.min(mx + rw, x + toothW / 2), my);
+          ctx.lineTo(Math.min(mx + rw, x + toothW), my + toothH);
+        }
+        ctx.lineTo(mx + rw, my + rh - toothH);
+        for (let x = mx + rw; x > mx; x -= toothW) {
+          ctx.lineTo(Math.max(mx, x - toothW / 2), my + rh);
+          ctx.lineTo(Math.max(mx, x - toothW), my + rh - toothH);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // Hạt giấy mịn trên hoá đơn
+        ctx.fillStyle = "rgba(80, 70, 55, 0.035)";
+        for (let i = 0; i < 650; i++) {
+          const gx = mx + ((i * 97) % rw);
+          const gy = my + toothH + ((i * 131) % (rh - toothH * 2));
+          ctx.fillRect(gx, gy, 2, 2);
+        }
+
+        const ink = "#1E1C1A";
+        const muted = "#6B655D";
+        const accent = "#9E472A";
+        const forest = "#2F5D50";
+        const fontMono = '"IBM Plex Mono", ui-monospace, Menlo, monospace';
+        const fontSans = '"Be Vietnam Pro", -apple-system, sans-serif';
+
+        const drawDash = (y) => {
+          ctx.strokeStyle = "#BDB7AC";
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 5]);
+          ctx.beginPath();
+          ctx.moveTo(padX, y);
+          ctx.lineTo(W - padX, y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        };
+
+        const truncText = (text, maxW) => {
+          let s = String(text || "");
+          if (ctx.measureText(s).width <= maxW) return s;
+          while (s.length > 1 && ctx.measureText(s + "…").width > maxW) s = s.slice(0, -1);
+          return s + "…";
+        };
+
+        let y = my + 54;
+
+        // Header hiệu sách
+        ctx.fillStyle = ink;
+        ctx.textAlign = "center";
+        ctx.font = `700 28px ${fontMono}`;
+        ctx.fillText("HIỆU SÁCH TỦ SÁCH", W / 2, y);
+        y += 28;
+        ctx.fillStyle = muted;
+        ctx.font = `500 15px ${fontMono}`;
+        ctx.fillText("PHIẾU KIỂM KÊ SƯU TẦM · MANGA & SÁCH", W / 2, y);
+        y += 26;
+        const nowStr = new Date().toLocaleString("vi-VN", { hour12: false });
+        ctx.font = `400 14px ${fontMono}`;
+        ctx.fillText(`NGÀY IN: ${nowStr}   ·   MÃ #${todayISO().replace(/-/g, "")}`, W / 2, y);
+        y += 22;
+        drawDash(y);
+        y += 28;
+
+        // Column header
+        ctx.textAlign = "left";
+        ctx.fillStyle = muted;
+        ctx.font = `600 13px ${fontMono}`;
+        ctx.fillText("TOP BỘ ĐỐT VÍ NHẤT", padX, y);
+        ctx.textAlign = "right";
+        ctx.fillText("SL · THỰC CHI", W - padX, y);
+        y += 26;
+
+        // Top series rows
+        ctx.fillStyle = ink;
+        topSeries.forEach((row, idx) => {
+          ctx.textAlign = "left";
+          ctx.font = `600 16px ${fontSans}`;
+          const nameStr = truncText(`${idx + 1}. ${row.title}`, W - padX * 2 - 190);
+          ctx.fillText(nameStr, padX, y);
+
+          ctx.textAlign = "right";
+          ctx.font = `500 15px ${fontMono}`;
+          ctx.fillText(`${row.vols}t · ${fmtMoney(row.paid)}`, W - padX, y);
+          y += rowH;
+        });
+
+        if (othersCount > 0) {
+          ctx.textAlign = "left";
+          ctx.fillStyle = muted;
+          ctx.font = `500 15px ${fontSans}`;
+          ctx.fillText(`+ ${othersCount} bộ khác trong tủ`, padX, y);
+          ctx.textAlign = "right";
+          ctx.font = `500 15px ${fontMono}`;
+          ctx.fillText(fmtMoney(othersPaid), W - padX, y);
+          y += rowH;
+        }
+
+        if (merchPaid > 0 || phys.totalGiftQty > 0) {
+          ctx.textAlign = "left";
+          ctx.fillStyle = ink;
+          ctx.font = `500 15px ${fontSans}`;
+          ctx.fillText(`Quà & Đồ sưu tầm (${phys.totalGiftQty} món)`, padX, y);
+          ctx.textAlign = "right";
+          ctx.font = `500 15px ${fontMono}`;
+          ctx.fillText(fmtMoney(merchPaid), W - padX, y);
+          y += rowH;
+        }
+
+        y += 4;
+        drawDash(y);
+        y += 32;
+
+        // Tổng cộng
+        ctx.textAlign = "left";
+        ctx.fillStyle = ink;
+        ctx.font = `700 20px ${fontMono}`;
+        ctx.fillText("TỔNG THỰC CHI", padX, y);
+        ctx.textAlign = "right";
+        ctx.fillStyle = accent;
+        ctx.font = `700 24px ${fontMono}`;
+        ctx.fillText(fmtMoney(totalPaid), W - padX, y);
+        y += 30;
+
+        ctx.fillStyle = muted;
+        ctx.textAlign = "left";
+        ctx.font = `500 15px ${fontMono}`;
+        ctx.fillText("TỔNG GIÁ BÌA SÁCH", padX, y);
+        ctx.textAlign = "right";
+        ctx.fillText(fmtMoney(bookCover), W - padX, y);
+        y += 26;
+
+        ctx.textAlign = "left";
+        ctx.fillStyle = savedDiff >= 0 ? forest : accent;
+        ctx.font = `600 15px ${fontMono}`;
+        ctx.fillText(savedDiff >= 0 ? "TIẾT KIỆM SĂN SALE" : "CHÊNH MUA BẢN HIẾM", padX, y);
+        ctx.textAlign = "right";
+        ctx.fillText(`${savedDiff >= 0 ? "-" : "+"}${fmtMoney(Math.abs(savedDiff))}`, W - padX, y);
+        y += 24;
+
+        drawDash(y);
+        y += 28;
+
+        // Quy đổi vật lý
+        ctx.textAlign = "left";
+        ctx.fillStyle = muted;
+        ctx.font = `600 13px ${fontMono}`;
+        ctx.fillText("THÔNG SỐ KỆ SÁCH VẬT LÝ", padX, y);
+        y += 26;
+        ctx.fillStyle = ink;
+        ctx.font = `600 15px ${fontMono}`;
+        ctx.fillText(`• ${state.series.length} đầu sách (${phys.fullSeriesCount} bộ full) · ${phys.totalVols} tập`, padX, y);
+        y += 25;
+        ctx.fillText(`• Chiều dài kệ ước tính : ~${phys.lengthText}`, padX, y);
+        y += 25;
+        ctx.fillText(`• Cân nặng giấy ước tính: ~${phys.weightText}`, padX, y);
+        y += 22;
+
+        drawDash(y);
+        y += 28;
+
+        // Theo NXB
+        ctx.fillStyle = muted;
+        ctx.font = `600 13px ${fontMono}`;
+        ctx.fillText("PHÂN BỔ THEO NXB", padX, y);
+        y += 24;
+        ctx.fillStyle = ink;
+        ctx.font = `500 14.5px ${fontMono}`;
+        if (!pubEntries.length) {
+          ctx.fillText("Chưa có dữ liệu chi tiêu.", padX, y);
+          y += 28;
+        } else {
+          pubEntries.forEach(([pubName, val]) => {
+            ctx.textAlign = "left";
+            ctx.fillText(pubName, padX, y);
+            ctx.textAlign = "right";
+            ctx.fillText(fmtMoney(val), W - padX, y);
+            y += 28;
+          });
+        }
+
+        y += 10;
+        drawDash(y);
+        y += 24;
+
+        // Vẽ mã vạch trang trí cuối hoá đơn (tạo từ tổng tập + tổng tiền)
+        const barSeed = `${phys.totalVols}${totalPaid}TUSACH2026`;
+        const barAreaW = 340;
+        const barStartX = (W - barAreaW) / 2;
+        const barH = 44;
+        ctx.fillStyle = ink;
+        let bx = barStartX;
+        let bi = 0;
+        while (bx < barStartX + barAreaW - 4) {
+          const code = barSeed.charCodeAt(bi % barSeed.length) + bi * 13;
+          const bw = (code % 3) + 1.6;
+          const gap = ((code >> 2) % 3) + 1.8;
+          ctx.fillRect(bx, y, bw, barH);
+          bx += bw + gap;
+          bi++;
+        }
+        y += barH + 22;
+
+        ctx.textAlign = "center";
+        ctx.fillStyle = muted;
+        ctx.font = `500 13px ${fontMono}`;
+        ctx.fillText("CẢM ƠN ĐÃ NUÔI KỆ SÁCH · TỦ SÁCH APP", W / 2, y);
+
+        return canvas.toDataURL("image/png");
+      }
+
+      function openReceiptModal() {
+        const pngUrl = generateReceiptPngDataUrl();
+        SFX.shutter();
+        const html = `
+          <div class="form-grid">
+            <div class="receipt-preview-box">
+              <img src="${pngUrl}" alt="Hoá đơn hiệu sách" />
+            </div>
+            <div class="small-muted" style="text-align:center;">
+              Bấm <strong>Lưu ảnh / Chia sẻ</strong> để lưu vào Ảnh iPhone hoặc gửi khoe bạn bè!
+            </div>
+            <div class="modal-actions" style="justify-content:space-between;">
+              <button type="button" class="btn btn-sm" id="closeReceiptBtn">Đóng</button>
+              <button type="button" class="btn btn-sm btn-primary" id="shareReceiptBtn">Lưu ảnh / Chia sẻ</button>
+            </div>
+          </div>`;
+
+        openModal("Hoá đơn hiệu sách của bạn", html, (body) => {
+          body.querySelector("#closeReceiptBtn").addEventListener("click", closeModal);
+          body.querySelector("#shareReceiptBtn").addEventListener("click", async () => {
+            try {
+              const res = await fetch(pngUrl);
+              const blob = await res.blob();
+              const fileName = `hoadon-tusach-${todayISO()}.png`;
+              const file = new File([blob], fileName, { type: "image/png" });
+              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ title: "Hoá đơn Tủ Sách", files: [file] });
+                SFX.success();
+                return;
+              }
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = fileName;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              setTimeout(() => URL.revokeObjectURL(url), 15000);
+              SFX.success();
+              showToast("Đã tải ảnh hoá đơn .png!");
+            } catch (err) {
+              if (err && err.name === "AbortError") return;
+              SFX.error();
+              showToast("Giữ tay vào ảnh hoá đơn phía trên để chọn Lưu vào Ảnh nhé.");
+            }
+          });
+        });
+      }
+
       function renderSpending(animateSpending = false) {
         let bookPaid = 0;
         let bookCover = 0;
@@ -7912,6 +9155,32 @@ Quy tắc bắt buộc:
             560
           );
           animateCountUp(document.getElementById("kpiValPinned"), pinnedTotal, fmtMoney, 420);
+        }
+
+        // Quy đổi vật lý kệ sách
+        const phys = computePhysicalStats();
+        const physGrid = document.getElementById("physicalStatsGrid");
+        const physNote = document.getElementById("physicalStatsNote");
+        if (physGrid) {
+          physGrid.innerHTML = `
+            <div class="phys-stat">
+              <div class="phys-val mono">${esc(phys.lengthText)}</div>
+              <div class="phys-lbl">Chiều dài kệ</div>
+            </div>
+            <div class="phys-stat">
+              <div class="phys-val mono">${esc(phys.weightText)}</div>
+              <div class="phys-lbl">Cân nặng giấy</div>
+            </div>
+            <div class="phys-stat">
+              <div class="phys-val mono">${phys.totalVols}</div>
+              <div class="phys-lbl">Tổng số tập</div>
+            </div>`;
+        }
+        if (physNote) {
+          const shelvesNeeded = Math.max(1, Math.ceil(phys.totalLengthCm / 80));
+          physNote.textContent = phys.totalVols
+            ? `Ước tính chiếm khoảng ${shelvesNeeded} tầng kệ chuẩn 80cm · ${phys.fullSeriesCount} bộ đã full · ${phys.totalGiftQty} món quà.`
+            : "Thêm truyện hoặc sách để xem tủ của bạn dài bao nhiêu mét và nặng mấy ký giấy!";
         }
 
         // Budget month
@@ -8150,7 +9419,7 @@ Quy tắc bắt buộc:
             <div class="field">
               <label>Âm thanh ứng dụng</label>
               <div class="scope-switch" id="soundSwitch" style="margin-bottom:0;">
-                <button type="button" class="${isSoundOn() ? "active" : ""}" data-sndval="on">Bật (vui tai)</button>
+                <button type="button" class="${isSoundOn() ? "active" : ""}" data-sndval="on">Bật (gỗ đầm & gãy)</button>
                 <button type="button" class="${!isSoundOn() ? "active" : ""}" data-sndval="off">Tắt (im lặng)</button>
               </div>
             </div>
@@ -8550,6 +9819,7 @@ Quy tắc bắt buộc:
       });
       document.getElementById("undoBtn").addEventListener("click", performUndo);
       document.getElementById("markLegacyBtn").addEventListener("click", openMarkLegacyModal);
+      document.getElementById("exportReceiptBtn").addEventListener("click", openReceiptModal);
       document.getElementById("settingsBtn").addEventListener("click", openSettingsModal);
       document.getElementById("quickCoverBtn").addEventListener("click", openQuickCoverModal);
       document.getElementById("addSeriesBtn").addEventListener("click", () => openSeriesForm());
