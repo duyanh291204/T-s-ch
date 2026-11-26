@@ -192,6 +192,18 @@
 
     .view.active {
       display: block;
+      animation: viewEnter 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes viewEnter {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* Toolbar & Filters */
@@ -936,11 +948,33 @@
     }
 
     .tabbar-inner {
+      position: relative;
       max-width: 960px;
       margin: 0 auto;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       height: 54px;
+    }
+
+    .tab-indicator {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 25%;
+      height: 2.5px;
+      pointer-events: none;
+      transition: transform 0.34s cubic-bezier(0.34, 1.38, 0.64, 1);
+      display: flex;
+      justify-content: center;
+    }
+
+    .tab-indicator::after {
+      content: "";
+      width: 44%;
+      height: 100%;
+      background: var(--accent);
+      border-radius: 0 0 2px 2px;
+      box-shadow: 0 1px 6px rgba(158, 71, 42, 0.35);
     }
 
     .tab-btn {
@@ -960,14 +994,14 @@
       font-weight: 600;
     }
 
-    .tab-btn.active::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 22%;
-      right: 22%;
-      height: 2px;
-      background: var(--accent);
+    .tab-btn.active svg {
+      animation: tabIconPop 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes tabIconPop {
+      0% { transform: scale(0.84) translateY(2px); }
+      55% { transform: scale(1.16) translateY(-2px); }
+      100% { transform: scale(1) translateY(0); }
     }
 
     .tab-btn svg {
@@ -976,6 +1010,7 @@
       stroke: currentColor;
       fill: none;
       stroke-width: 1.6;
+      transition: transform 0.2s ease;
     }
 
     .tab-dot {
@@ -997,10 +1032,14 @@
       position: fixed;
       inset: 0;
       z-index: 60;
-      background: rgba(15, 14, 12, 0.52);
+      background: rgba(15, 14, 12, 0.48);
+      -webkit-backdrop-filter: blur(5px);
+      backdrop-filter: blur(5px);
       display: none;
       align-items: flex-end;
       justify-content: center;
+      opacity: 0;
+      transition: opacity 0.22s ease;
     }
 
     @media (min-width: 640px) {
@@ -1012,6 +1051,11 @@
 
     .modal-backdrop.open {
       display: flex;
+      opacity: 1;
+    }
+
+    .modal-backdrop.closing {
+      opacity: 0;
     }
 
     .modal {
@@ -1023,6 +1067,58 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.24);
+      animation: modalSheetIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .modal-backdrop.closing .modal {
+      animation: none;
+      transform: translateY(28px);
+      opacity: 0;
+    }
+
+    @keyframes modalSheetIn {
+      from {
+        opacity: 0;
+        transform: translateY(36px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (min-width: 640px) {
+      @keyframes modalSheetIn {
+        from {
+          opacity: 0;
+          transform: translateY(14px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+      .modal-backdrop.closing .modal {
+        transform: scale(0.96);
+        opacity: 0;
+      }
+    }
+
+    .modal-body.step-in {
+      animation: modalStepSwap 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes modalStepSwap {
+      from {
+        opacity: 0;
+        transform: translateX(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
 
     @media (min-width: 640px) {
@@ -1660,26 +1756,442 @@
       color: var(--ink);
     }
 
+    /* Tactile Press & Ripple Effects (Mobile + iOS Safari) */
+    .btn, .icon-btn, .chip, .preset-chip, .ck-btn, .missing-chip,
+    .status-cycle, .tab-btn, .seg button, .scope-switch button,
+    .scope-switch-3 button, .section-card, .book-card, .book-row,
+    .vol-card, .vol-compact-cell, .gift-group-card {
+      position: relative;
+      transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1),
+                  background-color 0.12s ease,
+                  border-color 0.12s ease,
+                  box-shadow 0.12s ease,
+                  opacity 0.12s ease,
+                  filter 0.12s ease;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .btn, .icon-btn, .chip, .preset-chip, .ck-btn, .missing-chip,
+    .status-cycle, .seg button, .scope-switch button, .scope-switch-3 button {
+      overflow: hidden;
+    }
+
+    .btn:active, .btn.is-pressed,
+    .icon-btn:active, .icon-btn.is-pressed,
+    .chip:active, .chip.is-pressed,
+    .preset-chip:active, .preset-chip.is-pressed,
+    .ck-btn:active, .ck-btn.is-pressed,
+    .missing-chip:active, .missing-chip.is-pressed,
+    .status-cycle:active, .status-cycle.is-pressed,
+    .seg button:active, .seg button.is-pressed,
+    .scope-switch button:active, .scope-switch button.is-pressed,
+    .scope-switch-3 button:active, .scope-switch-3 button.is-pressed {
+      transform: scale(0.94);
+      filter: brightness(0.9);
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.18);
+    }
+
+    .btn-primary:active, .btn-primary.is-pressed,
+    .btn-accent:active, .btn-accent.is-pressed {
+      transform: scale(0.94);
+      opacity: 0.84;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.32);
+    }
+
+    .tab-btn:active, .tab-btn.is-pressed {
+      transform: scale(0.9);
+      opacity: 0.75;
+    }
+
+    .book-card:active, .book-card.is-pressed,
+    .book-row:active, .book-row.is-pressed,
+    .section-card:active, .section-card.is-pressed,
+    .vol-card:active, .vol-card.is-pressed,
+    .vol-compact-cell:active, .vol-compact-cell.is-pressed,
+    .gift-group-card:active, .gift-group-card.is-pressed {
+      transform: scale(0.97);
+      opacity: 0.88;
+    }
+
+    .tap-ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.22;
+      transform: scale(0);
+      pointer-events: none;
+      animation: tapRippleAnim 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @keyframes tapRippleAnim {
+      to {
+        transform: scale(2.6);
+        opacity: 0;
+      }
+    }
+
+    .icon-btn:disabled {
+      opacity: 0.38;
+      pointer-events: none;
+    }
+
+    .icon-btn.undo-ready {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    /* Interactive Toast with Undo button */
     .toast {
       position: fixed;
       left: 50%;
       bottom: calc(68px + var(--safe-bottom));
-      transform: translateX(-50%);
-      z-index: 80;
+      transform: translate(-50%, 8px);
+      z-index: 95;
       background: var(--ink);
       color: var(--bg);
-      padding: 8px 14px;
+      padding: 9px 12px;
       font-size: 12.5px;
       border-radius: var(--radius);
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.2s ease;
-      max-width: 90vw;
-      text-align: center;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      max-width: 92vw;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
     }
 
     .toast.show {
       opacity: 1;
+      transform: translate(-50%, 0);
+      pointer-events: auto;
+    }
+
+    .toast-undo-btn {
+      padding: 3px 9px;
+      border: 1px solid currentColor;
+      border-radius: var(--radius);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: inherit;
+      background: rgba(255, 255, 255, 0.14);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .toast-undo-btn:active {
+      transform: scale(0.93);
+    }
+
+    /* Legacy checkbox row */
+    .check-inline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      font-size: 12.5px;
+      cursor: pointer;
+    }
+
+    .check-inline input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* Image Cropper Overlay (z-index > modalBackdrop) */
+    .crop-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(12, 11, 10, 0.82);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    .crop-backdrop.open {
+      display: flex;
+    }
+
+    .crop-modal {
+      width: 100%;
+      max-width: 440px;
+      max-height: 92dvh;
+      background: var(--bg);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .crop-stage-wrap {
+      position: relative;
+      width: 100%;
+      height: 310px;
+      background: #0F0E0D;
+      overflow: hidden;
+      touch-action: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+    }
+
+    .crop-stage-wrap:active {
+      cursor: grabbing;
+    }
+
+    .crop-stage-wrap canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .crop-controls {
+      padding: 12px 14px calc(14px + var(--safe-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--bg);
+    }
+
+    .crop-zoom-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    .crop-zoom-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--ink);
+      height: 24px;
+    }
+
+    .crop-ratio-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ============================
+       HIỆU ỨNG PHONG PHÚ (STAGGER, SHEEN, PARTICLES, THEME WAVE, COUNTERS)
+       ============================ */
+    body {
+      transition: background-color 0.28s ease, color 0.24s ease;
+    }
+
+    .topbar {
+      transition: background-color 0.28s ease, border-color 0.24s ease, box-shadow 0.22s ease;
+    }
+
+    .topbar.scrolled {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    [data-theme="dark"] .topbar.scrolled {
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.42);
+    }
+
+    .panel, .kpi-card, .gift-kpi, .news-card, .merch-card, .gift-group-card, .book-cover, .section-card {
+      transition: background-color 0.26s ease, border-color 0.22s ease, transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+    }
+
+    /* Staggered card entrance */
+    .fx-card-in {
+      animation: cardPopIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+      animation-delay: calc(min(var(--stagger, 0), 16) * 26ms);
+    }
+
+    @keyframes cardPopIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.975);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Diagonal gloss / paper sheen sweep on book covers & volume cards */
+    .book-cover::after,
+    .vol-card-media::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        118deg,
+        transparent 32%,
+        rgba(255, 255, 255, 0.26) 48%,
+        rgba(255, 255, 255, 0.08) 56%,
+        transparent 68%
+      );
+      transform: translateX(-130%);
+      pointer-events: none;
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .book-card:hover .book-cover::after,
+    .book-card.is-pressed .book-cover::after,
+    .vol-card:hover .vol-card-media::after,
+    .vol-card.is-pressed .vol-card-media::after {
+      transform: translateX(130%);
+    }
+
+    .book-card:hover .book-cover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+      border-color: var(--line-strong);
+    }
+
+    /* Smooth animated bars on Tab Chi tiêu */
+    .bar-fill {
+      transition: width 0.62s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .progress-fill {
+      transition: width 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .progress-fill.over {
+      box-shadow: 0 0 10px rgba(166, 50, 41, 0.45);
+      animation: overBudgetPulse 2.2s ease-in-out infinite;
+    }
+
+    @keyframes overBudgetPulse {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.18); }
+    }
+
+    /* Micro-interactions: Undo wiggle, Save flash, Status flip */
+    .undo-wiggle {
+      animation: undoWiggleAnim 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+
+    @keyframes undoWiggleAnim {
+      0% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.08) rotate(-8deg); }
+      55% { transform: scale(1.06) rotate(6deg); }
+      80% { transform: scale(1.02) rotate(-3deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .save-flash {
+      animation: saveFlashPop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+      color: var(--forest) !important;
+    }
+
+    @keyframes saveFlashPop {
+      0% { transform: scale(0.88); opacity: 0.5; }
+      50% { transform: scale(1.12); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .status-pop {
+      animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes badgePop {
+      0% { transform: scale(0.78); }
+      60% { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+
+    /* Cropper smooth entrance */
+    .crop-backdrop {
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      animation: fadeOverlayIn 0.2s ease both;
+    }
+
+    .crop-backdrop.open .crop-modal {
+      animation: cropPopIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes fadeOverlayIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes cropPopIn {
+      from { opacity: 0; transform: scale(0.93) translateY(14px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Theme Radial Light Switch Wash */
+    .theme-wave {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      pointer-events: none;
+      animation: themeWaveFade 0.46s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes themeWaveFade {
+      0% { opacity: 0.55; transform: scale(0.15); }
+      100% { opacity: 0; transform: scale(2.4); }
+    }
+
+    /* Celebration Paper Confetti Particles */
+    .fx-particle {
+      position: fixed;
+      z-index: 98;
+      pointer-events: none;
+      border-radius: 1.5px;
+      will-change: transform, opacity;
+      animation: fxBurst 0.62s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes fxBurst {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0deg) scale(1);
+      }
+      75% {
+        opacity: 0.95;
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.35);
+      }
+    }
+
+    /* Chế độ Gọn nhẹ (Minimal Motion) hoặc Reduced Motion */
+    [data-fx="minimal"] .fx-card-in,
+    [data-fx="minimal"] .view.active,
+    [data-fx="minimal"] .modal,
+    [data-fx="minimal"] .modal-body.step-in,
+    [data-fx="minimal"] .tab-btn.active svg,
+    [data-fx="minimal"] .progress-fill.over,
+    [data-fx="minimal"] .undo-wiggle {
+      animation: none !important;
+    }
+
+    [data-fx="minimal"] .book-cover::after,
+    [data-fx="minimal"] .vol-card-media::after,
+    [data-fx="minimal"] .tap-ripple,
+    [data-fx="minimal"] .fx-particle,
+    [data-fx="minimal"] .theme-wave {
+      display: none !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fx-card-in, .view.active, .modal, .modal-body.step-in, .progress-fill.over {
+        animation: none !important;
+      }
     }
 
     .divider {
@@ -1704,6 +2216,10 @@
         <span class="save-status mono" id="saveIndicator"></span>
       </div>
       <div class="topbar-actions">
+        <button class="icon-btn" id="undoBtn" title="Hoàn tác thao tác vừa rồi" disabled>
+          <svg viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+          <span id="undoBtnLabel">Hoàn tác</span>
+        </button>
         <button class="icon-btn" id="themeBtn" title="Đổi giao diện">
           <span id="themeLabel">Đèn bàn</span>
         </button>
@@ -1839,9 +2355,12 @@
         <div class="kpi-grid" id="spendingKpis"></div>
 
         <div class="panel">
-          <div class="panel-head">
+          <div class="panel-head" style="flex-wrap:wrap;">
             <div class="panel-title" id="budgetMonthTitle">Hạn mức tháng</div>
-            <button class="btn btn-sm" id="editBudgetBtn">Đổi hạn mức</button>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button class="btn btn-sm" id="markLegacyBtn">Mua từ trước</button>
+              <button class="btn btn-sm" id="editBudgetBtn">Đổi hạn mức</button>
+            </div>
           </div>
           <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:6px;">
             <span class="mono" id="budgetSpentText">0đ</span>
@@ -1887,6 +2406,7 @@
     <!-- Bottom Tab Bar -->
     <nav class="tabbar">
       <div class="tabbar-inner">
+        <div class="tab-indicator" id="tabIndicator"></div>
         <button class="tab-btn active" data-tab="books">
           <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
           <span>Tủ sách</span>
@@ -1919,6 +2439,40 @@
     </div>
   </div>
 
+  <!-- Dedicated Image Cropper Modal (opens above forms without closing them) -->
+  <div class="crop-backdrop" id="cropBackdrop">
+    <div class="crop-modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div class="modal-title" id="cropModalTitle">Cắt ảnh</div>
+        <button type="button" class="btn btn-sm" id="cropCancelTopBtn">Huỷ</button>
+      </div>
+      <div class="crop-stage-wrap" id="cropStageWrap">
+        <canvas id="cropCanvas"></canvas>
+      </div>
+      <div class="crop-controls">
+        <div class="crop-zoom-row">
+          <span class="small-muted mono">Thu phóng</span>
+          <input type="range" id="cropZoomSlider" min="1" max="3.5" step="0.02" value="1" />
+          <span class="small-muted mono" id="cropZoomVal" style="width:36px; text-align:right;">1.0x</span>
+        </div>
+        <div class="crop-ratio-row">
+          <div style="display:flex; gap:5px; flex-wrap:wrap;" id="cropRatioBtns">
+            <button type="button" class="ck-btn active" data-cratio="0.6667">2:3 Bìa</button>
+            <button type="button" class="ck-btn" data-cratio="1">1:1 Vuông</button>
+            <button type="button" class="ck-btn" data-cratio="1.3333">4:3 Ngang</button>
+            <button type="button" class="ck-btn" data-cratio="0">Gốc</button>
+          </div>
+          <button type="button" class="btn btn-sm" id="cropRotateBtn">Xoay 90°</button>
+        </div>
+        <div class="small-muted" style="font-size:11px;">Kéo 1 ngón để chỉnh vị trí · Chụm 2 ngón hoặc kéo thanh để phóng to.</div>
+        <div style="display:flex; justify-content:space-between; gap:8px; padding-top:6px; border-top:1px solid var(--line);">
+          <button type="button" class="btn btn-sm" id="cropUseOriginalBtn">Dùng ảnh gốc</button>
+          <button type="button" class="btn btn-sm btn-primary" id="cropConfirmBtn">Cắt & Dùng ảnh</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
   <input type="file" id="importFileInput" accept=".json,application/json" style="display:none" />
 
@@ -1932,6 +2486,7 @@
 
       const DEFAULT_STATE = {
         theme: "light",
+        fxLevel: "rich", // "rich" | "minimal"
         bookView: "grid",
         volView: "cards", // "cards" | "compact"
         budgetLimit: 1000000,
@@ -2185,6 +2740,7 @@
                 coverPrice: Math.max(0, Number(v.coverPrice) || 0),
                 paidPrice: Math.max(0, Number(v.paidPrice) || 0),
                 date: v.date || todayISO(),
+                isLegacy: Boolean(v.isLegacy),
                 image: v.image || "",
                 readState: v.readState || "Chưa đọc",
                 lentTo: v.lentTo || "",
@@ -2213,6 +2769,7 @@
                     coverPrice: Math.max(0, Number(v.coverPrice) || 0),
                     paidPrice: Math.max(0, Number(v.paidPrice) || 0),
                     date: v.date || todayISO(),
+                    isLegacy: Boolean(v.isLegacy),
                     image: v.image || "",
                     readState: v.readState || "Chưa đọc",
                     lentTo: v.lentTo || "",
@@ -2251,6 +2808,7 @@
               source: m.source || "Kèm bản ĐB",
               status: m.status || "Đã có",
               date: m.date || todayISO(),
+              isLegacy: Boolean(m.isLegacy),
               image: m.image || "",
               note: m.note || "",
             });
@@ -2273,6 +2831,7 @@
                   source: it.source || "Kèm bản ĐB",
                   status: it.status || "Đã có",
                   date: it.date || todayISO(),
+                  isLegacy: Boolean(it.isLegacy),
                   image: it.image || "",
                   note: it.note || "",
                 }))
@@ -2451,7 +3010,15 @@
           }
           pendingSaves = Math.max(0, pendingSaves - 1);
           if (pendingSaves === 0) {
-            setSaveStatus("", "Đã lưu");
+            setSaveStatus("", "✓ Đã lưu");
+            if (isRichFx()) {
+              const sEl = document.getElementById("saveIndicator");
+              if (sEl) {
+                sEl.classList.remove("save-flash");
+                void sEl.offsetWidth;
+                sEl.classList.add("save-flash");
+              }
+            }
           }
         });
       }
@@ -2503,14 +3070,254 @@
         return "";
       }
 
+      // ============================
+      // HỆ THỐNG HOÀN TÁC (UNDO) TIẾT KIỆM RAM CHO IPHONE
+      // ============================
+      const MAX_UNDO_STEPS = 25;
+      const undoStack = [];
+      const undoImageBank = {}; // Giữ mỗi ảnh duy nhất 1 lần trong RAM để hoàn tác xoá nhầm ảnh/bộ
+
+      function updateUndoBtnUI() {
+        const btn = document.getElementById("undoBtn");
+        const lbl = document.getElementById("undoBtnLabel");
+        if (!btn) return;
+        const count = undoStack.length;
+        btn.disabled = count === 0;
+        btn.classList.toggle("undo-ready", count > 0);
+        if (lbl) lbl.textContent = count > 0 ? `Hoàn tác (${count})` : "Hoàn tác";
+        btn.title = count > 0 ? `Hoàn tác: ${undoStack[count - 1].label}` : "Chưa có thao tác để hoàn tác";
+      }
+
+      function pushUndo(label) {
+        if (!appReady) return;
+        compactImagesInState(state);
+        // Cất toàn bộ ảnh hiện có vào kho RAM dùng chung (không nhân bản giữa các bước undo)
+        const pool = state.images || {};
+        for (const k in pool) {
+          if (pool[k] && !undoImageBank[k]) undoImageBank[k] = pool[k];
+        }
+        const lightSnap = structuredClone({ ...state, images: {} });
+        undoStack.push({ label: label || "thao tác vừa rồi", snap: lightSnap });
+        if (undoStack.length > MAX_UNDO_STEPS) undoStack.shift();
+        updateUndoBtnUI();
+        if (isRichFx()) {
+          const ub = document.getElementById("undoBtn");
+          if (ub) {
+            ub.classList.remove("undo-wiggle");
+            void ub.offsetWidth;
+            ub.classList.add("undo-wiggle");
+          }
+        }
+      }
+
+      function collectImgKeysFromState(obj) {
+        const keys = new Set();
+        const addKey = (ref) => {
+          if (typeof ref === "string" && ref.startsWith("img:")) keys.add(ref.slice(4));
+        };
+        (obj.series || []).forEach((s) => {
+          addKey(s.cover);
+          (s.sections || []).forEach((sec) => {
+            addKey(sec.image);
+            (sec.volumes || []).forEach((v) => addKey(v.image));
+          });
+        });
+        (obj.giftGroups || []).forEach((g) => {
+          addKey(g.cover);
+          (g.gifts || []).forEach((it) => addKey(it.image));
+        });
+        return keys;
+      }
+
+      function performUndo() {
+        if (!undoStack.length) {
+          showToast("Không còn bước nào để hoàn tác.");
+          return;
+        }
+        const entry = undoStack.pop();
+        const restored = structuredClone(entry.snap);
+        const neededKeys = collectImgKeysFromState(restored);
+        const rebuiltPool = {};
+        neededKeys.forEach((k) => {
+          if (undoImageBank[k]) rebuiltPool[k] = undoImageBank[k];
+          else if (state.images && state.images[k]) rebuiltPool[k] = state.images[k];
+        });
+        restored.images = rebuiltPool;
+        state = migrateStateData(restored);
+        saveState();
+        applyTheme();
+        applyFxLevel();
+        renderAll();
+        closeModal();
+        updateUndoBtnUI();
+        showToast(`Đã hoàn tác: ${entry.label}`);
+      }
+
+      // Toast thông minh: hỗ trợ nút "Hoàn tác" trực tiếp trên thông báo
       let toastTimer = null;
-      function showToast(msg) {
+      function showToast(msg, opts = {}) {
         const el = document.getElementById("toast");
-        el.textContent = msg;
+        const undoable = Boolean(opts && opts.undoable && undoStack.length > 0);
+        const duration = opts.duration || (undoable ? 6000 : 2600);
+        el.innerHTML = `<span>${esc(msg)}</span>${
+          undoable ? `<button type="button" class="toast-undo-btn" id="toastUndoAction">Hoàn tác</button>` : ""
+        }`;
+        if (undoable) {
+          const ub = el.querySelector("#toastUndoAction");
+          if (ub) {
+            ub.addEventListener("click", (e) => {
+              e.stopPropagation();
+              clearTimeout(toastTimer);
+              el.classList.remove("show");
+              performUndo();
+            });
+          }
+        }
         el.classList.add("show");
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+        toastTimer = setTimeout(() => el.classList.remove("show"), duration);
       }
+
+      // ============================
+      // HIỆU ỨNG BẤM NÚT RÕ RÀNG TRÊN IPHONE (PRESS + RIPPLE)
+      // ============================
+      const PRESS_SELECTOR =
+        ".btn, .icon-btn, .chip, .preset-chip, .ck-btn, .missing-chip, .status-cycle, .tab-btn, .seg button, .scope-switch button, .scope-switch-3 button, .section-card, .book-card, .book-row, .vol-card, .vol-compact-cell, .gift-group-card";
+      const RIPPLE_SELECTOR =
+        ".btn, .icon-btn, .chip, .preset-chip, .ck-btn, .missing-chip, .status-cycle, .seg button, .scope-switch button, .scope-switch-3 button";
+      let activePressedEl = null;
+
+      function releasePressedEl() {
+        if (!activePressedEl) return;
+        const el = activePressedEl;
+        activePressedEl = null;
+        setTimeout(() => el.classList.remove("is-pressed"), 90);
+      }
+
+      document.addEventListener(
+        "pointerdown",
+        (e) => {
+          const target = e.target.closest(PRESS_SELECTOR);
+          if (!target || target.disabled) return;
+          if (activePressedEl && activePressedEl !== target) {
+            activePressedEl.classList.remove("is-pressed");
+          }
+          activePressedEl = target;
+          target.classList.add("is-pressed");
+
+          // Hiệu ứng gợn sóng nhẹ cho các nút bấm
+          if (target.matches(RIPPLE_SELECTOR)) {
+            const rect = target.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const ripple = document.createElement("span");
+            ripple.className = "tap-ripple";
+            ripple.style.width = size + "px";
+            ripple.style.height = size + "px";
+            ripple.style.left = e.clientX - rect.left - size / 2 + "px";
+            ripple.style.top = e.clientY - rect.top - size / 2 + "px";
+            target.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 400);
+          }
+        },
+        { passive: true }
+      );
+
+      document.addEventListener("pointerup", releasePressedEl, { passive: true });
+      document.addEventListener("pointercancel", releasePressedEl, { passive: true });
+      document.addEventListener("scroll", releasePressedEl, { passive: true, capture: true });
+
+      // Hiệu ứng & Chuyển động
+      function isRichFx() {
+        return (state.fxLevel || "rich") !== "minimal";
+      }
+
+      function applyFxLevel() {
+        document.documentElement.setAttribute("data-fx", isRichFx() ? "rich" : "minimal");
+      }
+
+      function spawnCelebration(originX, originY, count = 14) {
+        if (!isRichFx()) return;
+        const cx = typeof originX === "number" ? originX : window.innerWidth / 2;
+        const cy = typeof originY === "number" ? originY : window.innerHeight * 0.42;
+        const colors = ["#9E472A", "#2F5D50", "#CCA05C", "#CE6E4E", "#62A08D", "#D9A84E"];
+        for (let i = 0; i < count; i++) {
+          const p = document.createElement("span");
+          p.className = "fx-particle";
+          const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.45;
+          const dist = 36 + Math.random() * 68;
+          const tx = Math.cos(angle) * dist;
+          const ty = Math.sin(angle) * dist - 18;
+          const rot = Math.round((Math.random() - 0.5) * 320);
+          const w = 5 + Math.round(Math.random() * 4);
+          const h = 4 + Math.round(Math.random() * 5);
+          p.style.left = cx + "px";
+          p.style.top = cy + "px";
+          p.style.width = w + "px";
+          p.style.height = h + "px";
+          p.style.background = colors[i % colors.length];
+          p.style.setProperty("--tx", `${tx.toFixed(1)}px`);
+          p.style.setProperty("--ty", `${ty.toFixed(1)}px`);
+          p.style.setProperty("--rot", `${rot}deg`);
+          document.body.appendChild(p);
+          setTimeout(() => p.remove(), 660);
+        }
+      }
+
+      function spawnCelebrationFromEl(el, count = 14) {
+        if (!el) return spawnCelebration(undefined, undefined, count);
+        const r = el.getBoundingClientRect();
+        spawnCelebration(r.left + r.width / 2, r.top + r.height / 2, count);
+      }
+
+      function triggerThemeWash(btnEl, toDark) {
+        if (!isRichFx()) return;
+        const wave = document.createElement("div");
+        wave.className = "theme-wave";
+        let ox = "80%";
+        let oy = "28px";
+        if (btnEl) {
+          const r = btnEl.getBoundingClientRect();
+          ox = `${Math.round(r.left + r.width / 2)}px`;
+          oy = `${Math.round(r.top + r.height / 2)}px`;
+        }
+        wave.style.background = toDark
+          ? `radial-gradient(circle at ${ox} ${oy}, rgba(20, 19, 18, 0.72), transparent 64%)`
+          : `radial-gradient(circle at ${ox} ${oy}, rgba(246, 245, 241, 0.85), transparent 64%)`;
+        wave.style.transformOrigin = `${ox} ${oy}`;
+        document.body.appendChild(wave);
+        setTimeout(() => wave.remove(), 480);
+      }
+
+      function animateCountUp(el, targetVal, fmtFn = fmtMoney, duration = 460) {
+        if (!el) return;
+        if (!isRichFx() || targetVal === 0) {
+          el.textContent = fmtFn(targetVal);
+          return;
+        }
+        const start = performance.now();
+        const sign = targetVal < 0 ? -1 : 1;
+        const absTarget = Math.abs(targetVal);
+        const step = (now) => {
+          const progress = Math.min(1, (now - start) / duration);
+          // easeOutCubic
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const cur = Math.round(absTarget * eased) * sign;
+          el.textContent = fmtFn(cur);
+          if (progress < 1) requestAnimationFrame(step);
+          else el.textContent = fmtFn(targetVal);
+        };
+        requestAnimationFrame(step);
+      }
+
+      // Topbar scroll shadow
+      const topbarEl = document.querySelector(".topbar");
+      window.addEventListener(
+        "scroll",
+        () => {
+          if (topbarEl) topbarEl.classList.toggle("scrolled", window.scrollY > 6);
+        },
+        { passive: true }
+      );
 
       // Theme
       function applyTheme() {
@@ -2522,21 +3329,38 @@
         );
       }
 
-      // Modal helpers
+      // Modal helpers (with smooth open/close & drill-down step transition)
       const modalBackdrop = document.getElementById("modalBackdrop");
       const modalTitleEl = document.getElementById("modalTitle");
       const modalBodyEl = document.getElementById("modalBody");
 
       let currentModalCleanup = null;
+      let modalCloseTimer = null;
 
       function openModal(title, html, onMount, onClose = null) {
+        if (modalCloseTimer) {
+          clearTimeout(modalCloseTimer);
+          modalCloseTimer = null;
+        }
         if (typeof currentModalCleanup === "function") {
           try { currentModalCleanup(); } catch {}
           currentModalCleanup = null;
         }
+        const wasAlreadyOpen = modalBackdrop.classList.contains("open") && !modalBackdrop.classList.contains("closing");
+        modalBackdrop.classList.remove("closing");
         modalTitleEl.textContent = title;
         modalBodyEl.innerHTML = html;
+        modalBodyEl.scrollTop = 0;
         modalBackdrop.classList.add("open");
+
+        if (wasAlreadyOpen && isRichFx()) {
+          modalBodyEl.classList.remove("step-in");
+          void modalBodyEl.offsetWidth;
+          modalBodyEl.classList.add("step-in");
+        } else {
+          modalBodyEl.classList.remove("step-in");
+        }
+
         currentModalCleanup = typeof onClose === "function" ? onClose : null;
         if (typeof onMount === "function") onMount(modalBodyEl);
       }
@@ -2546,7 +3370,17 @@
           try { currentModalCleanup(); } catch {}
           currentModalCleanup = null;
         }
-        modalBackdrop.classList.remove("open");
+        if (!modalBackdrop.classList.contains("open")) return;
+        if (!isRichFx()) {
+          modalBackdrop.classList.remove("open", "closing");
+          return;
+        }
+        modalBackdrop.classList.add("closing");
+        clearTimeout(modalCloseTimer);
+        modalCloseTimer = setTimeout(() => {
+          modalBackdrop.classList.remove("open", "closing");
+          modalCloseTimer = null;
+        }, 200);
       }
 
       document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
@@ -2588,6 +3422,318 @@
         });
       }
 
+      // ============================
+      // TRÌNH CẮT ẢNH TRỰC TIẾP (KÉO + CHỤM 2 NGÓN + XOAY + TỶ LỆ BÌA)
+      // ============================
+      function openImageCropper(file, opts = {}) {
+        const defaultRatio = opts.ratio !== undefined ? opts.ratio : 2 / 3;
+        const maxW = opts.maxW || 360;
+        const maxH = opts.maxH || 540;
+        const quality = opts.quality || 0.76;
+        const title = opts.title || "Cắt ảnh";
+
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onerror = () => resolve(null);
+          reader.onload = () => {
+            const img = new Image();
+            img.onerror = () => resolve(null);
+            img.onload = () => {
+              const backdrop = document.getElementById("cropBackdrop");
+              const titleEl = document.getElementById("cropModalTitle");
+              const wrap = document.getElementById("cropStageWrap");
+              const canvas = document.getElementById("cropCanvas");
+              const ctx = canvas.getContext("2d");
+              const zoomSlider = document.getElementById("cropZoomSlider");
+              const zoomValEl = document.getElementById("cropZoomVal");
+              const ratioRow = document.getElementById("cropRatioBtns");
+              const rotateBtn = document.getElementById("cropRotateBtn");
+              const cancelTopBtn = document.getElementById("cropCancelTopBtn");
+              const useOrigBtn = document.getElementById("cropUseOriginalBtn");
+              const confirmBtn = document.getElementById("cropConfirmBtn");
+
+              titleEl.textContent = title;
+              backdrop.classList.add("open");
+
+              let aspect = defaultRatio; // 0 = gốc (giữ tỷ lệ gốc của ảnh)
+              let rotation = 0;          // 0, 90, 180, 270
+              let zoom = 1;
+              let panX = 0;
+              let panY = 0;
+
+              let stageW = 340;
+              let stageH = 310;
+              let boxW = 180;
+              let boxH = 270;
+              let boxX = 80;
+              let boxY = 20;
+              let baseScale = 1;
+
+              const getRotDims = () => {
+                const swapped = rotation % 180 !== 0;
+                return { rw: swapped ? img.height : img.width, rh: swapped ? img.width : img.height };
+              };
+
+              const computeGeometry = () => {
+                const rect = wrap.getBoundingClientRect();
+                stageW = Math.max(220, Math.round(rect.width));
+                stageH = Math.max(220, Math.round(rect.height));
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                canvas.width = Math.round(stageW * dpr);
+                canvas.height = Math.round(stageH * dpr);
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                const { rw, rh } = getRotDims();
+                const effectiveAspect = aspect > 0 ? aspect : rw / rh;
+                const pad = 22;
+                const availW = stageW - pad * 2;
+                const availH = stageH - pad * 2;
+                if (availW / availH > effectiveAspect) {
+                  boxH = availH;
+                  boxW = boxH * effectiveAspect;
+                } else {
+                  boxW = availW;
+                  boxH = boxW / effectiveAspect;
+                }
+                boxX = (stageW - boxW) / 2;
+                boxY = (stageH - boxH) / 2;
+                // Scale tối thiểu để ảnh luôn phủ kín khung cắt
+                baseScale = Math.max(boxW / rw, boxH / rh);
+              };
+
+              const clampPan = () => {
+                const { rw, rh } = getRotDims();
+                const drawW = rw * baseScale * zoom;
+                const drawH = rh * baseScale * zoom;
+                const maxPanX = Math.max(0, (drawW - boxW) / 2);
+                const maxPanY = Math.max(0, (drawH - boxH) / 2);
+                panX = Math.max(-maxPanX, Math.min(maxPanX, panX));
+                panY = Math.max(-maxPanY, Math.min(maxPanY, panY));
+              };
+
+              const drawStage = () => {
+                clampPan();
+                ctx.clearRect(0, 0, stageW, stageH);
+                ctx.fillStyle = "#0F0E0D";
+                ctx.fillRect(0, 0, stageW, stageH);
+
+                // Vẽ ảnh theo tâm stage + pan + xoay + scale
+                ctx.save();
+                ctx.translate(stageW / 2 + panX, stageH / 2 + panY);
+                ctx.rotate((rotation * Math.PI) / 180);
+                const totalScale = baseScale * zoom;
+                ctx.drawImage(
+                  img,
+                  (-img.width * totalScale) / 2,
+                  (-img.height * totalScale) / 2,
+                  img.width * totalScale,
+                  img.height * totalScale
+                );
+                ctx.restore();
+
+                // Lớp phủ tối xung quanh khung cắt
+                ctx.fillStyle = "rgba(10, 9, 8, 0.62)";
+                ctx.fillRect(0, 0, stageW, boxY);
+                ctx.fillRect(0, boxY + boxH, stageW, stageH - (boxY + boxH));
+                ctx.fillRect(0, boxY, boxX, boxH);
+                ctx.fillRect(boxX + boxW, boxY, stageW - (boxX + boxW), boxH);
+
+                // Khung cắt + lưới 3x3
+                ctx.strokeStyle = "#F6F5F1";
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(boxX + 0.5, boxY + 0.5, boxW - 1, boxH - 1);
+
+                ctx.strokeStyle = "rgba(246, 245, 241, 0.28)";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(boxX + boxW / 3, boxY);
+                ctx.lineTo(boxX + boxW / 3, boxY + boxH);
+                ctx.moveTo(boxX + (boxW * 2) / 3, boxY);
+                ctx.lineTo(boxX + (boxW * 2) / 3, boxY + boxH);
+                ctx.moveTo(boxX, boxY + boxH / 3);
+                ctx.lineTo(boxX + boxW, boxY + boxH / 3);
+                ctx.moveTo(boxX, boxY + (boxH * 2) / 3);
+                ctx.lineTo(boxX + boxW, boxY + (boxH * 2) / 3);
+                ctx.stroke();
+
+                zoomSlider.value = String(zoom);
+                zoomValEl.textContent = zoom.toFixed(1) + "x";
+              };
+
+              // Cập nhật nút tỷ lệ active
+              const syncRatioBtns = () => {
+                ratioRow.querySelectorAll("[data-cratio]").forEach((b) => {
+                  const r = Number(b.dataset.cratio);
+                  const match = r === 0 ? aspect === 0 : aspect > 0 && Math.abs(r - aspect) < 0.05;
+                  b.classList.toggle("active", match);
+                });
+              };
+
+              // Kéo 1 ngón & Chụm 2 ngón (Pinch-to-zoom trên iPhone)
+              const pointers = new Map();
+              let lastDragX = 0;
+              let lastDragY = 0;
+              let pinchStartDist = 0;
+              let pinchStartZoom = 1;
+
+              const onPointerDown = (e) => {
+                e.preventDefault();
+                canvas.setPointerCapture?.(e.pointerId);
+                pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+                if (pointers.size === 1) {
+                  lastDragX = e.clientX;
+                  lastDragY = e.clientY;
+                } else if (pointers.size === 2) {
+                  const pts = [...pointers.values()];
+                  pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+                  pinchStartZoom = zoom;
+                }
+              };
+
+              const onPointerMove = (e) => {
+                if (!pointers.has(e.pointerId)) return;
+                e.preventDefault();
+                pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+                if (pointers.size === 1) {
+                  const dx = e.clientX - lastDragX;
+                  const dy = e.clientY - lastDragY;
+                  lastDragX = e.clientX;
+                  lastDragY = e.clientY;
+                  panX += dx;
+                  panY += dy;
+                  drawStage();
+                } else if (pointers.size === 2) {
+                  const pts = [...pointers.values()];
+                  const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+                  if (pinchStartDist > 0) {
+                    zoom = Math.max(1, Math.min(3.5, pinchStartZoom * (dist / pinchStartDist)));
+                    drawStage();
+                  }
+                }
+              };
+
+              const onPointerUp = (e) => {
+                pointers.delete(e.pointerId);
+                if (pointers.size === 1) {
+                  const rem = [...pointers.values()][0];
+                  lastDragX = rem.x;
+                  lastDragY = rem.y;
+                }
+              };
+
+              const onZoomInput = () => {
+                zoom = Math.max(1, Math.min(3.5, Number(zoomSlider.value) || 1));
+                drawStage();
+              };
+
+              const onRatioClick = (e) => {
+                const btn = e.target.closest("[data-cratio]");
+                if (!btn) return;
+                aspect = Number(btn.dataset.cratio);
+                zoom = 1;
+                panX = 0;
+                panY = 0;
+                syncRatioBtns();
+                computeGeometry();
+                drawStage();
+              };
+
+              const onRotateClick = () => {
+                rotation = (rotation + 90) % 360;
+                zoom = 1;
+                panX = 0;
+                panY = 0;
+                computeGeometry();
+                drawStage();
+              };
+
+              const cleanup = () => {
+                canvas.removeEventListener("pointerdown", onPointerDown);
+                canvas.removeEventListener("pointermove", onPointerMove);
+                canvas.removeEventListener("pointerup", onPointerUp);
+                canvas.removeEventListener("pointercancel", onPointerUp);
+                zoomSlider.removeEventListener("input", onZoomInput);
+                ratioRow.removeEventListener("click", onRatioClick);
+                rotateBtn.removeEventListener("click", onRotateClick);
+                cancelTopBtn.removeEventListener("click", onCancel);
+                useOrigBtn.removeEventListener("click", onUseOrig);
+                confirmBtn.removeEventListener("click", onConfirm);
+                backdrop.classList.remove("open");
+              };
+
+              const onCancel = () => {
+                cleanup();
+                resolve(null);
+              };
+
+              const onUseOrig = async () => {
+                cleanup();
+                try {
+                  const compressed = await compressImageFile(file, maxW, maxH, quality);
+                  resolve(compressed);
+                } catch {
+                  resolve(null);
+                }
+              };
+
+              const onConfirm = () => {
+                clampPan();
+                const outRatio = boxW / boxH;
+                let outW = maxW;
+                let outH = Math.round(outW / outRatio);
+                if (outH > maxH) {
+                  outH = maxH;
+                  outW = Math.round(outH * outRatio);
+                }
+                const outCanvas = document.createElement("canvas");
+                outCanvas.width = Math.max(1, outW);
+                outCanvas.height = Math.max(1, outH);
+                const octx = outCanvas.getContext("2d");
+                octx.fillStyle = "#FFFFFF";
+                octx.fillRect(0, 0, outCanvas.width, outCanvas.height);
+
+                const scaleToOut = outCanvas.width / boxW;
+                const totalScale = baseScale * zoom * scaleToOut;
+                octx.save();
+                octx.translate(outCanvas.width / 2 + panX * scaleToOut, outCanvas.height / 2 + panY * scaleToOut);
+                octx.rotate((rotation * Math.PI) / 180);
+                octx.drawImage(
+                  img,
+                  (-img.width * totalScale) / 2,
+                  (-img.height * totalScale) / 2,
+                  img.width * totalScale,
+                  img.height * totalScale
+                );
+                octx.restore();
+
+                const dataUrl = outCanvas.toDataURL("image/jpeg", quality);
+                cleanup();
+                resolve(dataUrl);
+              };
+
+              canvas.addEventListener("pointerdown", onPointerDown);
+              canvas.addEventListener("pointermove", onPointerMove);
+              canvas.addEventListener("pointerup", onPointerUp);
+              canvas.addEventListener("pointercancel", onPointerUp);
+              zoomSlider.addEventListener("input", onZoomInput);
+              ratioRow.addEventListener("click", onRatioClick);
+              rotateBtn.addEventListener("click", onRotateClick);
+              cancelTopBtn.addEventListener("click", onCancel);
+              useOrigBtn.addEventListener("click", onUseOrig);
+              confirmBtn.addEventListener("click", onConfirm);
+
+              syncRatioBtns();
+              requestAnimationFrame(() => {
+                computeGeometry();
+                drawStage();
+              });
+            };
+            img.src = reader.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
       // Chia tổng tiền Boxset đều cho nhiều tập sao cho tổng đúng từng đồng
       function splitTotalExact(total, count) {
         const cleanTotal = Math.max(0, Math.round(Number(total) || 0));
@@ -2596,7 +3742,7 @@
         return Array.from({ length: count }, (_, idx) => base + (idx < rem ? 1 : 0));
       }
 
-      function addBatchVolumesToSection(section, { from, to, priceMode, coverInput, paidInput, discount, date, image, note }) {
+      function addBatchVolumesToSection(section, { from, to, priceMode, coverInput, paidInput, discount, date, isLegacy = false, image, note }) {
         const f = Math.round(Number(from));
         const t = Math.round(Number(to));
         const count = t - f + 1;
@@ -2622,7 +3768,10 @@
             coverPrice: coverParts[i],
             paidPrice: paidParts[i],
             date: date || todayISO(),
+            isLegacy: Boolean(isLegacy),
             image: image || "",
+            readState: "Chưa đọc",
+            lentTo: "",
             note: note || "",
             groupId,
             groupLabel,
@@ -2719,7 +3868,7 @@
 
         if (state.bookView === "grid") {
           container.innerHTML = `<div class="book-grid">${list
-            .map((s) => {
+            .map((s, idx) => {
               const vols = getAllSeriesVolumes(s);
               const secCount = (s.sections || []).length;
               const spent = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
@@ -2732,7 +3881,7 @@
                      <div class="typo-cat mono">${esc(s.category)}</div>
                    </div>`;
               return `
-                <article class="book-card" data-id="${s.id}">
+                <article class="book-card fx-card-in" style="--stagger:${idx}" data-id="${s.id}">
                   <div class="book-cover">
                     ${coverHtml}
                     <span class="cover-badge mono">${vols.length} tập</span>
@@ -2749,12 +3898,12 @@
             .join("")}</div>`;
         } else {
           container.innerHTML = `<div class="book-list">${list
-            .map((s) => {
+            .map((s, idx) => {
               const vols = getAllSeriesVolumes(s);
               const secCount = (s.sections || []).length;
               const spent = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
               return `
-                <div class="book-row" data-id="${s.id}">
+                <div class="book-row fx-card-in" style="--stagger:${idx}" data-id="${s.id}">
                   <div class="row-thumb" style="border-left:2px solid ${pubColorVar(s.publisher)}">
                     ${resolveImg(s.cover) ? `<img src="${esc(resolveImg(s.cover))}" alt="" referrerpolicy="no-referrer" />` : `<span class="mono">${esc(s.publisher.slice(0, 3))}</span>`}
                   </div>
@@ -2953,6 +4102,10 @@
                  <div class="ck-row" id="quickCkRow">
                    ${CK_PRESETS.map((pct) => `<button type="button" class="ck-btn mono" data-sck="${pct}">-${pct}%</button>`).join("")}
                  </div>
+                 <label class="check-inline">
+                   <input type="checkbox" id="quickLegacyChk" />
+                   <span>Mua từ trước (không tính vào hạn mức tháng này)</span>
+                 </label>
                  <div class="small-muted mono" id="quickVolSummary"></div>
                </div>
              </div>`
@@ -3003,6 +4156,7 @@
                     <input type="file" id="coverFileInput" accept="image/*" style="display:none;" />
                   </label>
                   <button type="button" class="btn btn-sm btn-danger" id="clearCoverBtn" style="${currentCover ? "" : "display:none;"}">Xoá ảnh</button>
+                  <button type="button" class="btn btn-sm" id="undoCoverBtn" style="display:none;">Hoàn tác ảnh</button>
                 </div>
               </div>
             </div>
@@ -3077,6 +4231,10 @@
                <div class="ck-row" id="batchCkRow">
                  ${CK_PRESETS.map((pct) => `<button type="button" class="ck-btn mono" data-batchck="${pct}">-${pct}%</button>`).join("")}
                </div>
+               <label class="check-inline">
+                 <input type="checkbox" id="batchLegacyChk" checked />
+                 <span>Mua từ trước (không tính vào hạn mức tháng này)</span>
+               </label>
                <div class="boxset-hint mono" id="batchPreviewSummary">Gõ hoặc dán danh sách ở trên để xem trước.</div>
                <div class="modal-actions">
                  <button type="button" class="btn btn-sm" id="cancelBatchBtn">Huỷ</button>
@@ -3112,20 +4270,35 @@
             clearBtn.style.display = currentCover ? "" : "none";
           };
 
+          const undoCoverBtn = body.querySelector("#undoCoverBtn");
+          let clearedCoverBackup = "";
+
           body.querySelector("#cancelSeriesBtn").addEventListener("click", closeModal);
           clearBtn.addEventListener("click", () => {
+            if (currentCover) clearedCoverBackup = currentCover;
             setPreview("");
-            showToast("Đã xoá ảnh bìa.");
+            if (undoCoverBtn && clearedCoverBackup) undoCoverBtn.style.display = "";
+            showToast("Đã xoá ảnh bìa — bấm 'Hoàn tác ảnh' nếu lỡ tay.");
           });
+
+          if (undoCoverBtn) {
+            undoCoverBtn.addEventListener("click", () => {
+              if (!clearedCoverBackup) return;
+              setPreview(clearedCoverBackup);
+              clearedCoverBackup = "";
+              undoCoverBtn.style.display = "none";
+              showToast("Đã khôi phục ảnh bìa.");
+            });
+          }
 
           body.querySelector("#coverFileInput").addEventListener("change", async (e) => {
             const file = e.target.files?.[0];
+            e.target.value = "";
             if (!file) return;
-            try {
-              const compressed = await compressImageFile(file, 320, 480, 0.74);
-              setPreview(compressed);
-            } catch {
-              showToast("Không đọc được ảnh này.");
+            const cropped = await openImageCropper(file, { ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.76, title: "Cắt ảnh bìa" });
+            if (cropped) {
+              setPreview(cropped);
+              if (undoCoverBtn) undoCoverBtn.style.display = "none";
             }
           });
 
@@ -3187,6 +4360,7 @@
             const category = fd.get("category");
 
             if (s) {
+              pushUndo(`sửa "${s.title}"`);
               s.title = title;
               s.publisher = publisher;
               s.category = category;
@@ -3199,7 +4373,7 @@
               renderNews();
               renderSpending();
               openSeriesDetail(s.id);
-              showToast("Đã cập nhật đầu sách.");
+              showToast("Đã cập nhật đầu sách.", { undoable: true });
               return;
             }
 
@@ -3233,6 +4407,7 @@
                   paidInput: 0,
                   discount: disc,
                   date: todayISO(),
+                  isLegacy: Boolean(body.querySelector("#quickLegacyChk")?.checked),
                   image: "",
                   note: "",
                 });
@@ -3255,6 +4430,7 @@
             renderNews();
             renderSpending();
 
+            spawnCelebration(undefined, undefined, 16);
             if (continueAdding) {
               showToast(`Đã lưu "${title}"${addedVols ? ` (${addedVols} tập)` : ""} — nhập tiếp bộ mới!`);
               openSeriesForm(null, "single");
@@ -3339,6 +4515,7 @@
                 showToast("Hãy nhập ít nhất 1 tên truyện/sách.");
                 return;
               }
+              pushUndo(`nhập nhanh ${items.length} bộ`);
               let totalCreatedVols = 0;
               // Duyệt ngược để thứ tự đầu danh sách vẫn đứng trên cùng
               for (let i = items.length - 1; i >= 0; i--) {
@@ -3365,6 +4542,7 @@
                     paidInput: 0,
                     discount: it.discount,
                     date: todayISO(),
+                    isLegacy: Boolean(body.querySelector("#batchLegacyChk")?.checked),
                     image: "",
                     note: "",
                   });
@@ -3384,6 +4562,7 @@
               renderNews();
               renderSpending();
               closeModal();
+              spawnCelebration(undefined, undefined, 22);
               showToast(`Đã nhập nhanh ${items.length} bộ (${totalCreatedVols} tập)!`);
             });
           }
@@ -3474,13 +4653,14 @@
           body.querySelector("#editSeriesBtn").addEventListener("click", () => openSeriesForm(seriesId));
           body.querySelector("#delSeriesBtn").addEventListener("click", () => {
             if (!confirm(`Xoá bộ "${s.title}" cùng toàn bộ ${sections.length} mục và ${allVols.length} tập?`)) return;
+            pushUndo(`xoá bộ "${s.title}"`);
             state.series = state.series.filter((x) => x.id !== seriesId);
             saveState();
             renderBooks();
             renderNews();
             renderSpending();
             closeModal();
-            showToast("Đã xoá đầu sách.");
+            showToast(`Đã xoá "${s.title}".`, { undoable: true });
           });
           body.querySelectorAll("[data-zoom-sec]").forEach((btn) => {
             btn.addEventListener("click", (e) => {
@@ -3528,6 +4708,7 @@
                     <input type="file" id="secImgInput" accept="image/*" style="display:none;" />
                   </label>
                   <button type="button" class="btn btn-sm btn-danger" id="clearSecImgBtn" style="${currentSecImg ? "" : "display:none;"}">Xoá ảnh</button>
+                  <button type="button" class="btn btn-sm" id="undoSecImgBtn" style="display:none;">Hoàn tác ảnh</button>
                 </div>
               </div>
             </div>
@@ -3561,19 +4742,34 @@
             );
           });
 
+          const undoSecImgBtn = body.querySelector("#undoSecImgBtn");
+          let clearedSecImgBackup = "";
+
           clearBtn.addEventListener("click", () => {
+            if (currentSecImg) clearedSecImgBackup = currentSecImg;
             setSecPreview("");
-            showToast("Đã xoá ảnh mục.");
+            if (undoSecImgBtn && clearedSecImgBackup) undoSecImgBtn.style.display = "";
+            showToast("Đã xoá ảnh mục — bấm 'Hoàn tác ảnh' nếu lỡ tay.");
           });
+
+          if (undoSecImgBtn) {
+            undoSecImgBtn.addEventListener("click", () => {
+              if (!clearedSecImgBackup) return;
+              setSecPreview(clearedSecImgBackup);
+              clearedSecImgBackup = "";
+              undoSecImgBtn.style.display = "none";
+              showToast("Đã khôi phục ảnh mục.");
+            });
+          }
 
           body.querySelector("#secImgInput").addEventListener("change", async (e) => {
             const file = e.target.files?.[0];
+            e.target.value = "";
             if (!file) return;
-            try {
-              const compressed = await compressImageFile(file, 360, 520, 0.74);
-              setSecPreview(compressed);
-            } catch {
-              showToast("Không đọc được ảnh này.");
+            const cropped = await openImageCropper(file, { ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.76, title: "Cắt ảnh mục" });
+            if (cropped) {
+              setSecPreview(cropped);
+              if (undoSecImgBtn) undoSecImgBtn.style.display = "none";
             }
           });
 
@@ -3594,6 +4790,7 @@
             if (!name) return;
             s.sections = s.sections || [];
             if (sec) {
+              pushUndo(`sửa mục "${sec.name}"`);
               sec.name = name;
               sec.image = currentSecImg;
               sec.note = fd.get("note").trim();
@@ -3692,7 +4889,7 @@
             .join("")}</div>`;
         } else {
           volsHtml = `<div class="vol-card-grid">${vols
-            .map((v) => {
+            .map((v, idx) => {
               const numStr = String(v.number).padStart(2, "0");
               const volImg = resolveImg(v.image);
               const isLent = Boolean((v.lentTo || "").trim());
@@ -3711,7 +4908,7 @@
                    <span class="vol-card-num-big mono">${esc(numStr)}</span>
                    <span class="small-muted" style="font-size:10px; margin-top:2px;">Tập ${esc(v.number)}</span>`;
               return `
-                <button type="button" class="vol-card" data-vol-id="${v.id}">
+                <button type="button" class="vol-card fx-card-in" style="--stagger:${idx}" data-vol-id="${v.id}">
                   <div class="vol-card-media">${mediaHtml}</div>
                   <div class="vol-card-body">
                     <div class="vol-card-label">Tập ${esc(v.number)}</div>
@@ -3778,12 +4975,13 @@
           }
           body.querySelector("#delSecBtn").addEventListener("click", () => {
             if (!confirm(`Xoá mục "${sec.name}" cùng ${vols.length} tập bên trong?`)) return;
+            pushUndo(`xoá mục "${sec.name}"`);
             s.sections = (s.sections || []).filter((x) => x.id !== sectionId);
             saveState();
             renderBooks();
             renderSpending();
             openSeriesDetail(seriesId);
-            showToast(`Đã xoá mục "${sec.name}".`);
+            showToast(`Đã xoá mục "${sec.name}".`, { undoable: true });
           });
           body.querySelectorAll("#volViewSeg [data-vmode]").forEach((btn) => {
             btn.addEventListener("click", () => {
@@ -3797,7 +4995,8 @@
           });
 
           // 1-Tap Quick Add Next Volume!
-          body.querySelector("#quickAddNextVolBtn").addEventListener("click", () => {
+          body.querySelector("#quickAddNextVolBtn").addEventListener("click", (ev) => {
+            spawnCelebrationFromEl(ev.currentTarget, 12);
             const last = { ...DEFAULT_STATE.lastEntry, ...(state.lastEntry || {}) };
             const cp = lastVol ? Number(lastVol.coverPrice) || 0 : Number(last.coverPrice) || 35000;
             const pp = lastVol
@@ -3875,6 +5074,7 @@
                     <input type="file" id="volImgInput" accept="image/*" style="display:none;" />
                   </label>
                   <button type="button" class="btn btn-sm btn-danger" id="clearVolImgBtn" style="${currentImg ? "" : "display:none;"}">Xoá ảnh</button>
+                  <button type="button" class="btn btn-sm" id="undoVolImgBtn" style="display:none;">Hoàn tác ảnh</button>
                 </div>
               </div>
             </div>
@@ -3902,13 +5102,17 @@
             <div class="form-row-2">
               <div class="field">
                 <label>Ngày mua</label>
-                <input name="date" type="date" value="${esc(v?.date || todayISO())}" />
+                <input name="date" id="volDateInput" type="date" value="${esc(v?.date || todayISO())}" />
               </div>
               <div class="field">
                 <label>Đang cho mượn (để trống nếu ở nhà)</label>
                 <input name="lentTo" value="${esc(v?.lentTo || "")}" placeholder="VD: Minh, Huy..." />
               </div>
             </div>
+            <label class="check-inline">
+              <input type="checkbox" name="isLegacy" id="volLegacyChk" ${v?.isLegacy ? "checked" : ""} />
+              <span>Mua từ trước (không tính vào hạn mức tháng này)</span>
+            </label>
 
             <div class="field">
               <label>Ghi chú (Obi, bookmark, nơi mua...)</label>
@@ -4000,19 +5204,44 @@
             );
           });
 
+          const undoVolImgBtn = body.querySelector("#undoVolImgBtn");
+          const volLegacyChk = body.querySelector("#volLegacyChk");
+          const volDateInput = body.querySelector("#volDateInput");
+          let clearedVolImgBackup = "";
+
+          if (volLegacyChk && volDateInput) {
+            const syncVolLegacyUI = () => {
+              volDateInput.style.opacity = volLegacyChk.checked ? "0.45" : "1";
+            };
+            volLegacyChk.addEventListener("change", syncVolLegacyUI);
+            syncVolLegacyUI();
+          }
+
           clearBtn.addEventListener("click", () => {
+            if (currentImg) clearedVolImgBackup = currentImg;
             setVolPreview("");
-            showToast("Đã xoá ảnh tập.");
+            if (undoVolImgBtn && clearedVolImgBackup) undoVolImgBtn.style.display = "";
+            showToast("Đã xoá ảnh tập — bấm 'Hoàn tác ảnh' nếu lỡ tay.");
           });
+
+          if (undoVolImgBtn) {
+            undoVolImgBtn.addEventListener("click", () => {
+              if (!clearedVolImgBackup) return;
+              setVolPreview(clearedVolImgBackup);
+              clearedVolImgBackup = "";
+              undoVolImgBtn.style.display = "none";
+              showToast("Đã khôi phục ảnh tập.");
+            });
+          }
 
           body.querySelector("#volImgInput").addEventListener("change", async (e) => {
             const file = e.target.files?.[0];
+            e.target.value = "";
             if (!file) return;
-            try {
-              const compressed = await compressImageFile(file, 360, 540, 0.74);
-              setVolPreview(compressed);
-            } catch {
-              showToast("Không đọc được ảnh này.");
+            const cropped = await openImageCropper(file, { ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.76, title: `Cắt ảnh tập ${defaultNum}` });
+            if (cropped) {
+              setVolPreview(cropped);
+              if (undoVolImgBtn) undoVolImgBtn.style.display = "none";
             }
           });
 
@@ -4021,12 +5250,13 @@
           const delBtn = body.querySelector("#delVolBtn");
           if (delBtn) {
             delBtn.addEventListener("click", () => {
+              pushUndo(`xoá tập ${v.number} (${s.title})`);
               sec.volumes = (sec.volumes || []).filter((x) => x.id !== volId);
               saveState();
               renderBooks();
               renderSpending();
               openSectionDetail(seriesId, sectionId);
-              showToast("Đã xoá tập.");
+              showToast(`Đã xoá tập ${v.number}.`, { undoable: true });
             });
           }
 
@@ -4034,12 +5264,13 @@
           if (delGrpBtn && v?.groupId) {
             delGrpBtn.addEventListener("click", () => {
               if (!confirm(`Xoá toàn bộ ${groupSiblings.length} tập thuộc ${v.groupLabel || "đợt này"}?`)) return;
+              pushUndo(`xoá đợt ${groupSiblings.length} tập (${s.title})`);
               sec.volumes = (sec.volumes || []).filter((x) => x.groupId !== v.groupId);
               saveState();
               renderBooks();
               renderSpending();
               openSectionDetail(seriesId, sectionId);
-              showToast(`Đã xoá ${groupSiblings.length} tập.`);
+              showToast(`Đã xoá ${groupSiblings.length} tập.`, { undoable: true });
             });
           }
 
@@ -4052,6 +5283,7 @@
               coverPrice: Math.max(0, Number(fd.get("coverPrice")) || 0),
               paidPrice: Math.max(0, Number(fd.get("paidPrice")) || 0),
               date: fd.get("date") || todayISO(),
+              isLegacy: Boolean(volLegacyChk && volLegacyChk.checked),
               image: currentImg,
               readState: fd.get("readState") || "Chưa đọc",
               lentTo: (fd.get("lentTo") || "").trim(),
@@ -4061,6 +5293,7 @@
             };
             sec.volumes = sec.volumes || [];
             if (v) {
+              pushUndo(`sửa tập ${v.number} (${s.title})`);
               const idx = sec.volumes.findIndex((x) => x.id === volId);
               sec.volumes[idx] = rec;
             } else {
@@ -4162,6 +5395,7 @@
                     <input type="file" id="bulkImgInput" accept="image/*" style="display:none;" />
                   </label>
                   <button type="button" class="btn btn-sm btn-danger" id="clearBulkImgBtn" style="display:none;">Xoá ảnh</button>
+                  <button type="button" class="btn btn-sm" id="undoBulkImgBtn" style="display:none;">Hoàn tác ảnh</button>
                 </div>
               </div>
             </div>
@@ -4176,6 +5410,10 @@
                 <input name="note" placeholder="VD: Box cứng + postcard..." />
               </div>
             </div>
+            <label class="check-inline">
+              <input type="checkbox" id="bulkLegacyChk" />
+              <span>Mua từ trước (không tính vào hạn mức tháng này)</span>
+            </label>
 
             <div class="modal-actions">
               <button type="button" class="btn btn-sm" id="backBulkBtn">Quay lại</button>
@@ -4248,21 +5486,39 @@
           form.addEventListener("input", updateUI);
           updateUI();
 
+          const undoBulkImgBtn = body.querySelector("#undoBulkImgBtn");
+          let clearedBulkImgBackup = "";
+
           clearImgBtn.addEventListener("click", () => {
+            if (sharedImg) clearedBulkImgBackup = sharedImg;
             sharedImg = "";
             imgPrev.innerHTML = "Chưa có";
             clearImgBtn.style.display = "none";
+            if (undoBulkImgBtn && clearedBulkImgBackup) undoBulkImgBtn.style.display = "";
           });
+
+          if (undoBulkImgBtn) {
+            undoBulkImgBtn.addEventListener("click", () => {
+              if (!clearedBulkImgBackup) return;
+              sharedImg = clearedBulkImgBackup;
+              clearedBulkImgBackup = "";
+              imgPrev.innerHTML = `<img src="${esc(sharedImg)}" alt="" />`;
+              clearImgBtn.style.display = "";
+              undoBulkImgBtn.style.display = "none";
+              showToast("Đã khôi phục ảnh.");
+            });
+          }
 
           body.querySelector("#bulkImgInput").addEventListener("change", async (e) => {
             const file = e.target.files?.[0];
+            e.target.value = "";
             if (!file) return;
-            try {
-              sharedImg = await compressImageFile(file, 320, 480, 0.72);
+            const cropped = await openImageCropper(file, { ratio: looksLikeBox ? 4 / 3 : 2 / 3, maxW: 400, maxH: 520, quality: 0.74, title: "Cắt ảnh đợt tập / Boxset" });
+            if (cropped) {
+              sharedImg = cropped;
               imgPrev.innerHTML = `<img src="${esc(sharedImg)}" alt="" />`;
               clearImgBtn.style.display = "";
-            } catch {
-              showToast("Không đọc được ảnh này.");
+              if (undoBulkImgBtn) undoBulkImgBtn.style.display = "none";
             }
           });
 
@@ -4285,6 +5541,7 @@
               paidInput: form.totalPaid.value,
               discount: form.discount.value,
               date: form.date.value || todayISO(),
+              isLegacy: Boolean(body.querySelector("#bulkLegacyChk")?.checked),
               image: sharedImg,
               note: form.note.value.trim(),
             });
@@ -4396,12 +5653,12 @@
         }
 
         container.innerHTML = `<div class="merch-list">${list
-          .map((g) => {
+          .map((g, idx) => {
             const st = getGroupGiftStats(g);
             const firstGiftImg = (g.gifts || []).find((x) => resolveImg(x.image))?.image || "";
             const thumbSrc = resolveImg(g.cover) || resolveImg(firstGiftImg);
             return `
-              <div class="gift-group-card" data-open-group="${g.id}">
+              <div class="gift-group-card fx-card-in" style="--stagger:${idx}" data-open-group="${g.id}">
                 <div class="gift-group-thumb" style="border-left:2px solid ${pubColorVar(g.publisher)}">
                   ${thumbSrc ? `<img src="${esc(thumbSrc)}" alt="" loading="lazy" />` : `<span class="mono">${esc(g.publisher.slice(0, 3))}</span>`}
                 </div>
@@ -4475,6 +5732,7 @@
                     <input type="file" id="ggCoverInput" accept="image/*" style="display:none;" />
                   </label>
                   <button type="button" class="btn btn-sm btn-danger" id="clearGgCoverBtn" style="${currentCover ? "" : "display:none;"}">Xoá ảnh</button>
+                  <button type="button" class="btn btn-sm" id="undoGgCoverBtn" style="display:none;">Hoàn tác ảnh</button>
                 </div>
               </div>
             </div>
@@ -4511,19 +5769,34 @@
             });
           });
 
+          const undoGgCoverBtn = body.querySelector("#undoGgCoverBtn");
+          let clearedGgBackup = "";
+
           clearBtn.addEventListener("click", () => {
+            if (currentCover) clearedGgBackup = currentCover;
             setGgPreview("");
-            showToast("Đã xoá ảnh.");
+            if (undoGgCoverBtn && clearedGgBackup) undoGgCoverBtn.style.display = "";
+            showToast("Đã xoá ảnh — bấm 'Hoàn tác ảnh' nếu lỡ tay.");
           });
+
+          if (undoGgCoverBtn) {
+            undoGgCoverBtn.addEventListener("click", () => {
+              if (!clearedGgBackup) return;
+              setGgPreview(clearedGgBackup);
+              clearedGgBackup = "";
+              undoGgCoverBtn.style.display = "none";
+              showToast("Đã khôi phục ảnh.");
+            });
+          }
 
           body.querySelector("#ggCoverInput").addEventListener("change", async (e) => {
             const file = e.target.files?.[0];
+            e.target.value = "";
             if (!file) return;
-            try {
-              const compressed = await compressImageFile(file, 320, 480, 0.74);
-              setGgPreview(compressed);
-            } catch {
-              showToast("Không đọc được ảnh này.");
+            const cropped = await openImageCropper(file, { ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.76, title: "Cắt ảnh đại diện bộ quà" });
+            if (cropped) {
+              setGgPreview(cropped);
+              if (undoGgCoverBtn) undoGgCoverBtn.style.display = "none";
             }
           });
 
@@ -4653,12 +5926,13 @@
           body.querySelector("#editGiftGroupBtn").addEventListener("click", () => openGiftGroupForm(groupId));
           body.querySelector("#delGiftGroupBtn").addEventListener("click", () => {
             if (!confirm(`Xoá "${g.title}" cùng toàn bộ ${st.qty} quà bên trong?`)) return;
+            pushUndo(`xoá bộ quà "${g.title}"`);
             state.giftGroups = state.giftGroups.filter((x) => x.id !== groupId);
             saveState();
             renderMerch();
             renderSpending();
             closeModal();
-            showToast("Đã xoá bộ quà.");
+            showToast(`Đã xoá bộ quà "${g.title}".`, { undoable: true });
           });
 
           body.querySelectorAll("#groupStatusChips [data-gs]").forEach((chip) => {
@@ -4723,6 +5997,7 @@
                     <input type="file" id="giftImgInput" accept="image/*" style="display:none;" />
                   </label>
                   <button type="button" class="btn btn-sm btn-danger" id="clearGiftImgBtn" style="${currentImage ? "" : "display:none;"}">Xoá ảnh</button>
+                  <button type="button" class="btn btn-sm" id="undoGiftImgBtn" style="display:none;">Hoàn tác ảnh</button>
                 </div>
               </div>
             </div>
@@ -4757,8 +6032,12 @@
 
             <div class="field">
               <label>Ngày mua / nhận</label>
-              <input name="date" type="date" value="${esc(it?.date || todayISO())}" />
+              <input name="date" id="giftDateInput" type="date" value="${esc(it?.date || todayISO())}" />
             </div>
+            <label class="check-inline">
+              <input type="checkbox" id="giftLegacyChk" ${it?.isLegacy ? "checked" : ""} />
+              <span>Mua / nhận từ trước (không tính vào hạn mức tháng này)</span>
+            </label>
 
             <div class="field">
               <label>Ghi chú</label>
@@ -4792,19 +6071,44 @@
             openImageLightbox(currentImage, it ? it.name : g.title, () => openGiftItemForm(groupId, giftId));
           });
 
+          const undoGiftImgBtn = body.querySelector("#undoGiftImgBtn");
+          const giftLegacyChk = body.querySelector("#giftLegacyChk");
+          const giftDateInput = body.querySelector("#giftDateInput");
+          let clearedGiftImgBackup = "";
+
+          if (giftLegacyChk && giftDateInput) {
+            const syncGiftLegacy = () => {
+              giftDateInput.style.opacity = giftLegacyChk.checked ? "0.45" : "1";
+            };
+            giftLegacyChk.addEventListener("change", syncGiftLegacy);
+            syncGiftLegacy();
+          }
+
           clearBtn.addEventListener("click", () => {
+            if (currentImage) clearedGiftImgBackup = currentImage;
             setGiftPreview("");
-            showToast("Đã xoá ảnh quà.");
+            if (undoGiftImgBtn && clearedGiftImgBackup) undoGiftImgBtn.style.display = "";
+            showToast("Đã xoá ảnh quà — bấm 'Hoàn tác ảnh' nếu lỡ tay.");
           });
+
+          if (undoGiftImgBtn) {
+            undoGiftImgBtn.addEventListener("click", () => {
+              if (!clearedGiftImgBackup) return;
+              setGiftPreview(clearedGiftImgBackup);
+              clearedGiftImgBackup = "";
+              undoGiftImgBtn.style.display = "none";
+              showToast("Đã khôi phục ảnh quà.");
+            });
+          }
 
           body.querySelector("#giftImgInput").addEventListener("change", async (e) => {
             const file = e.target.files?.[0];
+            e.target.value = "";
             if (!file) return;
-            try {
-              const compressed = await compressImageFile(file, 420, 420, 0.75);
-              setGiftPreview(compressed);
-            } catch {
-              showToast("Không đọc được ảnh này.");
+            const cropped = await openImageCropper(file, { ratio: 1, maxW: 440, maxH: 440, quality: 0.76, title: "Cắt ảnh quà" });
+            if (cropped) {
+              setGiftPreview(cropped);
+              if (undoGiftImgBtn) undoGiftImgBtn.style.display = "none";
             }
           });
 
@@ -4813,12 +6117,13 @@
           const delBtn = body.querySelector("#delGiftItemBtn");
           if (delBtn) {
             delBtn.addEventListener("click", () => {
+              pushUndo(`xoá quà "${it.name}"`);
               g.gifts = (g.gifts || []).filter((x) => x.id !== giftId);
               saveState();
               renderMerch();
               renderSpending();
               openGiftGroupDetail(groupId);
-              showToast("Đã xoá món quà.");
+              showToast(`Đã xoá "${it.name}".`, { undoable: true });
             });
           }
 
@@ -4833,12 +6138,14 @@
               source: fd.get("source"),
               status: fd.get("status"),
               date: fd.get("date") || todayISO(),
+              isLegacy: Boolean(giftLegacyChk && giftLegacyChk.checked),
               image: currentImage,
               note: fd.get("note").trim(),
             };
             if (!rec.name) return;
             g.gifts = g.gifts || [];
             if (it) {
+              pushUndo(`sửa quà "${it.name}"`);
               const idx = g.gifts.findIndex((x) => x.id === giftId);
               g.gifts[idx] = rec;
             } else {
@@ -4848,6 +6155,7 @@
             renderMerch();
             renderSpending();
             openGiftGroupDetail(groupId);
+            if (!it) spawnCelebration(undefined, undefined, 14);
             showToast(it ? "Đã cập nhật quà." : `Đã thêm "${rec.name}".`);
           });
         });
@@ -5089,12 +6397,12 @@
         const pinnedIds = new Set(state.pinned.map((p) => p.id));
 
         container.innerHTML = `<div class="news-list">${filtered
-          .map((it) => {
+          .map((it, idx) => {
             const matchedSeries = findMatchedSeries(it);
             const isPinned = pinnedIds.has(it.id);
             const cd = countdownText(it.releaseDate);
             return `
-              <article class="news-card ${matchedSeries ? "matched" : ""}">
+              <article class="news-card fx-card-in ${matchedSeries ? "matched" : ""}" style="--stagger:${idx}">
                 <div class="news-head">
                   <span class="tag" style="border-left:2px solid ${pubColorVar(it.publisher)}">${esc(it.publisher)}</span>
                   <span class="tag ${typeTagClass(it.type)}">${typeLabel(it.type)}</span>
@@ -5428,7 +6736,7 @@
       // ============================
       // TAB 4: CHI TIÊU
       // ============================
-      function renderSpending() {
+      function renderSpending(animateSpending = false) {
         let bookPaid = 0;
         let bookCover = 0;
         let merchPaid = 0;
@@ -5446,6 +6754,10 @@
           monthTotals[ym] = 0;
         }
 
+        let legacyVols = 0;
+        let legacyGifts = 0;
+        let legacyPaid = 0;
+
         state.series.forEach((s) => {
           const pubKey = pubTotals.hasOwnProperty(s.publisher) ? s.publisher : "Khác";
           const catKey = catTotals.hasOwnProperty(s.category) ? s.category : "Sách";
@@ -5456,8 +6768,13 @@
             bookCover += c;
             pubTotals[pubKey] += p;
             catTotals[catKey] += p;
-            const ym = (v.date || "").slice(0, 7);
-            if (monthTotals.hasOwnProperty(ym)) monthTotals[ym] += p;
+            if (v.isLegacy) {
+              legacyVols++;
+              legacyPaid += p;
+            } else {
+              const ym = (v.date || "").slice(0, 7);
+              if (monthTotals.hasOwnProperty(ym)) monthTotals[ym] += p;
+            }
           });
         });
 
@@ -5468,8 +6785,13 @@
             merchPaid += p;
             pubTotals[pubKey] += p;
             catTotals["Quà & Đồ"] += p;
-            const ym = (m.date || "").slice(0, 7);
-            if (monthTotals.hasOwnProperty(ym)) monthTotals[ym] += p;
+            if (m.isLegacy) {
+              legacyGifts++;
+              legacyPaid += p;
+            } else {
+              const ym = (m.date || "").slice(0, 7);
+              if (monthTotals.hasOwnProperty(ym)) monthTotals[ym] += p;
+            }
           });
         });
 
@@ -5477,29 +6799,42 @@
         const savedDiff = bookCover - bookPaid;
         const pinnedTotal = state.pinned.reduce((a, p) => a + (Number(p.estPrice) || 0), 0);
 
-        document.getElementById("spendingKpis").innerHTML = `
-          <div class="kpi-card">
+        const kpiWrap = document.getElementById("spendingKpis");
+        kpiWrap.innerHTML = `
+          <div class="kpi-card fx-card-in" style="--stagger:0">
             <div class="kpi-label">Tổng thực chi</div>
-            <div class="kpi-val mono">${fmtMoney(totalPaid)}</div>
+            <div class="kpi-val mono" id="kpiValTotalPaid">${fmtMoney(totalPaid)}</div>
             <div class="kpi-sub">Sách ${fmtMoney(bookPaid)} · Quà ${fmtMoney(merchPaid)}</div>
           </div>
-          <div class="kpi-card">
+          <div class="kpi-card fx-card-in" style="--stagger:1">
             <div class="kpi-label">Tổng giá bìa</div>
-            <div class="kpi-val mono">${fmtMoney(bookCover)}</div>
+            <div class="kpi-val mono" id="kpiValBookCover">${fmtMoney(bookCover)}</div>
             <div class="kpi-sub">Chỉ tính sách & truyện</div>
           </div>
-          <div class="kpi-card">
+          <div class="kpi-card fx-card-in" style="--stagger:2">
             <div class="kpi-label">${savedDiff >= 0 ? "Tiết kiệm sale" : "Chênh mua hiếm"}</div>
-            <div class="kpi-val mono" style="color:${savedDiff >= 0 ? "var(--forest)" : "var(--accent)"}">
+            <div class="kpi-val mono" id="kpiValSavedDiff" style="color:${savedDiff >= 0 ? "var(--forest)" : "var(--accent)"}">
               ${savedDiff >= 0 ? "-" : "+"}${fmtMoney(Math.abs(savedDiff))}
             </div>
             <div class="kpi-sub">So với giá bìa</div>
           </div>
-          <div class="kpi-card">
+          <div class="kpi-card fx-card-in" style="--stagger:3">
             <div class="kpi-label">Dự chi đang ghim</div>
-            <div class="kpi-val mono">${fmtMoney(pinnedTotal)}</div>
+            <div class="kpi-val mono" id="kpiValPinned">${fmtMoney(pinnedTotal)}</div>
             <div class="kpi-sub">${state.pinned.length} mục chờ săn</div>
           </div>`;
+
+        if (animateSpending) {
+          animateCountUp(document.getElementById("kpiValTotalPaid"), totalPaid, fmtMoney, 480);
+          animateCountUp(document.getElementById("kpiValBookCover"), bookCover, fmtMoney, 520);
+          animateCountUp(
+            document.getElementById("kpiValSavedDiff"),
+            Math.abs(savedDiff),
+            (n) => (savedDiff >= 0 ? "-" : "+") + fmtMoney(n),
+            560
+          );
+          animateCountUp(document.getElementById("kpiValPinned"), pinnedTotal, fmtMoney, 420);
+        }
 
         // Budget month
         const thisMonthSpent = monthTotals[currentYM] || 0;
@@ -5509,26 +6844,47 @@
         document.getElementById("budgetSpentText").textContent = fmtMoney(thisMonthSpent);
         document.getElementById("budgetLimitText").textContent = `/ ${fmtMoney(limit)}`;
         const bar = document.getElementById("budgetBar");
-        bar.style.width = `${pct}%`;
         bar.classList.toggle("over", thisMonthSpent > limit);
+        if (animateSpending && isRichFx()) {
+          bar.style.width = "0%";
+          requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = `${pct}%`; }));
+        } else {
+          bar.style.width = `${pct}%`;
+        }
+        const legacySummary =
+          legacyVols || legacyGifts
+            ? ` · Đã tách ${legacyVols} tập${legacyGifts ? ` & ${legacyGifts} quà` : ""} mua từ trước (${fmtMoney(legacyPaid)}).`
+            : "";
         document.getElementById("budgetNote").textContent =
-          thisMonthSpent > limit
+          (thisMonthSpent > limit
             ? `Đã vượt hạn mức tháng ${fmtMoney(thisMonthSpent - limit)}.`
-            : `Còn dư ${fmtMoney(limit - thisMonthSpent)} trong tháng này (${pct}%).`;
+            : `Còn dư ${fmtMoney(limit - thisMonthSpent)} trong tháng này (${pct}%).`) + legacySummary;
 
         // Helper for flat bar lists
         function renderBars(elId, entries) {
           const max = Math.max(...entries.map(([, v]) => v), 1);
-          document.getElementById(elId).innerHTML = entries
-            .map(
-              ([label, val]) => `
+          const wrapEl = document.getElementById(elId);
+          wrapEl.innerHTML = entries
+            .map(([label, val], idx) => {
+              const targetPct = Math.round((val / max) * 100);
+              const initPct = animateSpending && isRichFx() ? 0 : targetPct;
+              return `
             <div class="bar-row">
               <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${esc(label)}</span>
-              <div class="bar-track"><div class="bar-fill" style="width:${Math.round((val / max) * 100)}%"></div></div>
+              <div class="bar-track"><div class="bar-fill" data-target-w="${targetPct}" style="width:${initPct}%; transition-delay:${idx * 35}ms"></div></div>
               <span class="bar-val mono">${fmtMoney(val)}</span>
-            </div>`
-            )
+            </div>`;
+            })
             .join("");
+          if (animateSpending && isRichFx()) {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                wrapEl.querySelectorAll(".bar-fill[data-target-w]").forEach((f) => {
+                  f.style.width = f.dataset.targetW + "%";
+                });
+              });
+            });
+          }
         }
 
         renderBars(
@@ -5582,12 +6938,138 @@
         }
       }
 
+      function openMarkLegacyModal() {
+        const now = new Date();
+        const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+        let thisMonthCount = 0;
+        let thisMonthPaid = 0;
+        let allNonLegacyCount = 0;
+        let legacyCount = 0;
+
+        state.series.forEach((s) => {
+          getAllSeriesVolumes(s).forEach((v) => {
+            if (v.isLegacy) legacyCount++;
+            else {
+              allNonLegacyCount++;
+              if ((v.date || "").slice(0, 7) === currentYM) {
+                thisMonthCount++;
+                thisMonthPaid += Number(v.paidPrice) || 0;
+              }
+            }
+          });
+        });
+        state.giftGroups.forEach((g) => {
+          (g.gifts || []).forEach((m) => {
+            if (m.isLegacy) legacyCount++;
+            else {
+              allNonLegacyCount++;
+              if ((m.date || "").slice(0, 7) === currentYM) {
+                thisMonthCount++;
+                thisMonthPaid += Number(m.price) || 0;
+              }
+            }
+          });
+        });
+
+        const html = `
+          <div class="form-grid">
+            <div class="small-muted">
+              Các món đánh dấu <strong>Mua từ trước</strong> vẫn được tính vào <strong>Tổng thực chi</strong>, <strong>Tổng giá bìa</strong> và <strong>Theo NXB</strong>, nhưng sẽ <strong>không cộng vào Hạn mức tháng này & Biểu đồ 6 tháng</strong> để bạn theo dõi chi tiêu mới từ hôm nay chuẩn hơn.
+            </div>
+
+            <div class="boxset-hint mono">
+              Tháng ${currentYM.slice(5)}/${currentYM.slice(0, 4)} đang có: ${thisMonthCount} mục (${fmtMoney(thisMonthPaid)})<br/>
+              Đang là "Mua từ trước": ${legacyCount} mục
+            </div>
+
+            <button type="button" class="btn btn-primary" id="legThisMonthBtn" ${thisMonthCount ? "" : "disabled"}>
+              Chuyển ${thisMonthCount} mục tháng ${currentYM.slice(5)}/${currentYM.slice(0, 4)} → Mua từ trước
+            </button>
+
+            <button type="button" class="btn" id="legAllShelfBtn" ${allNonLegacyCount ? "" : "disabled"}>
+              Chuyển toàn bộ tủ (${allNonLegacyCount} mục) → Mua từ trước
+            </button>
+
+            ${
+              legacyCount
+                ? `<button type="button" class="btn btn-danger" id="legResetBtn">Bỏ nhãn "Mua từ trước" (${legacyCount} mục) về lại theo ngày mua</button>`
+                : ""
+            }
+          </div>`;
+
+        openModal("Gom tủ cũ → Mua từ trước", html, (body) => {
+          const applyLegacy = (mode) => {
+            let changed = 0;
+            const label =
+              mode === "month"
+                ? `chuyển tháng ${currentYM.slice(5)} sang Mua từ trước`
+                : mode === "all"
+                ? "chuyển toàn bộ tủ sang Mua từ trước"
+                : "bỏ nhãn Mua từ trước";
+            pushUndo(label);
+
+            state.series.forEach((s) => {
+              getAllSeriesVolumes(s).forEach((v) => {
+                if (mode === "reset" && v.isLegacy) {
+                  v.isLegacy = false;
+                  changed++;
+                } else if (mode === "all" && !v.isLegacy) {
+                  v.isLegacy = true;
+                  changed++;
+                } else if (mode === "month" && !v.isLegacy && (v.date || "").slice(0, 7) === currentYM) {
+                  v.isLegacy = true;
+                  changed++;
+                }
+              });
+            });
+            state.giftGroups.forEach((g) => {
+              (g.gifts || []).forEach((m) => {
+                if (mode === "reset" && m.isLegacy) {
+                  m.isLegacy = false;
+                  changed++;
+                } else if (mode === "all" && !m.isLegacy) {
+                  m.isLegacy = true;
+                  changed++;
+                } else if (mode === "month" && !m.isLegacy && (m.date || "").slice(0, 7) === currentYM) {
+                  m.isLegacy = true;
+                  changed++;
+                }
+              });
+            });
+
+            saveState();
+            renderSpending();
+            closeModal();
+            showToast(
+              mode === "reset"
+                ? `Đã đưa ${changed} mục về lại tính theo ngày mua.`
+                : `Đã chuyển ${changed} mục sang "Mua từ trước".`,
+              { undoable: true }
+            );
+          };
+
+          body.querySelector("#legThisMonthBtn").addEventListener("click", () => applyLegacy("month"));
+          body.querySelector("#legAllShelfBtn").addEventListener("click", () => applyLegacy("all"));
+          const resetBtn = body.querySelector("#legResetBtn");
+          if (resetBtn) resetBtn.addEventListener("click", () => applyLegacy("reset"));
+        });
+      }
+
       // ============================
       // SETTINGS & BACKUP
       // ============================
       function openSettingsModal() {
         const html = `
           <div class="form-grid">
+            <div class="field">
+              <label>Hiệu ứng & Chuyển động</label>
+              <div class="scope-switch" id="fxLevelSwitch" style="margin-bottom:0;">
+                <button type="button" class="${isRichFx() ? "active" : ""}" data-fxval="rich">Phong phú (mượt)</button>
+                <button type="button" class="${!isRichFx() ? "active" : ""}" data-fxval="minimal">Gọn nhẹ (tắt bớt)</button>
+              </div>
+            </div>
+
+            <div class="divider"></div>
             <div class="field">
               <label>Nguồn tin tự động (JSON URL)</label>
               <input id="setNewsUrl" value="${esc(state.newsUrl || "./news.json")}" />
@@ -5618,7 +7100,20 @@
           </div>`;
 
         openModal("Cài đặt & Sao lưu", html, (body) => {
-          const healthEl = body.querySelector("#storageHealthBox");
+          const fxSwitch = body.querySelector("#fxLevelSwitch");
+          if (fxSwitch) {
+            fxSwitch.addEventListener("click", (e) => {
+              const btn = e.target.closest("button[data-fxval]");
+              if (!btn) return;
+              state.fxLevel = btn.dataset.fxval;
+              applyFxLevel();
+              saveState();
+              fxSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+              if (state.fxLevel === "rich") spawnCelebrationFromEl(btn, 12);
+              showToast(state.fxLevel === "rich" ? "Đã bật hiệu ứng phong phú." : "Đã chuyển sang chế độ gọn nhẹ.");
+            });
+          }
+                    const healthEl = body.querySelector("#storageHealthBox");
           if (healthEl) {
             const bytes = estimateStateBytes(state);
             const mb = (bytes / (1024 * 1024)).toFixed(2);
@@ -5824,12 +7319,13 @@
           });
           body.querySelector("#wipeAllBtn").addEventListener("click", () => {
             if (!confirm("Xoá sạch toàn bộ sách, quà và mục đã ghim?")) return;
+            pushUndo("xoá toàn bộ tủ sách");
             state = structuredClone(DEFAULT_STATE);
             saveState();
             applyTheme();
             renderAll();
             closeModal();
-            showToast("Đã đặt lại sạch sẽ.");
+            showToast("Đã đặt lại sạch sẽ.", { undoable: true });
           });
         });
       }
@@ -5842,6 +7338,7 @@
           try {
             const parsed = JSON.parse(reader.result);
             if (!Array.isArray(parsed.series)) throw new Error("Sai định dạng");
+            pushUndo("nhập file sao lưu");
             state = migrateStateData(parsed);
             saveState();
             applyTheme();
@@ -5859,23 +7356,38 @@
       // ============================
       // EVENT WIRING
       // ============================
-      document.querySelectorAll(".tab-btn").forEach((btn) => {
+      const tabButtons = [...document.querySelectorAll(".tab-btn")];
+      const tabIndicator = document.getElementById("tabIndicator");
+
+      function updateTabIndicator(idx) {
+        if (tabIndicator) {
+          tabIndicator.style.transform = `translateX(${idx * 100}%)`;
+        }
+      }
+
+      tabButtons.forEach((btn, idx) => {
         btn.addEventListener("click", () => {
           const tab = btn.dataset.tab;
-          document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("active", b === btn));
+          tabButtons.forEach((b) => b.classList.toggle("active", b === btn));
+          updateTabIndicator(idx);
           document.querySelectorAll(".view").forEach((v) => v.classList.toggle("active", v.id === `view-${tab}`));
-          if (tab === "spending") renderSpending();
+          window.scrollTo({ top: 0, behavior: isRichFx() ? "smooth" : "auto" });
+          if (tab === "spending") renderSpending(true);
           if (tab === "news") renderNews();
         });
       });
 
-      document.getElementById("themeBtn").addEventListener("click", () => {
-        state.theme = state.theme === "dark" ? "light" : "dark";
+      document.getElementById("themeBtn").addEventListener("click", (e) => {
+        const toDark = state.theme !== "dark";
+        triggerThemeWash(e.currentTarget, toDark);
+        state.theme = toDark ? "dark" : "light";
         saveState();
         applyTheme();
       });
 
-      document.getElementById("settingsBtn").addEventListener("click", openSettingsModal);
+      document.getElementById("undoBtn").addEventListener("click", performUndo);
+      document.getElementById("markLegacyBtn").addEventListener("click", openMarkLegacyModal);
+            document.getElementById("settingsBtn").addEventListener("click", openSettingsModal);
       document.getElementById("addSeriesBtn").addEventListener("click", () => openSeriesForm());
       document.getElementById("addGiftGroupBtn").addEventListener("click", () => openGiftGroupForm());
       document.getElementById("manualPinBtn").addEventListener("click", openManualPinForm);
@@ -5999,7 +7511,9 @@
       async function initApp() {
         const ok = await loadStateAsync();
         applyTheme();
+        applyFxLevel();
         if (ok) {
+          updateUndoBtnUI();
           renderAll();
           fetchNews(false);
         }
