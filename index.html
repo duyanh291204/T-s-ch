@@ -1407,6 +1407,190 @@
       border-bottom: 1px solid var(--line);
     }
 
+    .scope-switch-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .scope-switch-3 button {
+      height: 33px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--muted);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .scope-switch-3 button + button {
+      border-left: 1px solid var(--line);
+    }
+
+    .scope-switch-3 button.active {
+      background: var(--ink);
+      color: var(--bg);
+      font-weight: 600;
+    }
+
+    .sort-select {
+      height: 26px;
+      padding: 0 6px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 11.5px;
+      outline: none;
+    }
+
+    .save-status {
+      font-size: 10.5px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .save-status.saving {
+      color: var(--amber);
+    }
+
+    .save-status.error {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .ck-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .ck-btn {
+      height: 26px;
+      padding: 0 8px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 11.5px;
+      font-weight: 500;
+    }
+
+    .ck-btn.active {
+      background: var(--ink);
+      color: var(--bg);
+      border-color: var(--ink);
+    }
+
+    .ck-meta {
+      font-size: 11.5px;
+      color: var(--forest);
+      margin-top: 5px;
+    }
+
+    .missing-strip {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--amber);
+      border-left: 3px solid var(--amber);
+      background: var(--amber-soft);
+      border-radius: var(--radius);
+      font-size: 12px;
+    }
+
+    .missing-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .missing-chip {
+      height: 24px;
+      padding: 0 8px;
+      border: 1px dashed var(--amber);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    .vol-flag {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      background: rgba(20, 19, 18, 0.84);
+      color: #F6F5F1;
+      font-size: 9px;
+      padding: 1px 4px;
+      border-radius: 1px;
+      max-width: calc(100% - 8px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .vol-flag.seal {
+      background: var(--forest);
+    }
+
+    .vol-flag.lent {
+      background: var(--accent);
+    }
+
+    .vol-compact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+      gap: 6px;
+      margin: 12px 0;
+    }
+
+    .vol-compact-cell {
+      position: relative;
+      height: 46px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+    }
+
+    .vol-compact-cell:active {
+      background: var(--surface-2);
+    }
+
+    .vol-compact-cell.is-lent {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .vol-compact-cell.is-seal {
+      border-color: var(--forest);
+    }
+
+    .vol-compact-num {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.1;
+    }
+
+    .vol-compact-price {
+      font-size: 9.5px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
     .boxset-hint {
       padding: 8px 10px;
       border: 1px solid var(--line);
@@ -1456,7 +1640,8 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-title">Tủ Sách</div>
-        <div class="brand-meta mono" id="headerSummary">0 đầu sách · 0 tập</div>
+        <div class="brand-meta mono" id="headerSummary">Đang tải...</div>
+        <span class="save-status mono" id="saveIndicator"></span>
       </div>
       <div class="topbar-actions">
         <button class="icon-btn" id="themeBtn" title="Đổi giao diện">
@@ -1471,17 +1656,23 @@
     <main class="main">
       <!-- TAB 1: TỦ SÁCH -->
       <section class="view active" id="view-books">
+        <div class="scope-switch-3" id="bookGroupSwitch">
+          <button class="active" data-group="all">Tất cả <span class="mono" id="cntAllBooks">(0)</span></button>
+          <button data-group="truyen">Truyện <span class="mono" id="cntTruyen">(0)</span></button>
+          <button data-group="sach">Sách <span class="mono" id="cntSach">(0)</span></button>
+        </div>
+
         <div class="toolbar">
           <input type="search" class="search-input" id="bookSearch" placeholder="Tìm tên truyện, sách, NXB..." />
           <button class="btn btn-primary" id="addSeriesBtn">+ Thêm bộ</button>
         </div>
 
         <div class="chip-row" id="bookCatChips">
-          <button class="chip active" data-cat="Tất cả">Tất cả</button>
+          <button class="chip active" data-cat="Tất cả">Mọi loại</button>
           <button class="chip" data-cat="Manga">Manga</button>
           <button class="chip" data-cat="Light Novel">Light Novel</button>
-          <button class="chip" data-cat="Sách">Sách</button>
           <button class="chip" data-cat="Artbook">Artbook</button>
+          <button class="chip" data-cat="Sách">Sách chữ</button>
         </div>
 
         <div class="chip-row" id="bookPubChips">
@@ -1495,9 +1686,17 @@
 
         <div class="subbar">
           <span class="mono" id="bookCountLabel">0 đầu sách</span>
-          <div class="seg" id="bookViewSeg">
-            <button class="active" data-mode="grid">Lưới bìa</button>
-            <button data-mode="list">Danh sách</button>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <select class="sort-select" id="bookSortSel" title="Sắp xếp">
+              <option value="recent">Mới thêm</option>
+              <option value="name">Tên A–Z</option>
+              <option value="vols">Nhiều tập</option>
+              <option value="spent">Chi nhiều</option>
+            </select>
+            <div class="seg" id="bookViewSeg">
+              <button class="active" data-mode="grid">Lưới</button>
+              <button data-mode="list">Dòng</button>
+            </div>
           </div>
         </div>
 
@@ -1668,11 +1867,16 @@
       "use strict";
 
       const STORAGE_KEY = "tusach_app_v2";
+      const IDB_MIGRATED_FLAG = "tusach_idb_migrated_v1";
+      const TEXT_SHADOW_KEY = "tusach_text_shadow_v1";
+
       const DEFAULT_STATE = {
         theme: "light",
         bookView: "grid",
+        volView: "cards", // "cards" | "compact"
         budgetLimit: 1000000,
         newsUrl: "./news.json",
+        lastBackupAt: "",
         series: [],     // { id, title, publisher, category, status, aliases, note, cover, createdAt, sections: [{ id, name, note, volumes: [...] }] }
         giftGroups: [], // { id, title, publisher, cover, note, createdAt, gifts: [{ id, name, quantity, price, source, status, date, image, note }] }
         pinned: [],     // { id, title, publisher, type, channel, releaseDate, estPrice, gift, url, manual }
@@ -1680,14 +1884,34 @@
       };
 
       // ============================
-      // BỘ LƯU TRỮ INDEXEDDB (CHỐNG TRÀN 5MB TRÊN IPHONE) + CHỐNG TRÙNG ẢNH
+      // BỘ LƯU TRỮ INDEXEDDB CHỐNG MẤT DỮ LIỆU CHO IPHONE
+      // - Chống ghi đè khi app đang load (appReady lock)
+      // - Tự nối lại khi iOS ngắt kết nối IDB nền (auto-retry)
+      // - Không bao giờ tự đọc lại localStorage cũ ghi đè IDB
+      // - Lưu kèm 1 bản text-only (<100KB) dự phòng khẩn cấp
       // ============================
       const IDB_NAME = "tusach_db_v1";
       const IDB_STORE = "kv";
       let idbInstance = null;
       let storageEngine = "IndexedDB";
+      let appReady = false;
+      let pendingSaves = 0;
       let saveChain = Promise.resolve();
       let lastSaveErrorShown = 0;
+
+      function setSaveStatus(status, text) {
+        const el = document.getElementById("saveIndicator");
+        if (!el) return;
+        el.textContent = text || "";
+        el.className = "save-status mono" + (status ? " " + status : "");
+      }
+
+      function resetIDBHandle() {
+        if (idbInstance) {
+          try { idbInstance.close(); } catch {}
+        }
+        idbInstance = null;
+      }
 
       function openIDB() {
         if (idbInstance) return Promise.resolve(idbInstance);
@@ -1706,31 +1930,50 @@
           req.onsuccess = () => {
             idbInstance = req.result;
             idbInstance.onclose = () => { idbInstance = null; };
+            idbInstance.onversionchange = () => { resetIDBHandle(); };
             resolve(idbInstance);
           };
           req.onerror = () => reject(req.error || new Error("Lỗi mở IndexedDB"));
+          req.onblocked = () => reject(new Error("IndexedDB đang bị tab khác khoá"));
         });
       }
 
       async function idbGet(key) {
-        const db = await openIDB();
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(IDB_STORE, "readonly");
-          const req = tx.objectStore(IDB_STORE).get(key);
-          req.onsuccess = () => resolve(req.result ?? null);
-          req.onerror = () => reject(req.error);
-        });
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            const db = await openIDB();
+            return await new Promise((resolve, reject) => {
+              const tx = db.transaction(IDB_STORE, "readonly");
+              const req = tx.objectStore(IDB_STORE).get(key);
+              req.onsuccess = () => resolve(req.result ?? null);
+              req.onerror = () => reject(req.error);
+              tx.onabort = () => reject(tx.error || new Error("IDB read abort"));
+            });
+          } catch (err) {
+            resetIDBHandle();
+            if (attempt === 1) throw err;
+          }
+        }
+        return null;
       }
 
       async function idbSet(key, val) {
-        const db = await openIDB();
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(IDB_STORE, "readwrite");
-          tx.objectStore(IDB_STORE).put(val, key);
-          tx.oncomplete = () => resolve(true);
-          tx.onerror = () => reject(tx.error || new Error("Lỗi ghi IndexedDB"));
-          tx.onabort = () => reject(tx.error || new Error("Giao dịch IndexedDB bị huỷ"));
-        });
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            const db = await openIDB();
+            return await new Promise((resolve, reject) => {
+              const tx = db.transaction(IDB_STORE, "readwrite");
+              tx.objectStore(IDB_STORE).put(val, key);
+              tx.oncomplete = () => resolve(true);
+              tx.onerror = () => reject(tx.error || new Error("Lỗi ghi IndexedDB"));
+              tx.onabort = () => reject(tx.error || new Error("Giao dịch IndexedDB bị huỷ"));
+            });
+          } catch (err) {
+            resetIDBHandle();
+            if (attempt === 1) throw err;
+          }
+        }
+        return false;
       }
 
       function hashStringFast(str) {
@@ -1796,6 +2039,40 @@
         obj.images = nextPool;
       }
 
+      // Tạo bản sao chỉ gồm chữ & số (bỏ ảnh) siêu nhẹ để cất dự phòng khẩn cấp vào localStorage
+      function writeTextOnlyShadow(snapshot) {
+        try {
+          const shadow = {
+            ...snapshot,
+            images: {},
+            series: (snapshot.series || []).map((s) => ({
+              ...s,
+              cover: "",
+              sections: (s.sections || []).map((sec) => ({
+                ...sec,
+                volumes: (sec.volumes || []).map((v) => ({ ...v, image: "" })),
+              })),
+            })),
+            giftGroups: (snapshot.giftGroups || []).map((g) => ({
+              ...g,
+              cover: "",
+              gifts: (g.gifts || []).map((it) => ({ ...it, image: "" })),
+            })),
+            shadowSavedAt: new Date().toISOString(),
+          };
+          localStorage.setItem(TEXT_SHADOW_KEY, JSON.stringify(shadow));
+        } catch {}
+      }
+
+      function readTextOnlyShadow() {
+        try {
+          const raw = localStorage.getItem(TEXT_SHADOW_KEY);
+          return raw ? JSON.parse(raw) : null;
+        } catch {
+          return null;
+        }
+      }
+
       function estimateStateBytes(obj) {
         try {
           return new Blob([JSON.stringify(obj)]).size;
@@ -1818,7 +2095,6 @@
           images: rawObj?.images && typeof rawObj.images === "object" ? { ...rawObj.images } : {},
         };
 
-        // 1. Migrate legacy series.volumes -> series.sections
         const edNameMap = {
           "Thường": "Manga — Bản thường",
           "ĐB / Limited": "Limited",
@@ -1840,6 +2116,8 @@
                 paidPrice: Math.max(0, Number(v.paidPrice) || 0),
                 date: v.date || todayISO(),
                 image: v.image || "",
+                readState: v.readState || "Chưa đọc",
+                lentTo: v.lentTo || "",
                 note: v.note || "",
                 groupId: v.boxsetId || v.groupId || "",
                 groupLabel: v.boxsetLabel || v.groupLabel || "",
@@ -1864,6 +2142,8 @@
                     paidPrice: Math.max(0, Number(v.paidPrice) || 0),
                     date: v.date || todayISO(),
                     image: v.image || "",
+                    readState: v.readState || "Chưa đọc",
+                    lentTo: v.lentTo || "",
                     note: v.note || "",
                     groupId: v.groupId || v.boxsetId || "",
                     groupLabel: v.groupLabel || v.boxsetLabel || "",
@@ -1875,7 +2155,6 @@
           return copy;
         });
 
-        // 2. Migrate legacy state.merch -> state.giftGroups
         if (Array.isArray(rawObj?.merch) && rawObj.merch.length > 0 && merged.giftGroups.length === 0) {
           const byBook = new Map();
           rawObj.merch.forEach((m) => {
@@ -1936,6 +2215,10 @@
         return (s.sections || []).flatMap((sec) => sec.volumes || []);
       }
 
+      function isBookItem(s) {
+        return s.category === "Sách";
+      }
+
       function getGroupGiftStats(g) {
         const gifts = g.gifts || [];
         let qty = 0;
@@ -1976,15 +2259,17 @@
       let newsMeta = { updatedAt: "", loaded: false, error: "" };
 
       const filters = {
+        bookGroup: "all", // "all" | "truyen" | "sach"
         bookSearch: "",
         bookCat: "Tất cả",
         bookPub: "Tất cả",
+        bookSort: "recent", // "recent" | "name" | "vols" | "spent"
         merchSearch: "",
         merchPub: "Tất cả",
         newsPub: "Tất cả",
         newsType: "Tất cả",
         newsChan: "Tất cả",
-        newsScope: "shelf", // Mặc định CHỈ hiện tin liên quan sách/truyện đang có trong tủ
+        newsScope: "shelf",
       };
 
       function loadFromLocalStorageLegacy() {
@@ -1999,16 +2284,32 @@
 
       async function loadStateAsync() {
         let loadedRaw = null;
-        let cameFromLegacy = false;
+        let idbWorked = false;
+        let alreadyMigrated = false;
+        try {
+          alreadyMigrated = localStorage.getItem(IDB_MIGRATED_FLAG) === "1";
+        } catch {}
 
         try {
           loadedRaw = await idbGet(STORAGE_KEY);
+          idbWorked = true;
           storageEngine = "IndexedDB";
         } catch (e) {
+          idbWorked = false;
           storageEngine = "localStorage";
         }
 
-        // Nếu lần đầu nâng cấp lên IndexedDB -> tự kéo toàn bộ dữ liệu cũ từ localStorage sang (không mất 16 bộ cũ)
+        // CHỐNG MẤT DỮ LIỆU: Nếu trước đây đã chuyển sang IndexedDB mà nay IDB bị lỗi tạm thời,
+        // KHÔNG ĐƯỢC tự nạp bản localStorage cũ lên đè! Báo lỗi & cho bấm tải lại.
+        if (!idbWorked && alreadyMigrated) {
+          setSaveStatus("error", "Lỗi đọc kho");
+          alert(
+            "Trình duyệt iPhone đang tạm khoá kho IndexedDB. App tạm dừng ghi để bảo vệ dữ liệu của bạn — hãy tắt hẳn app rồi mở lại!"
+          );
+          return false;
+        }
+
+        let cameFromLegacy = false;
         if (!loadedRaw) {
           const legacy = loadFromLocalStorageLegacy();
           if (legacy) {
@@ -2021,54 +2322,81 @@
         compactImagesInState(migrated);
         state = migrated;
 
-        if (cameFromLegacy && storageEngine === "IndexedDB") {
+        if (idbWorked && (cameFromLegacy || loadedRaw)) {
           try {
             await idbSet(STORAGE_KEY, state);
+            localStorage.setItem(IDB_MIGRATED_FLAG, "1");
+            writeTextOnlyShadow(state);
+            // Xoá bản localStorage cũ chứa ảnh nặng để tránh đọc nhầm về sau
+            if (cameFromLegacy) {
+              try { localStorage.removeItem(STORAGE_KEY); } catch {}
+            }
           } catch {}
         }
 
-        // Xin iOS cấp quyền lưu bền vững để không bị dọn cache
         if (navigator.storage && typeof navigator.storage.persist === "function") {
           navigator.storage.persist().catch(() => {});
         }
+        appReady = true;
+        setSaveStatus("", "Đã lưu");
+        return true;
       }
 
       function saveState() {
+        // Không bao giờ cho phép ghi đè trước khi loadStateAsync() đọc xong dữ liệu cũ
+        if (!appReady) return;
         compactImagesInState(state);
         updateHeaderSummary();
 
-        // Snapshot để lưu tuần tự vào IndexedDB (tránh ghi đè khi bấm nhanh liên tục)
         const snapshot = structuredClone(state);
+        pendingSaves++;
+        setSaveStatus("saving", "Đang lưu...");
+
         saveChain = saveChain.then(async () => {
           try {
             await idbSet(STORAGE_KEY, snapshot);
             storageEngine = "IndexedDB";
-            // Nếu dữ liệu còn nhẹ (< 3.5MB), ghi dự phòng thêm vào localStorage; lớn hơn thì bỏ qua không báo lỗi
-            try {
-              const serialized = JSON.stringify(snapshot);
-              if (serialized.length < 3500000) {
-                localStorage.setItem(STORAGE_KEY, serialized);
-              }
-            } catch {}
+            try { localStorage.setItem(IDB_MIGRATED_FLAG, "1"); } catch {}
+            writeTextOnlyShadow(snapshot);
           } catch (idbErr) {
-            // Fallback sang localStorage nếu trình duyệt khoá IndexedDB
             try {
               localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
               storageEngine = "localStorage";
             } catch (lsErr) {
+              setSaveStatus("error", "Lỗi lưu!");
               const now = Date.now();
               if (now - lastSaveErrorShown > 4000) {
                 lastSaveErrorShown = now;
                 alert(
-                  "CẢNH BÁO: Không lưu được dữ liệu mới vào bộ nhớ máy (" +
+                  "CẢNH BÁO: Chưa lưu được vào bộ nhớ máy (" +
                     (idbErr?.message || lsErr?.message || "QuotaExceeded") +
-                    "). Hãy vào Cài đặt -> Xuất file sao lưu ngay trước khi thoát app!"
+                    "). Vào Cài đặt -> Xuất file sao lưu ngay trước khi thoát app!"
                 );
               }
+              pendingSaves = Math.max(0, pendingSaves - 1);
+              return;
             }
+          }
+          pendingSaves = Math.max(0, pendingSaves - 1);
+          if (pendingSaves === 0) {
+            setSaveStatus("", "Đã lưu");
           }
         });
       }
+
+      // Tự reset kết nối IDB cũ khi người dùng quay lại app sau khi ẩn nền trên iPhone
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          if (pendingSaves === 0) resetIDBHandle();
+        }
+      });
+
+      window.addEventListener("beforeunload", (e) => {
+        if (pendingSaves > 0) {
+          e.preventDefault();
+          e.returnValue = "";
+        }
+      });
 
       function fmtMoney(n) {
         const val = Math.round(Number(n) || 0);
@@ -2238,8 +2566,31 @@
         const container = document.getElementById("booksContainer");
         const q = normVN(filters.bookSearch);
 
-        const list = state.series.filter((s) => {
-          if (filters.bookCat !== "Tất cả" && s.category !== filters.bookCat) return false;
+        // Đếm riêng Truyện vs Sách trên thanh switch trên cùng
+        const allCount = state.series.length;
+        const sachCount = state.series.filter((s) => isBookItem(s)).length;
+        const truyenCount = allCount - sachCount;
+        const elAll = document.getElementById("cntAllBooks");
+        const elTr = document.getElementById("cntTruyen");
+        const elSa = document.getElementById("cntSach");
+        if (elAll) elAll.textContent = `(${allCount})`;
+        if (elTr) elTr.textContent = `(${truyenCount})`;
+        if (elSa) elSa.textContent = `(${sachCount})`;
+
+        // Ẩn thanh lọc loại phụ khi đang xem riêng Sách chữ
+        const catRow = document.getElementById("bookCatChips");
+        if (catRow) {
+          catRow.style.display = filters.bookGroup === "sach" ? "none" : "flex";
+          const sachChip = catRow.querySelector('[data-cat="Sách"]');
+          if (sachChip) sachChip.style.display = filters.bookGroup === "truyen" ? "none" : "";
+        }
+
+        let list = state.series.filter((s) => {
+          if (filters.bookGroup === "truyen" && isBookItem(s)) return false;
+          if (filters.bookGroup === "sach" && !isBookItem(s)) return false;
+          if (filters.bookGroup !== "sach" && filters.bookCat !== "Tất cả" && s.category !== filters.bookCat) {
+            return false;
+          }
           if (filters.bookPub !== "Tất cả") {
             const known = ["Trẻ", "Kim Đồng", "IPM", "Nhã Nam"];
             if (filters.bookPub === "Khác") {
@@ -2256,23 +2607,38 @@
           return true;
         });
 
+        // Sắp xếp danh sách
+        if (filters.bookSort === "name") {
+          list = [...list].sort((a, b) => (a.title || "").localeCompare(b.title || "", "vi"));
+        } else if (filters.bookSort === "vols") {
+          list = [...list].sort((a, b) => getAllSeriesVolumes(b).length - getAllSeriesVolumes(a).length);
+        } else if (filters.bookSort === "spent") {
+          const sumS = (x) => getAllSeriesVolumes(x).reduce((acc, v) => acc + (Number(v.paidPrice) || 0), 0);
+          list = [...list].sort((a, b) => sumS(b) - sumS(a));
+        }
+
         const totalVols = list.reduce((a, s) => a + getAllSeriesVolumes(s).length, 0);
-        document.getElementById("bookCountLabel").textContent = `${list.length} đầu sách · ${totalVols} tập`;
+        const unitLabel = filters.bookGroup === "truyen" ? "bộ truyện" : filters.bookGroup === "sach" ? "đầu sách" : "bộ";
+        document.getElementById("bookCountLabel").textContent = `${list.length} ${unitLabel} · ${totalVols} tập`;
 
         if (!list.length) {
+          const emptyHeading =
+            filters.bookGroup === "truyen"
+              ? "Chưa có bộ truyện nào"
+              : filters.bookGroup === "sach"
+              ? "Chưa có đầu sách chữ nào"
+              : state.series.length
+              ? "Không tìm thấy kết quả khớp bộ lọc"
+              : "Tủ sách đang trống";
           container.innerHTML = `
             <div class="empty">
-              <div class="empty-title">${state.series.length ? "Không tìm thấy đầu sách phù hợp" : "Tủ sách đang trống"}</div>
+              <div class="empty-title">${emptyHeading}</div>
               <div class="empty-desc">${
                 state.series.length
-                  ? "Thử bỏ bớt bộ lọc hoặc đổi từ khoá tìm kiếm."
-                  : "Bấm + Thêm bộ để tạo đầu manga hoặc sách, sau đó tạo các mục (bản thường, boxset, limit, tái bản...) bên trong."
+                  ? "Bấm + Thêm bộ để bổ sung hoặc chuyển tab Truyện / Sách phía trên."
+                  : "Bấm + Thêm bộ để tạo đầu truyện hoặc sách, sau đó tạo các mục (bản thường, boxset, limit, tái bản...) bên trong."
               }</div>
-              ${
-                state.series.length
-                  ? ""
-                  : `<button class="btn btn-primary" id="emptyAddBookBtn">+ Thêm bộ đầu tiên</button>`
-              }
+              <button class="btn btn-primary" id="emptyAddBookBtn">+ Thêm ${filters.bookGroup === "sach" ? "sách" : "bộ truyện"}</button>
             </div>`;
           const btn = document.getElementById("emptyAddBookBtn");
           if (btn) btn.addEventListener("click", () => openSeriesForm());
@@ -2361,7 +2727,10 @@
                 <label>Danh mục</label>
                 <select name="category">
                   ${["Manga", "Light Novel", "Sách", "Artbook"]
-                    .map((c) => `<option value="${c}" ${s?.category === c ? "selected" : ""}>${c}</option>`)
+                    .map((c) => {
+                      const defCat = s ? s.category : filters.bookGroup === "sach" ? "Sách" : "Manga";
+                      return `<option value="${c}" ${defCat === c ? "selected" : ""}>${c}</option>`;
+                    })
                     .join("")}
                 </select>
               </div>
@@ -2634,7 +3003,26 @@
         });
       }
 
-      // Cấp 2: Bên trong 1 Mục -> xem các tập (kèm ảnh + giá) và thêm tập
+      // Helper tìm các số tập bị thiếu ("lủng tập") trong 1 mục
+      function findMissingVolumes(vols) {
+        const ints = [...new Set(vols.map((v) => Math.floor(Number(v.number))).filter((n) => n >= 1 && Number.isFinite(n)))].sort(
+          (a, b) => a - b
+        );
+        if (ints.length < 2) return [];
+        const minV = ints[0];
+        const maxV = ints[ints.length - 1];
+        if (maxV - minV > 200) return [];
+        const have = new Set(ints);
+        const missing = [];
+        for (let n = minV; n <= maxV; n++) {
+          if (!have.has(n)) missing.push(n);
+        }
+        return missing;
+      }
+
+      const CK_PRESETS = [0, 5, 10, 15, 20, 25, 30];
+
+      // Cấp 2: Bên trong 1 Mục -> xem các tập (Thẻ ảnh / Ô gọn), phát hiện lủng tập, thêm tập
       function openSectionDetail(seriesId, sectionId) {
         const s = state.series.find((x) => x.id === seriesId);
         if (!s) return;
@@ -2645,31 +3033,74 @@
         const totalCover = vols.reduce((a, v) => a + (Number(v.coverPrice) || 0), 0);
         const totalPaid = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
         const diff = totalCover - totalPaid;
+        const missing = findMissingVolumes(vols);
+        const lentCount = vols.filter((v) => (v.lentTo || "").trim()).length;
+        const viewMode = state.volView || "cards";
 
-        const volsHtml = vols.length
-          ? `<div class="vol-card-grid">${vols
-              .map((v) => {
-                const numStr = String(v.number).padStart(2, "0");
-                const volImg = resolveImg(v.image);
-                const mediaHtml = volImg
-                  ? `<img src="${esc(volImg)}" alt="Tập ${esc(v.number)}" loading="lazy" />
-                     <span class="vol-card-badge mono">T.${esc(numStr)}</span>`
-                  : `<span class="vol-card-num-big mono">${esc(numStr)}</span>
-                     <span class="small-muted" style="font-size:10px; margin-top:2px;">Tập ${esc(v.number)}</span>`;
-                return `
-                  <button type="button" class="vol-card" data-vol-id="${v.id}">
-                    <div class="vol-card-media">${mediaHtml}</div>
-                    <div class="vol-card-body">
-                      <div class="vol-card-label">Tập ${esc(v.number)}</div>
-                      <div class="vol-card-price mono">${fmtMoney(v.paidPrice)}</div>
-                    </div>
-                  </button>`;
-              })
-              .join("")}</div>`
-          : `<div class="empty" style="padding:20px 14px; margin:10px 0;">
+        const missingHtml = missing.length
+          ? `<div class="missing-strip">
+               <strong>Phát hiện thiếu ${missing.length} tập ở giữa</strong> (chạm để thêm nhanh):
+               <div class="missing-chips">
+                 ${missing
+                   .slice(0, 14)
+                   .map((n) => `<button type="button" class="missing-chip mono" data-add-missing="${n}">+ Tập ${n}</button>`)
+                   .join("")}
+                 ${missing.length > 14 ? `<span class="small-muted mono">...+${missing.length - 14} tập</span>` : ""}
+               </div>
+             </div>`
+          : "";
+
+        let volsHtml = "";
+        if (!vols.length) {
+          volsHtml = `<div class="empty" style="padding:20px 14px; margin:10px 0;">
                <div class="empty-title" style="font-size:13px;">Mục "${esc(sec.name)}" chưa có tập nào</div>
-               <div class="empty-desc">Bấm <strong>+ 1 tập</strong> để nhập tập kèm ảnh riêng, hoặc <strong>+ Nhiều tập</strong> cho loạt tập / Boxset.</div>
+               <div class="empty-desc">Bấm <strong>+ 1 tập</strong> để nhập tập (có nút tính chiết khấu 5–30%), hoặc <strong>+ Nhiều tập</strong> cho loạt tập / Boxset.</div>
              </div>`;
+        } else if (viewMode === "compact") {
+          volsHtml = `<div class="vol-compact-grid">${vols
+            .map((v) => {
+              const numStr = String(v.number).padStart(2, "0");
+              const isLent = Boolean((v.lentTo || "").trim());
+              const isSeal = v.readState === "Nguyên seal";
+              const kPrice = v.paidPrice >= 1000 ? `${Math.round(v.paidPrice / 1000)}k` : `${v.paidPrice}đ`;
+              return `
+                <button type="button" class="vol-compact-cell ${isLent ? "is-lent" : isSeal ? "is-seal" : ""}" data-vol-id="${v.id}" title="Tập ${esc(v.number)}">
+                  <span class="vol-compact-num mono">${esc(numStr)}</span>
+                  <span class="vol-compact-price mono">${isLent ? "Mượn" : isSeal ? "Seal" : kPrice}</span>
+                </button>`;
+            })
+            .join("")}</div>`;
+        } else {
+          volsHtml = `<div class="vol-card-grid">${vols
+            .map((v) => {
+              const numStr = String(v.number).padStart(2, "0");
+              const volImg = resolveImg(v.image);
+              const isLent = Boolean((v.lentTo || "").trim());
+              const flagHtml = isLent
+                ? `<span class="vol-flag lent">Mượn: ${esc(v.lentTo)}</span>`
+                : v.readState === "Nguyên seal"
+                ? `<span class="vol-flag seal">Nguyên seal</span>`
+                : v.readState === "Đã đọc"
+                ? `<span class="vol-flag">Đã đọc</span>`
+                : "";
+              const mediaHtml = volImg
+                ? `<img src="${esc(volImg)}" alt="Tập ${esc(v.number)}" loading="lazy" />
+                   ${flagHtml}
+                   <span class="vol-card-badge mono">T.${esc(numStr)}</span>`
+                : `${flagHtml}
+                   <span class="vol-card-num-big mono">${esc(numStr)}</span>
+                   <span class="small-muted" style="font-size:10px; margin-top:2px;">Tập ${esc(v.number)}</span>`;
+              return `
+                <button type="button" class="vol-card" data-vol-id="${v.id}">
+                  <div class="vol-card-media">${mediaHtml}</div>
+                  <div class="vol-card-body">
+                    <div class="vol-card-label">Tập ${esc(v.number)}</div>
+                    <div class="vol-card-price mono">${fmtMoney(v.paidPrice)}</div>
+                  </div>
+                </button>`;
+            })
+            .join("")}</div>`;
+        }
 
         const html = `
           <div class="crumb-bar">
@@ -2686,14 +3117,20 @@
               <div class="mono small-muted" style="margin-top:3px;">
                 ${vols.length} tập · Thực chi ${fmtMoney(totalPaid)} · Giá bìa ${fmtMoney(totalCover)}
                 ${diff > 0 ? ` (tiết kiệm ${fmtMoney(diff)})` : ""}
+                ${lentCount ? ` · Đang cho mượn ${lentCount}` : ""}
               </div>
               ${sec.note ? `<div class="small-muted" style="margin-top:3px;">${esc(sec.note)}</div>` : ""}
             </div>
           </div>
 
+          ${missingHtml}
+
           <div class="divider"></div>
           <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
-            <span class="panel-title">Danh sách tập (chạm để sửa / xem ảnh)</span>
+            <div class="seg" id="volViewSeg">
+              <button type="button" class="${viewMode === "cards" ? "active" : ""}" data-vmode="cards">Thẻ ảnh</button>
+              <button type="button" class="${viewMode === "compact" ? "active" : ""}" data-vmode="compact">Ô gọn</button>
+            </div>
             <div style="display:flex; gap:6px;">
               <button type="button" class="btn btn-sm" id="addBulkVolBtn">+ Nhiều tập</button>
               <button type="button" class="btn btn-sm btn-primary" id="addOneVolBtn">+ 1 tập</button>
@@ -2714,6 +3151,16 @@
             openSeriesDetail(seriesId);
             showToast(`Đã xoá mục "${sec.name}".`);
           });
+          body.querySelectorAll("#volViewSeg [data-vmode]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              state.volView = btn.dataset.vmode;
+              saveState();
+              openSectionDetail(seriesId, sectionId);
+            });
+          });
+          body.querySelectorAll("[data-add-missing]").forEach((btn) => {
+            btn.addEventListener("click", () => openVolumeForm(seriesId, sectionId, null, Number(btn.dataset.addMissing)));
+          });
           body.querySelector("#addOneVolBtn").addEventListener("click", () => openVolumeForm(seriesId, sectionId));
           body.querySelector("#addBulkVolBtn").addEventListener("click", () => openBulkVolumeForm(seriesId, sectionId));
           body.querySelectorAll("[data-vol-id]").forEach((btn) => {
@@ -2722,8 +3169,8 @@
         });
       }
 
-      // Thêm / sửa 1 tập trong Mục (hỗ trợ Ảnh riêng từng tập + Giá bìa + Thực chi)
-      function openVolumeForm(seriesId, sectionId, volId = null) {
+      // Thêm / sửa 1 tập trong Mục (Tính giá theo CK 0–30% + Ảnh riêng + Trạng thái đọc / Nguyên seal / Cho mượn)
+      function openVolumeForm(seriesId, sectionId, volId = null, prefillVolNum = null) {
         const s = state.series.find((x) => x.id === seriesId);
         const sec = s ? (s.sections || []).find((x) => x.id === sectionId) : null;
         if (!s || !sec) return;
@@ -2734,12 +3181,23 @@
           ? (sec.volumes || []).filter((x) => x.groupId === v.groupId)
           : [];
         let currentImg = resolveImg(v?.image || "");
+        const defaultNum = v ? v.number : prefillVolNum ?? maxNum + 1;
 
         const html = `
           <form id="volForm" class="form-grid">
-            <div class="field">
-              <label>Số tập *</label>
-              <input name="number" type="number" step="0.5" required value="${esc(v ? v.number : maxNum + 1)}" />
+            <div class="form-row-2">
+              <div class="field">
+                <label>Số tập *</label>
+                <input name="number" type="number" step="0.5" required value="${esc(defaultNum)}" />
+              </div>
+              <div class="field">
+                <label>Tình trạng</label>
+                <select name="readState">
+                  ${["Chưa đọc", "Đang đọc", "Đã đọc", "Nguyên seal"]
+                    .map((rs) => `<option value="${rs}" ${(v?.readState || "Chưa đọc") === rs ? "selected" : ""}>${rs}</option>`)
+                    .join("")}
+                </select>
+              </div>
             </div>
 
             <div class="field">
@@ -2758,20 +3216,35 @@
               </div>
             </div>
 
-            <div class="form-row-2">
-              <div class="field">
-                <label>Giá bìa (VNĐ)</label>
-                <input name="coverPrice" type="number" min="0" value="${v ? v.coverPrice : lastVol?.coverPrice ?? 35000}" />
+            <div class="field">
+              <div class="form-row-2">
+                <div>
+                  <label>Giá bìa (VNĐ)</label>
+                  <input name="coverPrice" id="volCoverInput" type="number" min="0" value="${v ? v.coverPrice : lastVol?.coverPrice ?? 35000}" />
+                </div>
+                <div>
+                  <label>Thực chi (VNĐ)</label>
+                  <input name="paidPrice" id="volPaidInput" type="number" min="0" value="${v ? v.paidPrice : lastVol?.paidPrice ?? 30000}" />
+                </div>
               </div>
-              <div class="field">
-                <label>Thực chi (VNĐ)</label>
-                <input name="paidPrice" type="number" min="0" value="${v ? v.paidPrice : lastVol?.paidPrice ?? 30000}" />
+              <div style="margin-top:7px;">
+                <label style="margin-bottom:2px;">Tính nhanh theo chiết khấu (CK):</label>
+                <div class="ck-row" id="volCkRow">
+                  ${CK_PRESETS.map((pct) => `<button type="button" class="ck-btn mono" data-ck="${pct}">-${pct}%</button>`).join("")}
+                </div>
+                <div class="ck-meta mono" id="volCkMeta"></div>
               </div>
             </div>
 
-            <div class="field">
-              <label>Ngày mua</label>
-              <input name="date" type="date" value="${esc(v?.date || todayISO())}" />
+            <div class="form-row-2">
+              <div class="field">
+                <label>Ngày mua</label>
+                <input name="date" type="date" value="${esc(v?.date || todayISO())}" />
+              </div>
+              <div class="field">
+                <label>Đang cho mượn (để trống nếu ở nhà)</label>
+                <input name="lentTo" value="${esc(v?.lentTo || "")}" placeholder="VD: Minh, Huy..." />
+              </div>
             </div>
 
             <div class="field">
@@ -2795,9 +3268,59 @@
             </div>
           </form>`;
 
-        openModal(`${sec.name} — ${v ? `Tập ${v.number}` : "Thêm 1 tập"}`, html, (body) => {
+        openModal(`${sec.name} — ${v ? `Tập ${v.number}` : `Thêm tập ${defaultNum}`}`, html, (body) => {
           const previewEl = body.querySelector("#volImgPreview");
           const clearBtn = body.querySelector("#clearVolImgBtn");
+          const coverIn = body.querySelector("#volCoverInput");
+          const paidIn = body.querySelector("#volPaidInput");
+          const ckRow = body.querySelector("#volCkRow");
+          const ckMeta = body.querySelector("#volCkMeta");
+          let activeCk = null;
+
+          const refreshCkInfo = () => {
+            const cp = Math.max(0, Number(coverIn.value) || 0);
+            const pp = Math.max(0, Number(paidIn.value) || 0);
+            ckRow.querySelectorAll(".ck-btn").forEach((b) => {
+              const p = Number(b.dataset.ck);
+              const expected = Math.round(cp * (1 - p / 100));
+              b.classList.toggle("active", cp > 0 && pp === expected);
+            });
+            if (cp > 0 && pp <= cp) {
+              const saved = cp - pp;
+              const pct = ((saved / cp) * 100).toFixed(1).replace(/\.0$/, "");
+              ckMeta.style.color = "var(--forest)";
+              ckMeta.textContent = saved > 0 ? `Đang giảm ${pct}% (tiết kiệm ${fmtMoney(saved)})` : "Mua đúng giá bìa (0%)";
+            } else if (cp > 0 && pp > cp) {
+              ckMeta.style.color = "var(--accent)";
+              ckMeta.textContent = `Chênh cao hơn giá bìa +${fmtMoney(pp - cp)}`;
+            } else {
+              ckMeta.textContent = "";
+            }
+          };
+
+          ckRow.querySelectorAll(".ck-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const pct = Number(btn.dataset.ck);
+              activeCk = pct;
+              const cp = Math.max(0, Number(coverIn.value) || 0);
+              paidIn.value = Math.round(cp * (1 - pct / 100));
+              refreshCkInfo();
+            });
+          });
+
+          coverIn.addEventListener("input", () => {
+            if (activeCk !== null) {
+              const cp = Math.max(0, Number(coverIn.value) || 0);
+              paidIn.value = Math.round(cp * (1 - activeCk / 100));
+            }
+            refreshCkInfo();
+          });
+
+          paidIn.addEventListener("input", () => {
+            activeCk = null;
+            refreshCkInfo();
+          });
+          refreshCkInfo();
 
           const setVolPreview = (url) => {
             currentImg = url || "";
@@ -2808,8 +3331,8 @@
 
           previewEl.addEventListener("click", () => {
             if (!currentImg) return;
-            openImageLightbox(currentImg, `${s.title} — ${sec.name} (Tập ${v ? v.number : ""})`, () =>
-              openVolumeForm(seriesId, sectionId, volId)
+            openImageLightbox(currentImg, `${s.title} — ${sec.name} (Tập ${defaultNum})`, () =>
+              openVolumeForm(seriesId, sectionId, volId, prefillVolNum)
             );
           });
 
@@ -2866,6 +3389,8 @@
               paidPrice: Math.max(0, Number(fd.get("paidPrice")) || 0),
               date: fd.get("date") || todayISO(),
               image: currentImg,
+              readState: fd.get("readState") || "Chưa đọc",
+              lentTo: (fd.get("lentTo") || "").trim(),
               note: fd.get("note").trim(),
               groupId: v?.groupId || "",
               groupLabel: v?.groupLabel || "",
@@ -2886,7 +3411,7 @@
         });
       }
 
-      // Thêm nhiều tập / Boxset vào trong 1 Mục
+      // Thêm nhiều tập / Boxset vào trong 1 Mục (hỗ trợ nút CK 0–30% cho cả 2 chế độ giá!)
       function openBulkVolumeForm(seriesId, sectionId) {
         const s = state.series.find((x) => x.id === seriesId);
         const sec = s ? (s.sections || []).find((x) => x.id === sectionId) : null;
@@ -2923,7 +3448,7 @@
               </div>
               <div class="field">
                 <label>Tổng thực chi (VNĐ)</label>
-                <input name="totalPaid" type="number" min="0" value="210000" />
+                <input name="totalPaid" type="number" min="0" value="212500" />
               </div>
             </div>
 
@@ -2935,6 +3460,13 @@
               <div class="field">
                 <label>Chiết khấu (%)</label>
                 <input name="discount" type="number" min="0" max="100" value="15" />
+              </div>
+            </div>
+
+            <div>
+              <div class="small-muted" style="margin-bottom:3px;">Chọn nhanh % chiết khấu:</div>
+              <div class="ck-row" id="bulkCkRow">
+                ${CK_PRESETS.map((pct) => `<button type="button" class="ck-btn mono" data-bck="${pct}">-${pct}%</button>`).join("")}
               </div>
             </div>
 
@@ -2979,6 +3511,7 @@
           const preview = body.querySelector("#bulkPreview");
           const imgPrev = body.querySelector("#bulkImgPreview");
           const clearImgBtn = body.querySelector("#clearBulkImgBtn");
+          const bulkCkRow = body.querySelector("#bulkCkRow");
 
           const updateUI = () => {
             const isTotal = modeSel.value === "total";
@@ -2987,6 +3520,19 @@
             const f = Math.round(Number(form.from.value) || 0);
             const t = Math.round(Number(form.to.value) || 0);
             const count = t - f + 1;
+
+            // Highlight matching CK chip
+            bulkCkRow.querySelectorAll(".ck-btn").forEach((b) => {
+              const p = Number(b.dataset.bck);
+              if (isTotal) {
+                const tc = Math.max(0, Number(form.totalCover.value) || 0);
+                const tp = Math.max(0, Number(form.totalPaid.value) || 0);
+                b.classList.toggle("active", tc > 0 && tp === Math.round(tc * (1 - p / 100)));
+              } else {
+                b.classList.toggle("active", Number(form.discount.value) === p);
+              }
+            });
+
             if (count < 1) {
               preview.textContent = "Đến tập phải lớn hơn hoặc bằng Từ tập.";
               return;
@@ -3004,6 +3550,19 @@
               preview.textContent = `${count} tập (Tập ${f}–${t}) · ${fmtMoney(paid)}/tập (Tổng ${fmtMoney(paid * count)})`;
             }
           };
+
+          bulkCkRow.querySelectorAll(".ck-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const pct = Number(btn.dataset.bck);
+              if (modeSel.value === "total") {
+                const tc = Math.max(0, Number(form.totalCover.value) || 0);
+                form.totalPaid.value = Math.round(tc * (1 - pct / 100));
+              } else {
+                form.discount.value = pct;
+              }
+              updateUI();
+            });
+          });
 
           modeSel.addEventListener("change", updateUI);
           form.addEventListener("input", updateUI);
@@ -4027,14 +4586,19 @@
               <label>Tên món quà *</label>
               <input name="giftName" value="${esc(item.gift || item.title)}" />
             </div>
-            <div class="form-row-2">
-              <div class="field">
-                <label>Giá bìa (VNĐ)</label>
-                <input name="coverPrice" type="number" min="0" value="${Number(item.price) || 0}" />
+            <div class="field">
+              <div class="form-row-2">
+                <div>
+                  <label>Giá bìa (VNĐ)</label>
+                  <input name="coverPrice" id="qiCoverIn" type="number" min="0" value="${Number(item.price) || 0}" />
+                </div>
+                <div>
+                  <label>Thực chi (VNĐ)</label>
+                  <input name="paidPrice" id="qiPaidIn" type="number" min="0" value="${Number(item.price) || 0}" />
+                </div>
               </div>
-              <div class="field">
-                <label>Thực chi (VNĐ)</label>
-                <input name="paidPrice" type="number" min="0" value="${Number(item.price) || 0}" />
+              <div class="ck-row" id="qiCkRow">
+                ${CK_PRESETS.map((pct) => `<button type="button" class="ck-btn mono" data-qck="${pct}">-${pct}%</button>`).join("")}
               </div>
             </div>
             <div id="qiBookExtra" class="form-grid">
@@ -4074,7 +4638,16 @@
           targetSel.addEventListener("change", toggleExtra);
           toggleExtra();
 
-          body.querySelector("#qiCancel").addEventListener("click", closeModal);
+          const qiCover = body.querySelector("#qiCoverIn");
+          const qiPaid = body.querySelector("#qiPaidIn");
+          body.querySelectorAll("#qiCkRow .ck-btn").forEach((b) => {
+            b.addEventListener("click", () => {
+              const pct = Number(b.dataset.qck);
+              const cp = Math.max(0, Number(qiCover.value) || 0);
+              qiPaid.value = Math.round(cp * (1 - pct / 100));
+            });
+          });
+                    body.querySelector("#qiCancel").addEventListener("click", closeModal);
           body.querySelector("#quickImportForm").addEventListener("submit", (e) => {
             e.preventDefault();
             const fd = new FormData(e.target);
@@ -4349,9 +4922,11 @@
             <div class="panel-title">Bộ nhớ & Sao lưu iPhone</div>
             <div class="boxset-hint mono" id="storageHealthBox">Đang kiểm tra dung lượng...</div>
             <div class="small-muted">Dữ liệu đã được lưu trên <strong>IndexedDB</strong> (dung lượng lớn, chống tràn 5MB của Safari) và tự chống trùng lặp ảnh. Nên xuất 1 file sao lưu vào iCloud Drive mỗi tháng.</div>
+            <div class="small-muted mono" id="lastBackupMeta"></div>
             <div style="display:flex; flex-wrap:wrap; gap:8px;">
-              <button class="btn btn-sm btn-primary" id="exportJsonBtn">Xuất file sao lưu (.json)</button>
+              <button class="btn btn-sm btn-primary" id="exportJsonBtn">Lưu iCloud / Xuất .json</button>
               <button class="btn btn-sm" id="importJsonBtn">Nhập file sao lưu (.json)</button>
+              <button class="btn btn-sm" id="recoverShadowBtn">Khôi phục bản chữ khẩn cấp</button>
             </div>
 
             <div class="divider"></div>
@@ -4382,15 +4957,62 @@
             saveState();
             fetchNews(true);
           });
-          body.querySelector("#exportJsonBtn").addEventListener("click", () => {
-            const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+          const lastBkEl = body.querySelector("#lastBackupMeta");
+          if (lastBkEl) {
+            lastBkEl.textContent = state.lastBackupAt
+              ? `Lần sao lưu gần nhất: ${state.lastBackupAt}`
+              : "Chưa xuất file sao lưu lần nào.";
+          }
+
+          body.querySelector("#exportJsonBtn").addEventListener("click", async () => {
+            const fileName = `tusach-backup-${todayISO()}.json`;
+            const jsonText = JSON.stringify(state, null, 2);
+            const blob = new Blob([jsonText], { type: "application/json" });
+
+            state.lastBackupAt = new Date().toLocaleString("vi-VN", { hour12: false });
+            saveState();
+            if (lastBkEl) lastBkEl.textContent = `Lần sao lưu gần nhất: ${state.lastBackupAt}`;
+
+            // Ưu tiên bảng Chia sẻ gốc trên iPhone để lưu thẳng vào iCloud Drive / Tệp
+            try {
+              const file = new File([blob], fileName, { type: "application/json" });
+              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ title: "Sao lưu Tủ Sách", files: [file] });
+                showToast("Đã mở bảng chia sẻ lưu file.");
+                return;
+              }
+            } catch (err) {
+              if (err && err.name === "AbortError") return;
+            }
+
+            // Fallback tải file chuẩn (trì hoãn revokeObjectURL 15s để Safari iOS không cắt mất file)
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `tusach-backup-${todayISO()}.json`;
+            a.download = fileName;
+            document.body.appendChild(a);
             a.click();
-            URL.revokeObjectURL(url);
-            showToast("Đã tải file sao lưu.");
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 15000);
+            showToast("Đã xuất file sao lưu .json.");
+          });
+
+          body.querySelector("#recoverShadowBtn").addEventListener("click", () => {
+            const sh = readTextOnlyShadow();
+            if (!sh || !Array.isArray(sh.series) || !sh.series.length) {
+              showToast("Chưa có bản dự phòng khẩn cấp nào trên máy.");
+              return;
+            }
+            const shCount = sh.series.length;
+            const shVols = sh.series.reduce((acc, x) => acc + getAllSeriesVolumes(x).length, 0);
+            if (!confirm(`Tìm thấy bản dự phòng chữ (${shCount} bộ · ${shVols} tập, không gồm ảnh). Khôi phục bản này?`)) {
+              return;
+            }
+            state = migrateStateData(sh);
+            saveState();
+            renderAll();
+            closeModal();
+            showToast("Đã khôi phục bản dự phòng khẩn cấp.");
           });
           body.querySelector("#importJsonBtn").addEventListener("click", () => {
             document.getElementById("importFileInput").click();
@@ -4591,7 +5213,24 @@
         }
       });
 
-      document.getElementById("bookSearch").addEventListener("input", (e) => {
+      document.getElementById("bookGroupSwitch").addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-group]");
+        if (!btn) return;
+        filters.bookGroup = btn.dataset.group;
+        if (filters.bookGroup === "truyen" && filters.bookCat === "Sách") {
+          filters.bookCat = "Tất cả";
+          document.querySelectorAll("#bookCatChips .chip").forEach((c) => c.classList.toggle("active", c.dataset.cat === "Tất cả"));
+        }
+        document.querySelectorAll("#bookGroupSwitch button").forEach((b) => b.classList.toggle("active", b === btn));
+        renderBooks();
+      });
+
+      document.getElementById("bookSortSel").addEventListener("change", (e) => {
+        filters.bookSort = e.target.value;
+        renderBooks();
+      });
+
+            document.getElementById("bookSearch").addEventListener("input", (e) => {
         filters.bookSearch = e.target.value;
         renderBooks();
       });
@@ -4678,10 +5317,12 @@
       }
 
       async function initApp() {
-        await loadStateAsync();
+        const ok = await loadStateAsync();
         applyTheme();
-        renderAll();
-        fetchNews(false);
+        if (ok) {
+          renderAll();
+          fetchNews(false);
+        }
       }
 
       initApp();
