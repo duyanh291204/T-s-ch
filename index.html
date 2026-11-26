@@ -2969,50 +2969,56 @@
       background: transparent;
     }
 
-    /* Con dấu mộc đỏ kiểu Nhật (Hanko FULL) + Thanh tiến độ bộ */
+    /* Nhãn FULL tinh gọn, đồng bộ với bìa sách & thanh tiến độ */
     .hanko-full {
       position: absolute;
       top: 5px;
-      left: 6px;
+      left: 5px;
       z-index: 5;
-      padding: 1px 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 5px;
       font-family: "IBM Plex Mono", ui-monospace, monospace;
       font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      line-height: 1.15;
-      color: #B82622;
-      background: rgba(255, 250, 246, 0.9);
-      border: 1.5px solid #B82622;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      line-height: 1.1;
+      color: #F6F5F1;
+      background: rgba(20, 19, 18, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 1.5px;
-      box-shadow: 0 0 0 1px rgba(184, 38, 34, 0.22), 0 1px 4px rgba(0, 0, 0, 0.28);
-      transform: rotate(-7deg);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.32);
       pointer-events: none;
       text-transform: uppercase;
+    }
+
+    .hanko-full::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #5FB39C;
+      flex-shrink: 0;
     }
 
     .hanko-inline {
       display: inline-flex;
       align-items: center;
-      padding: 0 4px;
-      height: 18px;
+      gap: 3px;
+      padding: 0 5px;
+      height: 17px;
       font-family: "IBM Plex Mono", ui-monospace, monospace;
       font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      color: #B82622;
-      border: 1.25px solid #B82622;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--forest);
+      border: 1px solid var(--forest);
       border-radius: 1.5px;
-      background: rgba(184, 38, 34, 0.08);
-      transform: rotate(-3deg);
+      background: var(--forest-soft);
       flex-shrink: 0;
-    }
-
-    [data-theme="dark"] .hanko-inline,
-    [data-theme="midnight"] .hanko-inline {
-      color: #F06A65;
-      border-color: #F06A65;
-      background: rgba(240, 106, 101, 0.14);
     }
 
     .book-prog-bar {
@@ -3033,7 +3039,7 @@
     }
 
     .book-prog-fill.is-done {
-      background: #C93832;
+      background: var(--forest);
     }
 
     /* Chế độ Tủ kính (Gallery) cho Tab Quà & Đồ */
@@ -12075,7 +12081,7 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
         });
 
         // 2. Bóng mềm bám sát viền trên thanh tab
-        const shadowRx = 14.2 + capoo.moveMix * 2.5 + capoo.sleepMix * 3.0 + capoo.tiredMix * 3.5 - Math.abs(capoo.hopY) * 0.2;
+        const shadowRx = 16.2 + capoo.moveMix * 2.5 + capoo.sleepMix * 3.0 + capoo.tiredMix * 3.5 - Math.abs(capoo.hopY) * 0.2;
         ctx.fillStyle = isDark ? "rgba(0, 0, 0, 0.5)" : "rgba(28, 25, 22, 0.14)";
         ctx.beginPath();
         ctx.ellipse(capoo.x, groundY + 0.5, Math.max(6, shadowRx), 1.8, 0, 0, Math.PI * 2);
@@ -12123,9 +12129,9 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
 
-        // Kích thước bánh bao múp gọn cân đối với khung 41px
-        const rx = 14.2 + capoo.moveMix * 1.4;
-        const ry = 9.8;
+        // Kích thước bánh bao bè ngang béo múp hơn, vẫn gọn đẹp trong khung 41px
+        const rx = 16.6 + capoo.moveMix * 1.5;
+        const ry = 9.7;
         const earDroop = capoo.sleepMix * 0.45 + capoo.tiredMix * 0.72 + capoo.runMix * 0.22 + (capoo.expr === "pout" ? 0.16 : 0) + (capoo.isPetting ? 0.22 : 0);
 
         // 4 mấu chân ngắn tũn dính liền nhau kiểu Bugcat Capoo siêu cute!
