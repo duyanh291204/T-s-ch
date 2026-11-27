@@ -2529,10 +2529,10 @@ body::before {
 }
 
 /* ============================
-   4. CHẾ ĐỘ XEM KỆ GỖ (WOODEN BOOKCASE + TANKOBON SPINE)
+   4. CHẾ ĐỘ XEM KỆ GỖ (REALISTIC WOOD BOOKCASE + TANKOBON SPINE)
    ============================ */
 .shelf-section-group {
-  margin-bottom: 22px;
+  margin-bottom: 24px;
 }
 
 .shelf-section-title {
@@ -2544,7 +2544,7 @@ body::before {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink);
-  margin: 0 0 8px;
+  margin: 0 0 9px;
   padding: 0 4px;
 }
 
@@ -2554,29 +2554,68 @@ body::before {
   color: var(--muted);
 }
 
-/* Khung tủ gỗ bao quanh các tầng kệ */
+/* Khung tủ gỗ tự nhiên có vân gỗ, phào chỉ trên & thành gỗ hai bên */
 .shelf-bookcase {
-  background: linear-gradient(90deg, #5C3D24 0%, #7A5230 14px, #3E2716 14px, #2E1D11 calc(100% - 14px), #7A5230 calc(100% - 14px), #4B301B 100%);
-  border: 1.5px solid #4A2F1B;
-  border-radius: 5px;
-  padding: 12px 12px 14px;
+  position: relative;
+  border-radius: 6px;
+  padding: 13px 13px 15px;
+  background-color: #5E3B20;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.35' numOctaves='3' seed='7'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23w)' opacity='0.18'/%3E%3C/svg%3E"),
+    linear-gradient(
+      90deg,
+      #4A2C16 0px,
+      #8A5A34 4px,
+      #6E4524 10px,
+      #3A2212 13px,
+      #27170C 14px,
+      #2E1C10 50%,
+      #24150B calc(100% - 14px),
+      #3A2212 calc(100% - 13px),
+      #6E4524 calc(100% - 10px),
+      #8A5A34 calc(100% - 4px),
+      #4A2C16 100%
+    );
+  border: 2px solid #7C4F2B;
+  border-top-color: #9E6A40;
+  border-bottom-color: #3D2310;
   box-shadow:
-    inset 0 8px 18px rgba(0, 0, 0, 0.45),
-    0 10px 24px rgba(24, 16, 10, 0.22);
+    inset 0 10px 20px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 224, 184, 0.25),
+    0 12px 26px rgba(20, 12, 6, 0.28);
 }
 
 [data-theme="dark"] .shelf-bookcase, [data-theme="midnight"] .shelf-bookcase {
-  background: linear-gradient(90deg, #3A2618 0%, #4E3422 14px, #1D1510 14px, #16100C calc(100% - 14px), #4E3422 calc(100% - 14px), #311F13 100%);
-  border-color: #4D3422;
+  background-color: #3D2515;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.35' numOctaves='3' seed='7'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23w)' opacity='0.16'/%3E%3C/svg%3E"),
+    linear-gradient(
+      90deg,
+      #2B190D 0px,
+      #664024 4px,
+      #4E301A 10px,
+      #23140B 13px,
+      #160E09 14px,
+      #1D130C 50%,
+      #140D08 calc(100% - 14px),
+      #23140B calc(100% - 13px),
+      #4E301A calc(100% - 10px),
+      #664024 calc(100% - 4px),
+      #2B190D 100%
+    );
+  border-color: #5C3A20;
+  border-top-color: #7D5130;
+  border-bottom-color: #24140A;
   box-shadow:
-    inset 0 10px 22px rgba(0, 0, 0, 0.65),
-    0 12px 28px rgba(0, 0, 0, 0.52);
+    inset 0 12px 24px rgba(0, 0, 0, 0.72),
+    inset 0 1px 0 rgba(255, 220, 178, 0.16),
+    0 14px 30px rgba(0, 0, 0, 0.56);
 }
 
 .shelf-wrap {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .shelf-unit {
@@ -2587,65 +2626,72 @@ body::before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 4px 4px;
+  padding: 2px 6px 5px;
   font-size: 10px;
-  color: rgba(245, 232, 212, 0.68);
+  color: rgba(247, 232, 208, 0.72);
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
+/* Hốc tủ gỗ có vách hậu kẻ nan gỗ dọc + đèn hắt ấm nhẹ từ trên xuống */
 .shelf-row {
   display: flex;
   align-items: flex-end;
   gap: 7px;
-  padding: 10px 8px 0;
-  min-height: 198px;
+  padding: 12px 9px 0;
+  min-height: 200px;
   overflow-x: auto;
   scrollbar-width: none;
   background:
-    radial-gradient(ellipse 90% 45% at 50% 0%, rgba(255, 224, 172, 0.09) 0%, transparent 72%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0.04) 45%, rgba(0, 0, 0, 0.34) 100%);
+    radial-gradient(ellipse 85% 40% at 50% 0%, rgba(255, 218, 160, 0.14) 0%, transparent 72%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 226, 186, 0.025) 0px,
+      rgba(255, 226, 186, 0.025) 28px,
+      rgba(0, 0, 0, 0.2) 28px,
+      rgba(0, 0, 0, 0.2) 30px
+    ),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.32) 0%, rgba(0, 0, 0, 0.06) 36%, rgba(0, 0, 0, 0.36) 100%);
   border-radius: 2px 2px 0 0;
+  box-shadow: inset 0 8px 14px rgba(0, 0, 0, 0.42);
 }
 
 .shelf-row::-webkit-scrollbar {
   display: none;
 }
 
-/* Thanh ván gỗ ngang (Oak / Walnut plank) */
+/* Tấm ván gỗ ngang dày dặn, có mép vát trên sáng & bóng đổ dày xuống tầng dưới */
 .shelf-plank {
-  height: 12px;
-  border-radius: 1.5px;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 235, 205, 0.05) 0px,
-      rgba(255, 235, 205, 0.05) 18px,
-      rgba(0, 0, 0, 0.06) 18px,
-      rgba(0, 0, 0, 0.06) 36px
-    ),
-    linear-gradient(180deg, #B58354 0%, #8E5F36 48%, #6B4323 100%);
-  border-top: 1px solid rgba(255, 236, 204, 0.42);
-  border-bottom: 1px solid rgba(28, 16, 8, 0.7);
-  box-shadow: 0 7px 14px rgba(0, 0, 0, 0.48), inset 0 -2px 3px rgba(0, 0, 0, 0.32);
+  height: 15px;
+  margin: 0 -2px;
+  border-radius: 2px;
+  background-color: #7D502D;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='30'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015 0.45' numOctaves='3' seed='3'/%3E%3C/filter%3E%3Crect width='220' height='30' filter='url(%23g)' opacity='0.22'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #C79260 0px, #A56E40 2.5px, #85542D 55%, #5C371C 100%);
+  border-top: 1px solid rgba(255, 238, 210, 0.5);
+  border-bottom: 1.5px solid rgba(22, 12, 6, 0.85);
+  box-shadow:
+    0 9px 16px rgba(0, 0, 0, 0.55),
+    0 3px 4px rgba(0, 0, 0, 0.45),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.35);
   position: relative;
+  z-index: 4;
 }
 
 [data-theme="dark"] .shelf-plank, [data-theme="midnight"] .shelf-plank {
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 235, 205, 0.035) 0px,
-      rgba(255, 235, 205, 0.035) 18px,
-      rgba(0, 0, 0, 0.08) 18px,
-      rgba(0, 0, 0, 0.08) 36px
-    ),
-    linear-gradient(180deg, #7A5335 0%, #5B3B24 50%, #3E2716 100%);
-  border-top: 1px solid rgba(255, 224, 182, 0.24);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.65), inset 0 -2px 3px rgba(0, 0, 0, 0.42);
+  background-color: #5C3A20;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='30'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015 0.45' numOctaves='3' seed='3'/%3E%3C/filter%3E%3Crect width='220' height='30' filter='url(%23g)' opacity='0.2'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #986841 0px, #774E2D 2.5px, #5A391F 55%, #3B2312 100%);
+  border-top: 1px solid rgba(255, 226, 186, 0.3);
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.72),
+    0 3px 5px rgba(0, 0, 0, 0.55),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.45);
 }
 
-/* Cụm 1 bộ sách trên kệ */
+/* Cụm 1 bộ sách trên kệ + hiệu ứng rút sách mượt mà kiểu 3D spring */
 .shelf-book-group {
   position: relative;
   flex: 0 0 auto;
@@ -2656,18 +2702,35 @@ body::before {
   padding: 0;
   background: none;
   border: none;
-  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, filter;
+  transition:
+    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.28s ease;
 }
 
-.shelf-book-group:hover,
-.shelf-book-group.pulled {
-  transform: translateY(-11px);
+.shelf-book-group:hover {
+  transform: translateY(-7px) scale(1.02);
   z-index: 6;
+}
+
+.shelf-book-group.pulled {
+  transform: translateY(-16px) scale(1.07) rotateZ(-2.5deg);
+  filter: drop-shadow(0 14px 16px rgba(0, 0, 0, 0.62));
+  z-index: 12;
+}
+
+.shelf-book-group .shelf-slice {
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+}
+
+.shelf-book-group.pulled .shelf-slice {
+  transform: translateX(2px) translateY(3px);
+  opacity: 0.55 !important;
 }
 
 .shelf-spine-main {
   position: relative;
-  width: 42px;
+  width: 44px;
   border-radius: 2.5px 2px 0 0;
   overflow: hidden;
   display: flex;
@@ -2677,13 +2740,13 @@ body::before {
   padding: 0 0 6px;
   color: var(--sp-ink, #F7F4EE);
   background: var(--sp-bg, #2B2825);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-bottom: none;
   box-shadow:
-    inset 4px 0 6px rgba(255, 255, 255, 0.12),
-    inset -4px 0 7px rgba(0, 0, 0, 0.32),
+    inset 4px 0 6px rgba(255, 255, 255, 0.14),
+    inset -4px 0 7px rgba(0, 0, 0, 0.34),
     0 -1px 0 rgba(255, 255, 255, 0.12),
-    2px 0 6px rgba(0, 0, 0, 0.28);
+    2px 0 6px rgba(0, 0, 0, 0.34);
   z-index: 3;
 }
 
@@ -2692,8 +2755,8 @@ body::before {
   box-shadow:
     inset 4px 0 6px rgba(255, 240, 200, 0.16),
     inset -4px 0 7px rgba(0, 0, 0, 0.34),
-    0 0 10px rgba(229, 193, 108, 0.2),
-    2px 0 6px rgba(0, 0, 0, 0.28);
+    0 0 10px rgba(229, 193, 108, 0.22),
+    2px 0 6px rgba(0, 0, 0, 0.34);
 }
 
 .shelf-stack-slices {
@@ -2744,7 +2807,7 @@ body::before {
   border-radius: 1.5px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.24);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.42);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
   flex: 0 0 36px;
   background: rgba(0, 0, 0, 0.24);
 }
@@ -2756,38 +2819,42 @@ body::before {
   display: block;
 }
 
-/* Chữ dọc theo gáy sách (vertical-rl chuẩn trên iOS Safari): dài quá tự xuống 2 dòng dọc cạnh nhau, không bị bẻ ngang */
+/* Chữ gáy dọc: cách rõ ảnh bìa trên (9px) và số tập dưới (7px), tự chia 2 dòng dọc song song khi tên dài */
 .sp-title-vert {
   position: relative;
   z-index: 2;
   display: flex;
+  flex-direction: row-reverse;
   align-items: center;
   justify-content: center;
+  gap: 2.5px;
   width: 100%;
-  margin: 4px 0;
-  padding: 2px 3px;
+  margin: 9px 0 7px;
+  padding: 0 3px;
   overflow: hidden;
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.sp-title-vert span {
+.sp-title-vert .sp-line {
   display: block;
   writing-mode: vertical-rl;
   -webkit-writing-mode: vertical-rl;
   text-orientation: mixed;
-  font-size: 9px;
+  font-size: 9.2px;
   font-weight: 600;
-  line-height: 1.2;
-  max-height: 100%;
-  max-width: 24px;
+  line-height: 1.1;
+  max-height: 86px;
   overflow: hidden;
-  white-space: normal;
-  word-break: normal;
-  overflow-wrap: break-word;
-  text-align: center;
-  letter-spacing: 0.01em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.015em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.52);
+}
+
+.sp-title-vert.is-two-line .sp-line {
+  font-size: 8.3px;
+  max-height: 86px;
 }
 
 .sp-vol-box {
@@ -3774,7 +3841,7 @@ body::before {
         </button>
         <button class="tab-btn" data-tab="news">
           <span class="tab-dot" id="newsDot"></span>
-          <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6" stroke-dasharray="2.5 2"/><path d="M12 8v8"/><path d="M14.2 9.8c-.4-.7-1.2-1.1-2.2-1.1-1.2 0-2 .6-2 1.5s.8 1.3 2 1.6c1.3.3 2.2.8 2.2 1.8 0 1-.9 1.7-2.2 1.7-1.1 0-1.9-.5-2.3-1.2"/></svg>
           <span>Săn kèo</span>
         </button>
         <button class="tab-btn" data-tab="spending">
@@ -5876,6 +5943,34 @@ function addBatchVolumesToSection(section, { from, to, priceMode, coverInput, pa
 // ============================
 // TAB 1: TỦ SÁCH (Đầu sách -> Các mục -> Tập + Ảnh + Giá)
 // ============================
+function formatSpineTitleHtml(rawTitle, hasThumb) {
+  const title = String(rawTitle || "").trim();
+  const limit = hasThumb ? 13 : 18;
+  if (title.length <= limit) {
+    return `<span class="sp-title-vert"><span class="sp-line">${esc(title)}</span></span>`;
+  }
+  const words = title.split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    const mid = title.length / 2;
+    let bestIdx = 1;
+    let bestDiff = Infinity;
+    let acc = 0;
+    for (let i = 0; i < words.length - 1; i++) {
+      acc += words[i].length + (i > 0 ? 1 : 0);
+      const diff = Math.abs(acc - mid);
+      if (diff < bestDiff) {
+        bestDiff = diff;
+        bestIdx = i + 1;
+      }
+    }
+    const line1 = words.slice(0, bestIdx).join(" ");
+    const line2 = words.slice(bestIdx).join(" ");
+    return `<span class="sp-title-vert is-two-line"><span class="sp-line">${esc(line1)}</span><span class="sp-line">${esc(line2)}</span></span>`;
+  }
+  const half = Math.ceil(title.length / 2);
+  return `<span class="sp-title-vert is-two-line"><span class="sp-line">${esc(title.slice(0, half))}</span><span class="sp-line">${esc(title.slice(half))}</span></span>`;
+}
+
 function renderBooks() {
   const container = document.getElementById("booksContainer");
   const q = normVN(filters.bookSearch);
@@ -6051,7 +6146,7 @@ function renderBooks() {
                               <span class="shelf-spine-main ${holo ? "sp-gold" : ""}" style="height:${heightPx}px;">
                                 <span class="sp-top-cap mono">${esc(pubShort)}${holo ? '<span class="sp-gold-dot">✦</span>' : ""}</span>
                                 ${coverSrc ? `<span class="sp-thumb-win"><img src="${esc(coverSrc)}" alt="" loading="lazy" /></span>` : ""}
-                                <span class="sp-title-vert"><span>${esc(s.title)}</span></span>
+                                ${formatSpineTitleHtml(s.title, Boolean(coverSrc))}
                                 <span class="sp-vol-box mono">${vCount}</span>
                               </span>
                               ${slicesHtml}
@@ -6096,12 +6191,13 @@ function renderBooks() {
         });
       }
       el.addEventListener("click", () => {
+        if (el.classList.contains("pulled")) return;
         SFX.shelfPull();
         el.classList.add("pulled");
         setTimeout(() => {
-          el.classList.remove("pulled");
           openSeriesDetail(s.id);
-        }, 160);
+          setTimeout(() => el.classList.remove("pulled"), 180);
+        }, 230);
       });
     });
     return;
@@ -7104,7 +7200,7 @@ function openSectionDetail(seriesId, sectionId) {
   const totalCover = vols.reduce((a, v) => a + (Number(v.coverPrice) || 0), 0);
   const totalPaid = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
   const diff = totalCover - totalPaid;
-  const missing = findMissingVolumes(vols);
+  const missing = isSpecialSection(sec) ? [] : findMissingVolumes(vols);
   const lentCount = vols.filter((v) => (v.lentTo || "").trim()).length;
   const viewMode = state.volView || "cards";
   const secImg = resolveImg(sec.image);
@@ -9968,6 +10064,8 @@ function collectAllMissingGaps() {
   const gaps = [];
   (state.series || []).forEach((s) => {
     (s.sections || []).forEach((sec) => {
+      // Chỉ đề xuất lấp lỗ cho bản thường (bỏ qua Limited / Đặc biệt / Boxset / Artbook)
+      if (isSpecialSection(sec)) return;
       const missing = findMissingVolumes(sec.volumes || []);
       if (missing.length) {
         const lastVol = (sec.volumes || [])[(sec.volumes || []).length - 1];
@@ -12063,48 +12161,49 @@ function traceCapooEar(ctx, side, rx, ry, droop) {
 
 // Nằm ngửa ra làm nũng (lăn lộn lộ bụng trắng + 4 chân quẫy lên trời + mắt long lanh)
 function drawCapooBellyUp(ctx, pal, outlineCol, groundY, wobbleX, scaleX, scaleY) {
-  const wiggleSpeed = capoo.isPetting ? 11.5 : 6.8;
-  const rock = Math.sin(capoo.clock * wiggleSpeed) * 0.14;
-  const brx = 20.5;
-  const bry = 7.6;
+  const wiggleSpeed = capoo.isPetting ? 11.5 : 6.2;
+  const rock = Math.sin(capoo.clock * wiggleSpeed) * 0.11;
+  // Giữ dáng tròn múp tự nhiên (không bị bẹp dí)
+  const brx = 17.2;
+  const bry = 9.5;
 
   ctx.save();
-  ctx.translate(capoo.x + wobbleX, groundY - 1.1 + capoo.hopY);
+  ctx.translate(capoo.x + wobbleX, groundY - 0.8 + capoo.hopY);
   ctx.rotate(rock);
-  ctx.scale(scaleX * 1.04, scaleY * 0.96);
+  ctx.scale(scaleX, scaleY);
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
-  // 4 chân nhỏ giơ lên trời quẫy quẫy (2 chân trong + 2 chân ngoài)
+  // 4 chân nhỏ giơ lên trời quẫy quẫy
   const pawDefs = [
-    { x: -brx * 0.64, y: -bry * 1.72, rw: 2.6, rh: 4.0, baseRot: -0.48, phase: 0 },
-    { x: -brx * 0.24, y: -bry * 1.98, rw: 2.5, rh: 3.8, baseRot: -0.18, phase: 1.5 },
-    { x: brx * 0.24, y: -bry * 1.98, rw: 2.5, rh: 3.8, baseRot: 0.18, phase: 3.1 },
-    { x: brx * 0.64, y: -bry * 1.72, rw: 2.6, rh: 4.0, baseRot: 0.48, phase: 4.6 },
+    { x: -brx * 0.62, y: -bry * 1.68, rw: 2.35, rh: 3.4, baseRot: -0.42, phase: 0 },
+    { x: -brx * 0.24, y: -bry * 1.92, rw: 2.25, rh: 3.2, baseRot: -0.16, phase: 1.5 },
+    { x: brx * 0.24, y: -bry * 1.92, rw: 2.25, rh: 3.2, baseRot: 0.16, phase: 3.1 },
+    { x: brx * 0.62, y: -bry * 1.68, rw: 2.35, rh: 3.4, baseRot: 0.42, phase: 4.6 },
   ];
 
   const traceBellyBody = () => {
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.bezierCurveTo(brx * 0.94, 0, brx * 1.1, -bry * 0.34, brx * 1.0, -bry * 0.98);
-    ctx.bezierCurveTo(brx * 0.9, -bry * 1.62, brx * 0.56, -bry * 1.82, 0, -bry * 1.82);
-    ctx.bezierCurveTo(-brx * 0.56, -bry * 1.82, -brx * 0.9, -bry * 1.62, -brx * 1.0, -bry * 0.98);
-    ctx.bezierCurveTo(-brx * 1.1, -bry * 0.34, -brx * 0.94, 0, 0, 0);
+    ctx.bezierCurveTo(brx * 0.92, 0, brx * 1.1, -bry * 0.3, brx * 1.0, -bry * 0.96);
+    ctx.bezierCurveTo(brx * 0.9, -bry * 1.64, brx * 0.56, -bry * 1.88, 0, -bry * 1.88);
+    ctx.bezierCurveTo(-brx * 0.56, -bry * 1.88, -brx * 0.9, -bry * 1.64, -brx * 1.0, -bry * 0.96);
+    ctx.bezierCurveTo(-brx * 1.1, -bry * 0.3, -brx * 0.92, 0, 0, 0);
     ctx.closePath();
   };
 
   const traceFlippedEar = (side) => {
-    // 2 tai áp sát bên hông dưới (đầu ngửa dựa sát mép thanh)
-    const bx1 = side * brx * 0.58;
+    // 2 tai áp xuống dưới bên hông (đầu ngửa dựa sát mép thanh)
+    const bx1 = side * brx * 0.56;
     const by1 = -bry * 0.12;
-    const bx2 = side * brx * 0.96;
-    const by2 = -bry * 0.72;
-    const tx = side * (brx * 1.18);
-    const ty = -bry * 0.08 + Math.sin(capoo.clock * wiggleSpeed + side) * 0.7;
+    const bx2 = side * brx * 0.94;
+    const by2 = -bry * 0.68;
+    const tx = side * (brx * 1.16);
+    const ty = -bry * 0.06 + Math.sin(capoo.clock * wiggleSpeed + side) * 0.65;
     ctx.beginPath();
     ctx.moveTo(bx1, by1);
-    ctx.quadraticCurveTo(side * brx * 0.98, ty + 1.2, tx, ty);
-    ctx.quadraticCurveTo(side * brx * 1.14, by2 + 1.5, bx2, by2);
+    ctx.quadraticCurveTo(side * brx * 0.98, ty + 1.1, tx, ty);
+    ctx.quadraticCurveTo(side * brx * 1.12, by2 + 1.4, bx2, by2);
     ctx.closePath();
   };
 
@@ -12130,9 +12229,9 @@ function drawCapooBellyUp(ctx, pal, outlineCol, groundY, wobbleX, scaleX, scaleY
 
     // 4 chân quẫy lên trời
     pawDefs.forEach((p) => {
-      const kick = Math.sin(capoo.clock * 13.5 + p.phase);
-      const lift = kick * 1.6;
-      const rot = p.baseRot + kick * 0.34;
+      const kick = Math.sin(capoo.clock * 13.0 + p.phase);
+      const lift = kick * 1.45;
+      const rot = p.baseRot + kick * 0.32;
       ctx.save();
       ctx.translate(p.x, p.y - lift);
       ctx.rotate(rot);
@@ -12151,115 +12250,106 @@ function drawCapooBellyUp(ctx, pal, outlineCol, groundY, wobbleX, scaleX, scaleY
   paintBellyPass("outline");
   paintBellyPass("fill");
 
-  // Bụng trắng mềm nổi bật ở giữa thân -> nhìn phát biết ngay đang nằm ngửa!
-  ctx.save();
-  ctx.fillStyle = pal.belly || "#FFFFFF";
-  ctx.globalAlpha = 0.92;
-  ctx.beginPath();
-  ctx.ellipse(0, -bry * 1.18, brx * 0.54, bry * 0.56, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-
   // Đệm thịt hồng siêu nhỏ trên đầu 4 bàn chân giơ lên trời
   pawDefs.forEach((p) => {
-    const kick = Math.sin(capoo.clock * 13.5 + p.phase);
-    const lift = kick * 1.6;
-    const rot = p.baseRot + kick * 0.34;
+    const kick = Math.sin(capoo.clock * 13.0 + p.phase);
+    const lift = kick * 1.45;
+    const rot = p.baseRot + kick * 0.32;
     ctx.save();
     ctx.translate(p.x, p.y - lift);
     ctx.rotate(rot);
     ctx.fillStyle = pal.cheek;
     ctx.globalAlpha = 0.85;
     ctx.beginPath();
-    ctx.ellipse(0, -1.1, 1.15, 0.95, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, -1.0, 1.1, 0.9, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   });
 
-  // PASS 3: Bụng trắng múp phơi hẳn lên trên
+  // PASS 3: Bụng trắng múp hướng lên trên
   ctx.save();
   traceBellyBody();
   ctx.clip();
-  const bellyPulse = Math.sin(capoo.clock * 5.2) * 0.5;
-  ctx.fillStyle = pal.belly;
+  const bellyPulse = Math.sin(capoo.clock * 5.0) * 0.45;
+  ctx.fillStyle = pal.belly || "#FFFFFF";
   ctx.beginPath();
-  ctx.ellipse(0, -bry * 1.42, brx * 0.58, bry * 0.68 + bellyPulse * 0.4, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, -bry * 1.48, brx * 0.56, bry * 0.62 + bellyPulse * 0.35, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
-  // PASS 4: Khuôn mặt làm nũng (mắt cười cong tít > ω < + má ửng hồng rực)
+  // PASS 4: Khuôn mặt NGƯỢC CHIỀU (vì mèo đang nằm ngửa đầu xuống đất, bụng lên trời!)
   ctx.save();
-  ctx.translate(0, -bry * 0.68);
-  // Má hồng rực làm nũng
+  ctx.translate(0, -bry * 0.62);
+  ctx.scale(1, -1); // Lật ngược mặt chuẩn tư thế nằm ngửa!
+
+  // Má hồng ửng cute
   ctx.fillStyle = pal.cheek;
   ctx.globalAlpha = 0.82;
   ctx.beginPath();
-  ctx.ellipse(-8.4, -0.4, 2.55, 1.45, 0, 0, Math.PI * 2);
-  ctx.ellipse(8.4, -0.4, 2.55, 1.45, 0, 0, Math.PI * 2);
+  ctx.ellipse(-8.0, 1.4, 2.4, 1.35, 0, 0, Math.PI * 2);
+  ctx.ellipse(8.0, 1.4, 2.4, 1.35, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  // Mắt híp cong làm nũng (^^) hoặc long lanh chớp nhẹ
+  // Mắt cười > < hoặc mắt long lanh (vẽ trong hệ tọa độ đã lật ngược)
   ctx.strokeStyle = pal.mouthLine;
-  ctx.lineWidth = 1.75;
+  ctx.lineWidth = 1.7;
   if (Math.sin(capoo.clock * 3.2) > -0.35) {
-    // Mắt cong > < cực nũng
     ctx.beginPath();
-    ctx.moveTo(-7.5, -2.0);
-    ctx.lineTo(-4.7, -0.6);
-    ctx.lineTo(-7.5, 0.8);
-    ctx.moveTo(7.5, -2.0);
-    ctx.lineTo(4.7, -0.6);
-    ctx.lineTo(7.5, 0.8);
+    ctx.moveTo(-7.2, -1.8);
+    ctx.lineTo(-4.5, -0.3);
+    ctx.lineTo(-7.2, 1.2);
+    ctx.moveTo(7.2, -1.8);
+    ctx.lineTo(4.5, -0.3);
+    ctx.lineTo(7.2, 1.2);
     ctx.stroke();
   } else {
-    // Mắt long lanh xin xoa bụng
     const drawPleadEye = (ex) => {
       ctx.fillStyle = pal.isBlack ? "#FFFDF7" : pal.eye;
       ctx.beginPath();
-      ctx.ellipse(ex, -0.7, 2.25, 2.45, 0, 0, Math.PI * 2);
+      ctx.ellipse(ex, -0.3, 2.15, 2.35, 0, 0, Math.PI * 2);
       ctx.fill();
       if (pal.isBlack) {
         ctx.fillStyle = "#1D1F28";
         ctx.beginPath();
-        ctx.ellipse(ex, -0.7, 1.4, 1.5, 0, 0, Math.PI * 2);
+        ctx.ellipse(ex, -0.3, 1.35, 1.45, 0, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.fillStyle = "#FFFFFF";
       ctx.beginPath();
-      ctx.arc(ex - 0.75, -1.45, 0.9, 0, Math.PI * 2);
-      ctx.arc(ex + 0.65, 0.1, 0.45, 0, Math.PI * 2);
+      ctx.arc(ex - 0.7, -1.0, 0.85, 0, Math.PI * 2);
+      ctx.arc(ex + 0.6, 0.45, 0.45, 0, Math.PI * 2);
       ctx.fill();
     };
-    drawPleadEye(-5.8);
-    drawPleadEye(5.8);
+    drawPleadEye(-5.6);
+    drawPleadEye(5.6);
   }
 
-  // Miệng ω nhỏ xinh hơi hé hồng nũng nịu
+  // Miệng ω nhỏ xinh hơi hé hồng (cũng ngược chiều chuẩn khớp khuôn mặt ngửa)
   ctx.fillStyle = pal.pink;
   ctx.strokeStyle = pal.mouthLine;
-  ctx.lineWidth = 1.45;
+  ctx.lineWidth = 1.4;
   ctx.beginPath();
-  ctx.moveTo(-2.7, -1.2);
-  ctx.quadraticCurveTo(-1.35, 0.4, 0, -1.0);
-  ctx.quadraticCurveTo(1.35, 0.4, 2.7, -1.2);
-  ctx.bezierCurveTo(2.4, 2.2, -2.4, 2.2, -2.7, -1.2);
+  ctx.moveTo(-2.6, 0.6);
+  ctx.quadraticCurveTo(-1.3, 2.1, 0, 0.8);
+  ctx.quadraticCurveTo(1.3, 2.1, 2.6, 0.6);
+  ctx.bezierCurveTo(2.3, 3.6, -2.3, 3.6, -2.6, 0.6);
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
 
-  ctx.restore(); // end face
+  ctx.restore(); // end upside-down face
 
-  // Vệt rung lăn lộn hai bên hông
-  const wAlpha = 0.35 + Math.abs(Math.sin(capoo.clock * wiggleSpeed)) * 0.4;
+  // Vệt rung nhẹ hai bên hông
+  const wAlpha = 0.3 + Math.abs(Math.sin(capoo.clock * wiggleSpeed)) * 0.35;
   ctx.strokeStyle = pal.pink;
   ctx.globalAlpha = wAlpha;
-  ctx.lineWidth = 1.3;
+  ctx.lineWidth = 1.25;
   ctx.beginPath();
-  ctx.arc(-brx - 3.6, -bry * 0.95, 3.2, 0.72 * Math.PI, 1.28 * Math.PI);
+  ctx.arc(-brx - 3.4, -bry * 0.95, 3.0, 0.72 * Math.PI, 1.28 * Math.PI);
   ctx.stroke();
   ctx.beginPath();
-  ctx.arc(brx + 3.6, -bry * 0.95, 3.2, -0.28 * Math.PI, 0.28 * Math.PI);
+  ctx.arc(brx + 3.4, -bry * 0.95, 3.0, -0.28 * Math.PI, 0.28 * Math.PI);
   ctx.stroke();
 
   ctx.restore();
