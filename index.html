@@ -3042,73 +3042,135 @@
       background: var(--forest);
     }
 
-    /* Chế độ Tủ kính (Gallery) cho Tab Quà & Đồ */
-    .showcase-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 11px;
+    /* Chế độ Tủ kính trưng bày (Quà trôi nổi theo quỹ đạo + Cửa kính mở 3D) */
+    .cabinet-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
-    @media (min-width: 600px) {
-      .showcase-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 13px;
-      }
+    .cabinet-frame {
+      position: relative;
+      border-radius: 6px;
+      padding: 11px;
+      background: linear-gradient(155deg, #47392E 0%, #2C231C 52%, #1D1713 100%);
+      border: 1.5px solid rgba(255, 232, 200, 0.14);
+      box-shadow:
+        0 14px 32px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 240, 215, 0.24),
+        inset 0 -2px 6px rgba(0, 0, 0, 0.45);
+      user-select: none;
+      -webkit-user-select: none;
     }
 
-    @media (min-width: 840px) {
-      .showcase-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
+    [data-theme="midnight"] .cabinet-frame {
+      background: linear-gradient(155deg, #25344E 0%, #162134 55%, #0D1422 100%);
+      border-color: rgba(150, 195, 255, 0.18);
     }
 
-    .showcase-card {
-      background: var(--surface);
-      border: 1px solid var(--line-strong);
+    .cabinet-stage {
+      position: relative;
+      width: 100%;
+      height: 360px;
       border-radius: 3px;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 4px 14px rgba(24, 20, 16, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.45);
-      transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+      perspective: 980px;
+      background:
+        radial-gradient(ellipse 78% 42% at 50% 0%, rgba(255, 236, 198, 0.26) 0%, rgba(255, 224, 170, 0.06) 52%, transparent 78%),
+        radial-gradient(circle at 50% 54%, #25211E 0%, #151311 72%, #0E0D0C 100%);
+      box-shadow:
+        inset 0 10px 24px rgba(0, 0, 0, 0.65),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08);
     }
 
-    [data-theme="dark"] .showcase-card,
-    [data-theme="midnight"] .showcase-card {
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    [data-theme="midnight"] .cabinet-stage {
+      background:
+        radial-gradient(ellipse 78% 42% at 50% 0%, rgba(130, 192, 255, 0.24) 0%, rgba(104, 168, 234, 0.05) 52%, transparent 78%),
+        radial-gradient(circle at 50% 54%, #172338 0%, #0D1523 74%, #080E18 100%);
     }
 
-    .showcase-card:active {
-      transform: scale(0.97);
-    }
-
-    .showcase-media {
-      position: relative;
-      aspect-ratio: 1 / 1;
-      width: 100%;
-      background: linear-gradient(145deg, var(--surface-2) 0%, var(--bg) 100%);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 10px;
-      text-align: center;
-      cursor: zoom-in;
-      border-bottom: 1px solid var(--line);
-    }
-
-    /* Hiệu ứng phản chiếu kính nhẹ góc trên trái */
-    .showcase-media::before {
-      content: "";
+    /* Đèn LED thanh mảnh trên nóc tủ */
+    .cabinet-led {
       position: absolute;
-      inset: 0;
+      top: 0;
+      left: 16%;
+      right: 16%;
+      height: 3px;
+      border-radius: 0 0 4px 4px;
+      background: linear-gradient(90deg, transparent, #FFF3D4 22%, #FFFFFF 50%, #FFF3D4 78%, transparent);
+      box-shadow: 0 2px 14px 3px rgba(255, 232, 180, 0.55);
       z-index: 2;
       pointer-events: none;
-      background: linear-gradient(132deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.04) 36%, transparent 52%);
+      transition: opacity 0.35s ease, box-shadow 0.35s ease;
     }
 
-    .showcase-media img {
+    .cabinet-frame.is-open .cabinet-led {
+      box-shadow: 0 3px 20px 5px rgba(255, 236, 190, 0.78);
+    }
+
+    /* Đường quỹ đạo elip mờ làm điểm nhấn thị giác */
+    .cabinet-orbit-ring {
+      position: absolute;
+      left: 50%;
+      top: 52%;
+      border-radius: 50%;
+      border: 1px dashed rgba(255, 244, 224, 0.11);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Bệ đáy tủ kính */
+    .cabinet-floor {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 26px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0.42) 100%);
+      border-top: 1px solid rgba(255, 255, 255, 0.09);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Vật phẩm quà trôi nổi bên trong tủ */
+    .cabinet-item {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 78px;
+      padding: 0;
+      border: 1.5px solid rgba(255, 255, 255, 0.24);
+      border-radius: 6px;
+      background: rgba(34, 31, 28, 0.92);
+      overflow: hidden;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(0, 0, 0, 0.28);
+      will-change: transform, opacity;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cabinet-item:active {
+      border-color: #F6E08E;
+      box-shadow: 0 0 16px rgba(246, 224, 142, 0.55);
+    }
+
+    .cabinet-item-media {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: linear-gradient(145deg, #2B2723 0%, #191715 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      overflow: hidden;
+    }
+
+    .cabinet-item-media img {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -3117,92 +3179,163 @@
       display: block;
     }
 
-    .showcase-empty-art {
-      font-size: 11px;
-      color: var(--muted);
-      line-height: 1.35;
-      padding: 6px;
-      z-index: 1;
-    }
-
-    .showcase-status-btn {
-      position: absolute;
-      top: 6px;
-      left: 6px;
-      z-index: 4;
-      height: 20px;
-      padding: 0 6px;
-      border-radius: 1.5px;
-      font-size: 10px;
+    .cabinet-item-fallback {
+      font-size: 9.5px;
       font-weight: 600;
-      border: 1px solid var(--line-strong);
-      background: var(--surface);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
-    }
-
-    .showcase-status-btn[data-status="Đã có"] {
-      border-color: var(--forest);
-      color: var(--forest);
-      background: var(--forest-soft);
-    }
-
-    .showcase-status-btn[data-status="Đang ship"] {
-      border-color: var(--amber);
-      color: var(--amber);
-      background: var(--amber-soft);
-    }
-
-    .showcase-status-btn[data-status="Đang săn"] {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: var(--accent-soft);
-    }
-
-    .showcase-qty {
-      position: absolute;
-      bottom: 6px;
-      right: 6px;
-      z-index: 4;
-      background: rgba(20, 19, 18, 0.84);
-      color: #F6F5F1;
-      font-size: 10px;
-      font-weight: 600;
-      padding: 1px 5px;
-      border-radius: 1.5px;
-    }
-
-    .showcase-body {
-      padding: 8px 9px 9px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .showcase-name {
-      font-size: 12.5px;
-      font-weight: 600;
-      line-height: 1.3;
+      color: #EFEAE0;
+      text-align: center;
+      line-height: 1.25;
       display: -webkit-box;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
 
-    .showcase-series {
-      font-size: 11px;
-      color: var(--muted);
+    .cabinet-item-name {
+      padding: 3px 5px 4px;
+      font-size: 9.5px;
+      font-weight: 600;
+      color: #F6F5F1;
+      background: rgba(16, 15, 14, 0.88);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .showcase-foot {
+    .cabinet-item-qty {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      z-index: 3;
+      background: rgba(16, 15, 14, 0.84);
+      color: #F6F5F1;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 2px;
+    }
+
+    .cabinet-item-dot {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      z-index: 3;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      background: #5FB39C;
+    }
+
+    .cabinet-item-dot[data-status="Đang ship"] { background: #D4AA62; }
+    .cabinet-item-dot[data-status="Đang săn"] { background: #E06B66; }
+
+    /* 2 Cánh cửa kính đóng/mở 3D */
+    .cabinet-doors {
+      position: absolute;
+      inset: 0;
+      z-index: 200;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 3px;
+      transform-style: preserve-3d;
+      cursor: pointer;
+    }
+
+    .cabinet-frame.is-open .cabinet-doors {
+      pointer-events: none;
+    }
+
+    .cabinet-door {
+      position: relative;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.14) 0%,
+        rgba(255, 255, 255, 0.04) 38%,
+        rgba(255, 255, 255, 0.11) 52%,
+        rgba(255, 255, 255, 0.03) 100%
+      );
+      -webkit-backdrop-filter: blur(1.4px);
+      backdrop-filter: blur(1.4px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.06);
+      transition: transform 0.68s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s ease;
+      backface-visibility: hidden;
+    }
+
+    .cabinet-door-left {
+      transform-origin: left center;
+      border-right: 1px solid rgba(255, 255, 255, 0.24);
+    }
+
+    .cabinet-door-right {
+      transform-origin: right center;
+      border-left: 1px solid rgba(0, 0, 0, 0.35);
+    }
+
+    .cabinet-frame.is-open .cabinet-door-left {
+      transform: rotateY(-104deg);
+      opacity: 0.35;
+    }
+
+    .cabinet-frame.is-open .cabinet-door-right {
+      transform: rotateY(104deg);
+      opacity: 0.35;
+    }
+
+    /* Tay nắm kim loại ở giữa 2 cánh cửa kính */
+    .cabinet-handle {
+      position: absolute;
+      top: 50%;
+      width: 4px;
+      height: 36px;
+      border-radius: 3px;
+      background: linear-gradient(180deg, #E8D5B0 0%, #B89A64 55%, #7D6438 100%);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+      transform: translateY(-50%);
+    }
+
+    .cabinet-door-left .cabinet-handle { right: 8px; }
+    .cabinet-door-right .cabinet-handle { left: 8px; }
+
+    /* Nhãn nhắc "Chạm tủ để mở" khi tủ đang đóng */
+    .cabinet-open-hint {
+      position: absolute;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      z-index: 210;
+      padding: 5px 11px;
+      border-radius: 99px;
+      background: rgba(20, 19, 18, 0.82);
+      border: 1px solid rgba(255, 240, 210, 0.26);
+      color: #F6F5F1;
       font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      transition: opacity 0.28s ease, transform 0.28s ease;
+    }
+
+    .cabinet-frame.is-open .cabinet-open-hint {
+      opacity: 0;
+      transform: translate(-50%, 8px);
+    }
+
+    /* Thanh điều khiển gọn bên dưới tủ kính */
+    .cabinet-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-size: 12px;
     }
 
     /* 5-Theme swatch picker */
@@ -3378,12 +3511,12 @@
       <section class="view" id="view-news">
         <div class="news-status-bar">
           <div>
-            <div style="font-weight:600;" id="newsSyncTitle">Đang kiểm tra nguồn tin...</div>
-            <div class="small-muted mono" id="newsSyncMeta">Nguồn: ./news.json</div>
+            <div style="font-weight:600;" id="newsSyncTitle">Tin 4 NXB (Gemini AI Search)</div>
+            <div class="small-muted mono" id="newsSyncMeta">Nguồn: Gemini Google Search</div>
           </div>
           <div style="display:flex; gap:6px; flex-shrink:0;">
             <button class="btn btn-sm" id="manualPinBtn">+ Ghim tay</button>
-            <button class="btn btn-sm" id="refreshNewsBtn">Làm mới</button>
+            <button class="btn btn-sm btn-primary" id="refreshNewsBtn">Quét tin AI</button>
           </div>
         </div>
 
@@ -3583,7 +3716,7 @@
         merchView: "list", // "list" | "gallery"
         volView: "cards", // "cards" | "compact"
         budgetLimit: 1000000,
-        newsUrl: "./news.json",
+        aiNewsCache: { updatedAt: "", items: [] },
         geminiApiKey: "",
         geminiModel: "",
         lastBackupAt: "",
@@ -8645,6 +8778,85 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
       // ============================
       const MERCH_STATUSES = ["Đã có", "Đang ship", "Đang săn"];
 
+      let cabinetAnimId = null;
+      let cabinetIsOpen = false;
+      let cabinetPaused = false;
+
+      function stopCabinetOrbit() {
+        if (cabinetAnimId !== null) {
+          cancelAnimationFrame(cabinetAnimId);
+          cabinetAnimId = null;
+        }
+      }
+
+      function startCabinetOrbit(stageEl, itemEls) {
+        stopCabinetOrbit();
+        if (!stageEl || !itemEls.length) return;
+        const n = itemEls.length;
+        // Chia quỹ đạo thành 1 hoặc 2 vòng elip đồng tâm để dù ít hay nhiều quà vẫn bay đẹp không đè nhau
+        const outerCount = n <= 6 ? n : Math.ceil(n * 0.62);
+        const innerCount = n - outerCount;
+        const specs = itemEls.map((el, i) => {
+          const isOuter = i < outerCount;
+          const idxInRing = isOuter ? i : i - outerCount;
+          const ringTotal = isOuter ? outerCount : Math.max(1, innerCount);
+          return {
+            el,
+            isOuter,
+            phase: (idxInRing / ringTotal) * Math.PI * 2,
+            speed: isOuter ? 0.34 : -0.46,
+            bobFreq: isOuter ? 1.4 : 1.9,
+            bobAmp: isOuter ? 6 : 5,
+            tiltFactor: isOuter ? 4 : -4,
+          };
+        });
+
+        let simTime = 0;
+        let lastTs = performance.now();
+
+        const tick = (now) => {
+          if (!stageEl.isConnected) {
+            cabinetAnimId = null;
+            return;
+          }
+          const dt = Math.min(0.05, (now - lastTs) / 1000);
+          lastTs = now;
+
+          // Khi mở tủ: giảm tốc bay xuống chậm rãi cho dễ chạm chọn từng món (hoặc dừng hẳn nếu bấm Dừng bay)
+          const speedMult = cabinetPaused ? 0 : cabinetIsOpen ? 0.32 : 1.0;
+          simTime += dt * speedMult;
+
+          const sw = stageEl.clientWidth || 320;
+          const sh = stageEl.clientHeight || 360;
+          const cx = sw * 0.5;
+          const cy = sh * 0.52;
+          const outerRx = Math.max(66, sw * 0.34);
+          const outerRy = Math.max(62, sh * 0.26);
+          const innerRx = Math.max(36, sw * 0.17);
+          const innerRy = Math.max(34, sh * 0.13);
+
+          for (let i = 0; i < specs.length; i++) {
+            const sp = specs[i];
+            const ang = sp.phase + simTime * sp.speed;
+            const rx = sp.isOuter ? outerRx : innerRx;
+            const ry = sp.isOuter ? outerRy : innerRy;
+            const x = cx + Math.cos(ang) * rx;
+            const y = cy + Math.sin(ang) * ry + Math.sin(simTime * sp.bobFreq + sp.phase) * sp.bobAmp;
+            const depth = (Math.sin(ang) + 1) * 0.5; // 0 (phía sau) -> 1 (phía trước)
+            const scale = (sp.isOuter ? 0.80 : 0.76) + depth * 0.28;
+            const tilt = Math.cos(ang) * sp.tiltFactor;
+            const alpha = 0.72 + depth * 0.28;
+
+            sp.el.style.transform = `translate3d(${(x - 39).toFixed(1)}px, ${(y - 46).toFixed(1)}px, 0) scale(${scale.toFixed(3)}) rotate(${tilt.toFixed(1)}deg)`;
+            sp.el.style.zIndex = String(10 + Math.round(depth * 80));
+            sp.el.style.opacity = alpha.toFixed(2);
+          }
+
+          cabinetAnimId = requestAnimationFrame(tick);
+        };
+        cabinetAnimId = requestAnimationFrame(tick);
+      }
+
       function renderMerch() {
         const kpiEl = document.getElementById("giftSummaryKpis");
         const container = document.getElementById("merchContainer");
@@ -8725,6 +8937,7 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
           b.classList.toggle("active", b.dataset.mmode === merchMode)
         );
 
+        stopCabinetOrbit();
         if (merchMode === "gallery") {
           const allCards = [];
           list.forEach((g) => {
@@ -8755,74 +8968,101 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
             return;
           }
 
-          container.innerHTML = `<div class="showcase-grid">${allCards
-            .map(({ g, it }, idx) => {
+          const itemsHtml = allCards
+            .map(({ g, it }) => {
               const imgSrc = resolveImg(it.image) || resolveImg(g.cover);
               const qty = Math.max(1, Number(it.quantity) || 1);
-              const isHoloGift = it.status === "Đã có" || /standee|shikishi|acrylic|limited|fes|đb/i.test(`${it.name} ${it.source}`);
               return `
-                <article class="showcase-card fx-card-in" style="--stagger:${idx}">
-                  <div class="showcase-media ${isHoloGift ? "is-holo" : ""}" data-sc-zoom="${g.id}::${it.id}">
+                <button type="button" class="cabinet-item" data-cab-item="${g.id}::${it.id}" title="${esc(it.name)} — ${esc(g.title)}">
+                  <span class="cabinet-item-media">
                     ${
                       imgSrc
                         ? `<img src="${esc(imgSrc)}" alt="${esc(it.name)}" loading="lazy" />`
-                        : `<div class="showcase-empty-art"><div style="font-weight:600; color:var(--ink);">${esc(it.name)}</div><div style="margin-top:4px;">${esc(it.source || "Quà sưu tầm")}</div></div>`
+                        : `<span class="cabinet-item-fallback">${esc(it.name)}</span>`
                     }
-                    <button type="button" class="showcase-status-btn" data-sc-cycle="${g.id}::${it.id}" data-status="${esc(it.status)}">${esc(it.status)}</button>
-                    ${qty > 1 ? `<span class="showcase-qty mono">x${qty}</span>` : ""}
-                  </div>
-                  <div class="showcase-body" data-sc-edit="${g.id}::${it.id}">
-                    <div class="showcase-name">${esc(it.name)}</div>
-                    <div class="showcase-series">${esc(g.title)} · ${esc(g.publisher)}</div>
-                    <div class="showcase-foot">
-                      <span class="small-muted">${esc(it.source || "")}</span>
-                      <span class="mono" style="font-weight:600;">${fmtMoney(it.price)}</span>
-                    </div>
-                  </div>
-                </article>`;
+                    <span class="cabinet-item-dot" data-status="${esc(it.status)}"></span>
+                    ${qty > 1 ? `<span class="cabinet-item-qty mono">x${qty}</span>` : ""}
+                  </span>
+                  <span class="cabinet-item-name">${esc(it.name)}</span>
+                </button>`;
             })
-            .join("")}</div>`;
+            .join("");
 
-          container.querySelectorAll("[data-sc-cycle]").forEach((btn) => {
-            btn.addEventListener("click", (e) => {
-              e.stopPropagation();
-              const [gid, iid] = btn.dataset.scCycle.split("::");
-              const g = state.giftGroups.find((x) => x.id === gid);
-              const it = g && (g.gifts || []).find((x) => x.id === iid);
-              if (!it) return;
-              const nextIdx = (MERCH_STATUSES.indexOf(it.status) + 1) % MERCH_STATUSES.length;
-              it.status = MERCH_STATUSES[nextIdx];
-              SFX.status(nextIdx);
-              saveState();
-              renderMerch();
-              showToast(`Đổi trạng thái -> ${it.status}`);
-            });
+          container.innerHTML = `
+            <div class="cabinet-wrap">
+              <div class="cabinet-frame ${cabinetIsOpen ? "is-open" : ""}" id="giftCabinetFrame">
+                <div class="cabinet-stage" id="giftCabinetStage">
+                  <div class="cabinet-led"></div>
+                  <div class="cabinet-orbit-ring" style="width:68%; height:52%;"></div>
+                  ${allCards.length > 6 ? `<div class="cabinet-orbit-ring" style="width:36%; height:28%;"></div>` : ""}
+                  <div class="cabinet-floor"></div>
+                  ${itemsHtml}
+                  <div class="cabinet-doors" id="giftCabinetDoors" title="Chạm để mở tủ kính">
+                    <div class="cabinet-door cabinet-door-left"><span class="cabinet-handle"></span></div>
+                    <div class="cabinet-door cabinet-door-right"><span class="cabinet-handle"></span></div>
+                  </div>
+                  <div class="cabinet-open-hint">Chạm vào tủ kính để mở · ${allCards.length} món</div>
+                </div>
+              </div>
+              <div class="cabinet-bar">
+                <span class="small-muted" id="cabinetStateHint">${
+                  cabinetIsOpen ? "Tủ đang mở — chạm vào từng món quà để xem" : "Tủ đang đóng — chạm vào cửa kính để mở"
+                }</span>
+                <div style="display:flex; gap:6px; flex-shrink:0;">
+                  <button type="button" class="btn btn-sm" id="cabinetPauseBtn">${cabinetPaused ? "Tiếp tục bay" : "Dừng bay"}</button>
+                  <button type="button" class="btn btn-sm btn-primary" id="cabinetToggleDoorBtn">${cabinetIsOpen ? "Đóng tủ" : "Mở tủ"}</button>
+                </div>
+              </div>
+            </div>`;
+
+          const frameEl = container.querySelector("#giftCabinetFrame");
+          const stageEl = container.querySelector("#giftCabinetStage");
+          const doorsEl = container.querySelector("#giftCabinetDoors");
+          const toggleDoorBtn = container.querySelector("#cabinetToggleDoorBtn");
+          const pauseBtn = container.querySelector("#cabinetPauseBtn");
+          const stateHint = container.querySelector("#cabinetStateHint");
+
+          const syncDoorUI = () => {
+            frameEl.classList.toggle("is-open", cabinetIsOpen);
+            toggleDoorBtn.textContent = cabinetIsOpen ? "Đóng tủ" : "Mở tủ";
+            stateHint.textContent = cabinetIsOpen
+              ? "Tủ đang mở — chạm vào từng món quà để xem"
+              : "Tủ đang đóng — chạm vào cửa kính để mở";
+          };
+
+          const setCabinetOpen = (openVal) => {
+            if (cabinetIsOpen === openVal) return;
+            cabinetIsOpen = openVal;
+            if (cabinetIsOpen) SFX.openBook();
+            else SFX.close();
+            syncDoorUI();
+          };
+
+          doorsEl.addEventListener("click", () => setCabinetOpen(true));
+          toggleDoorBtn.addEventListener("click", () => setCabinetOpen(!cabinetIsOpen));
+          pauseBtn.addEventListener("click", () => {
+            cabinetPaused = !cabinetPaused;
+            SFX.filter();
+            pauseBtn.textContent = cabinetPaused ? "Tiếp tục bay" : "Dừng bay";
           });
 
-          container.querySelectorAll("[data-sc-zoom]").forEach((el) => {
-            el.addEventListener("click", () => {
-              const [gid, iid] = el.dataset.scZoom.split("::");
+          const itemEls = [...stageEl.querySelectorAll(".cabinet-item")];
+          itemEls.forEach((btn) => {
+            btn.addEventListener("click", () => {
+              if (!cabinetIsOpen) {
+                setCabinetOpen(true);
+                return;
+              }
+              const [gid, iid] = btn.dataset.cabItem.split("::");
               const g = state.giftGroups.find((x) => x.id === gid);
               const it = g && (g.gifts || []).find((x) => x.id === iid);
               if (!g || !it) return;
-              const imgSrc = resolveImg(it.image) || resolveImg(g.cover);
-              if (imgSrc) {
-                SFX.openBook();
-                openImageLightbox(imgSrc, `${it.name} — ${g.title} (${fmtMoney(it.price)})`);
-              } else {
-                SFX.openBook();
-                openGiftItemForm(gid, iid);
-              }
-            });
-          });
-
-          container.querySelectorAll("[data-sc-edit]").forEach((el) => {
-            el.addEventListener("click", () => {
-              const [gid, iid] = el.dataset.scEdit.split("::");
               SFX.openBook();
               openGiftItemForm(gid, iid);
             });
           });
+
+          startCabinetOrbit(stageEl, itemEls);
           return;
         }
 
@@ -9416,39 +9656,204 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
         return Boolean(findMatchedSeries(item));
       }
 
+      async function callGeminiSearchNews(apiKey) {
+        const key = String(apiKey || "").trim();
+        if (!key) throw new Error("Chưa nhập Gemini API Key trong Cài đặt.");
+
+        const now = new Date();
+        const ymText = `tháng ${now.getMonth() + 1}/${now.getFullYear()}`;
+        const nextM = now.getMonth() === 11 ? 1 : now.getMonth() + 2;
+        const nextY = now.getMonth() === 11 ? now.getFullYear() + 1 : now.getFullYear();
+        const nextYmText = `tháng ${nextM}/${nextY}`;
+
+        const activeSeries = (state.series || [])
+          .filter((s) => s.status !== "Tạm ngưng")
+          .sort((a, b) => (a.status === "Đang theo" ? -1 : 1) - (b.status === "Đang theo" ? -1 : 1))
+          .slice(0, 24)
+          .map((s) => (s.aliases ? `${s.title} (${s.aliases.split(",")[0].trim()})` : s.title));
+
+        const shelfHint = activeSeries.length
+          ? `Ưu tiên tìm tin tập mới, tái bản, bản đặc biệt/limited, quà tặng, Fes cho các bộ đang có trong tủ này: ${activeSeries.join(", ")}. Ngoài ra lấy thêm các tin lịch phát hành manga/light novel/sách nổi bật nhất của 4 NXB trong ${ymText} và ${nextYmText}.`
+          : `Tìm các tin lịch phát hành manga, light novel, sách mới, tái bản, bản đặc biệt có quà tặng và sự kiện Fes nổi bật nhất trong ${ymText} và ${nextYmText}.`;
+
+        const promptText = `Hãy dùng Google Search tìm tin phát hành manga, light novel, sách mới nhất tại Việt Nam từ 4 nhà xuất bản: Kim Đồng, NXB Trẻ, IPM, Nhã Nam (gồm cả web chính thức, fanpage Facebook công khai, bài tổng hợp lịch phát hành, Fahasa).
+${shelfHint}
+Bỏ qua hoàn toàn tin rác, mã giảm giá Shopee/Lazada, tuyển dụng, minigame.
+Trả về DUY NHẤT 1 mảng JSON thuần (không bọc markdown, không giải thích thêm), tối đa 16 tin mới & chính xác nhất, mỗi phần tử có cấu trúc:
+{"publisher":"Kim Đồng|Trẻ|IPM|Nhã Nam","type":"new|reprint|gift|fes","channel":"Web|FB|IG|TikTok","title":"Tiêu đề ngắn gọn rõ tên truyện và số tập","series":"Tên bộ gốc","summary":"Tóm tắt 1 câu ngắn gọn","gift":"Quà kèm/bản ĐB nếu có hoặc chuỗi rỗng","releaseDate":"YYYY-MM-DD hoặc chuỗi rỗng","price":0,"url":"Link bài viết gốc (nếu có)"}`;
+
+        let modelsToTry = await discoverActiveGeminiModels(key, false);
+        modelsToTry = [...modelsToTry].sort((a, b) => {
+          const score = (m) => (m.includes("2.5-flash") && !m.includes("lite") ? 3 : m.includes("flash") ? 2 : 1);
+          return score(b) - score(a);
+        });
+
+        let lastErr = "Không kết nối được Gemini Search.";
+        for (const model of modelsToTry) {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
+          try {
+            const res = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: promptText }] }],
+                tools: [{ google_search: {} }],
+                generationConfig: {
+                  temperature: 0.2,
+                  maxOutputTokens: 2400,
+                },
+              }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+              const msg = data?.error?.message || `HTTP ${res.status}`;
+              lastErr = `[${model}] ${msg}`;
+              if (/API_KEY_INVALID|API key not valid|invalid api key/i.test(msg)) {
+                throw new Error("API Key không hợp lệ — kiểm tra lại trong Cài đặt.");
+              }
+              if (res.status === 429) {
+                throw new Error("API Key tạm chạm giới hạn (429) — đợi ~30 giây bấm Quét lại.");
+              }
+              continue;
+            }
+
+            const respParts = data?.candidates?.[0]?.content?.parts || [];
+            const textParts = respParts.filter((p) => !p.thought && typeof p.text === "string");
+            const rawText = (textParts.length ? textParts : respParts).map((p) => p.text || "").join("
+").trim();
+            if (!rawText) {
+              lastErr = `[${model}] AI không trả về kết quả.`;
+              continue;
+            }
+
+            const parsed = extractJsonFromText(rawText);
+            const arr = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.items) ? parsed.items : [];
+            const groundingChunks = data?.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+            const fallbackUrls = groundingChunks.map((c) => c?.web?.uri).filter(Boolean);
+
+            const validPubs = ["Trẻ", "Kim Đồng", "IPM", "Nhã Nam"];
+            const validTypes = ["new", "reprint", "gift", "fes"];
+            const validChans = ["Web", "FB", "IG", "TikTok"];
+
+            const normalized = arr
+              .map((it, idx) => {
+                let pub = String(it.publisher || "").trim();
+                if (/trẻ|tre/i.test(pub)) pub = "Trẻ";
+                else if (/kim/i.test(pub)) pub = "Kim Đồng";
+                else if (/ipm/i.test(pub)) pub = "IPM";
+                else if (/nhã|nha/i.test(pub)) pub = "Nhã Nam";
+                if (!validPubs.includes(pub)) pub = "Kim Đồng";
+
+                const type = validTypes.includes(it.type) ? it.type : "new";
+                let chan = validChans.includes(it.channel) ? it.channel : "Web";
+                let itemUrl = String(it.url || "").trim();
+                if (!/^https?:\/\//i.test(itemUrl)) itemUrl = fallbackUrls[idx] || "";
+                if (/facebook\.com|fb\.com/i.test(itemUrl)) chan = "FB";
+                else if (/instagram\.com/i.test(itemUrl)) chan = "IG";
+                else if (/tiktok\.com/i.test(itemUrl)) chan = "TikTok";
+
+                return {
+                  id: "ai_" + hashStringFast(`${pub}_${it.title || idx}`),
+                  publisher: pub,
+                  type,
+                  channel: chan,
+                  title: String(it.title || "").trim(),
+                  series: String(it.series || "").trim(),
+                  summary: String(it.summary || "").trim(),
+                  gift: String(it.gift || "").trim(),
+                  releaseDate: /^\d{4}-\d{2}-\d{2}$/.test(String(it.releaseDate || "").trim())
+                    ? String(it.releaseDate).trim()
+                    : "",
+                  price: Math.max(0, Math.round(Number(it.price) || 0)),
+                  url: itemUrl,
+                  image: "",
+                  manual: false,
+                };
+              })
+              .filter((x) => x.title && !isJunkNewsItem(x));
+
+            return { items: normalized, model };
+          } catch (err) {
+            lastErr = err?.message || String(err);
+            if (/API Key không hợp lệ|429/i.test(lastErr)) throw err;
+          }
+        }
+        throw new Error(lastErr);
+      }
+
+      let isFetchingNews = false;
+
       async function fetchNews(manual = false) {
+        if (isFetchingNews) return;
         const titleEl = document.getElementById("newsSyncTitle");
         const metaEl = document.getElementById("newsSyncMeta");
-        const srcUrl = state.newsUrl || "./news.json";
-        titleEl.textContent = "Đang tải tin 4 NXB...";
-        metaEl.textContent = `Nguồn: ${srcUrl}`;
+        const refreshBtn = document.getElementById("refreshNewsBtn");
+
+        const cache = state.aiNewsCache || { updatedAt: "", items: [] };
+        const cacheAgeMs = cache.updatedAt ? Date.now() - new Date(cache.updatedAt).getTime() : Infinity;
+
+        // Khi mở app (manual=false), ưu tiên nạp ngay tin đã lưu trong 12 giờ qua để tiết kiệm lượt API
+        if (!manual && Array.isArray(cache.items) && cache.items.length > 0 && cacheAgeMs < 12 * 3600 * 1000) {
+          newsItems = cache.items.filter((it) => !isJunkNewsItem(it));
+          newsMeta = { updatedAt: cache.updatedAt, loaded: true, error: "" };
+          const timeStr = new Date(cache.updatedAt).toLocaleString("vi-VN", { hour12: false });
+          metaEl.textContent = `Gemini AI · Cập nhật: ${timeStr}`;
+          renderNews();
+          return;
+        }
+
+        const key = (state.geminiApiKey || "").trim();
+        if (!key) {
+          newsItems = Array.isArray(cache.items) ? cache.items : [];
+          newsMeta = { updatedAt: cache.updatedAt || "", loaded: false, error: "Chưa có Gemini API Key" };
+          titleEl.textContent = "Chưa gắn Gemini API Key";
+          metaEl.textContent = "Vào Cài đặt dán API Key miễn phí để AI tự quét tin 4 NXB.";
+          renderNews();
+          if (manual) {
+            showToast("Hãy dán Gemini API Key trong Cài đặt trước nhé.");
+            openSettingsModal();
+          }
+          return;
+        }
+
+        isFetchingNews = true;
+        if (refreshBtn) {
+          refreshBtn.disabled = true;
+          refreshBtn.textContent = "Đang quét...";
+        }
+        titleEl.textContent = "Gemini AI đang tìm tin 4 NXB...";
+        metaEl.textContent = "Đang tìm trên Google (Web & bài công khai 4 NXB)...";
 
         try {
-          const sep = srcUrl.includes("?") ? "&" : "?";
-          const res = await fetch(`${srcUrl}${sep}t=${Date.now()}`, { cache: "no-store" });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          const rawList = Array.isArray(data) ? data : Array.isArray(data.items) ? data.items : [];
-          // Lọc sạch tin rác ngay phía client (phòng trường hợp news.json cũ còn sót)
-          newsItems = rawList.filter((it) => !isJunkNewsItem(it));
-          newsMeta = {
-            updatedAt: data.updatedAt || "",
-            loaded: true,
-            error: "",
-          };
-          const timeStr = newsMeta.updatedAt
-            ? new Date(newsMeta.updatedAt).toLocaleString("vi-VN", { hour12: false })
-            : "Vừa xong";
-          metaEl.textContent = `Cập nhật: ${timeStr}`;
-          if (manual) showToast("Đã cập nhật dữ liệu tin 4 NXB.");
+          const res = await callGeminiSearchNews(key);
+          newsItems = res.items;
+          const nowIso = new Date().toISOString();
+          state.aiNewsCache = { updatedAt: nowIso, items: newsItems };
+          saveState();
+          newsMeta = { updatedAt: nowIso, loaded: true, error: "" };
+          const timeStr = new Date(nowIso).toLocaleString("vi-VN", { hour12: false });
+          metaEl.textContent = `Gemini AI (${res.model}) · ${timeStr}`;
+          if (manual) {
+            SFX.success();
+            showToast(`Đã quét được ${newsItems.length} tin sạch từ 4 NXB!`);
+          }
         } catch (err) {
-          newsMeta = { updatedAt: "", loaded: false, error: err.message };
-          titleEl.textContent = "Chưa kết nối được file tin";
-          metaEl.textContent =
-            location.protocol === "file:"
-              ? "Đang mở file offline — đẩy lên GitHub Pages để bot tự cập nhật."
-              : `Lỗi tải ${srcUrl} (${err.message})`;
-          if (manual) showToast("Chưa tải được news.json.");
+          if (Array.isArray(cache.items) && cache.items.length > 0) {
+            newsItems = cache.items;
+          }
+          newsMeta = { updatedAt: cache.updatedAt || "", loaded: false, error: err.message };
+          titleEl.textContent = "Chưa quét được tin mới";
+          metaEl.textContent = err.message || "Lỗi kết nối Gemini API";
+          if (manual) {
+            SFX.error();
+            showToast(err.message || "Lỗi quét tin Gemini AI.");
+          }
+        } finally {
+          isFetchingNews = false;
+          if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = "Quét tin AI";
+          }
         }
         renderNews();
       }
@@ -9562,7 +9967,7 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
               <div class="empty-desc">${
                 combined.length
                   ? "Thử chọn lại NXB, loại tin hoặc kênh khác."
-                  : "Vào tab Actions trên GitHub bấm Run workflow để bot kéo tin mới từ 4 NXB."
+                  : "Bấm nút Quét tin AI ở góc trên để Gemini tự tìm lịch phát hành mới nhất từ 4 NXB."
               }</div>
               <button class="btn btn-sm" id="emptyManualPin">+ Tự ghim lịch săn</button>
             </div>`;
@@ -10683,7 +11088,7 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
 
             <div class="divider"></div>
             <div class="field">
-              <label>Gemini API Key (miễn phí — dùng cho Tạo bìa nhanh)</label>
+              <label>Gemini API Key (miễn phí — dùng cho Tạo bìa & Quét tin 4 NXB)</label>
               <input id="setGeminiKey" type="password" autocomplete="off" value="${esc(state.geminiApiKey || "")}" placeholder="AIzaSy..." />
               <div class="small-muted" style="margin-top:4px;">
                 Lấy miễn phí tại <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style="text-decoration:underline;">aistudio.google.com/apikey</a>. Key chỉ lưu trên máy bạn để AI đọc ảnh bìa sách.
@@ -10693,17 +11098,6 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
               <button type="button" class="btn btn-sm btn-primary" id="saveGeminiKeyBtn">Lưu Key</button>
               <button type="button" class="btn btn-sm" id="testGeminiKeyBtn">Kiểm tra Key</button>
               <button type="button" class="btn btn-sm" id="toggleGeminiKeyBtn">Hiện Key</button>
-            </div>
-
-            <div class="divider"></div>
-            <div class="field">
-              <label>Nguồn tin tự động (JSON URL)</label>
-              <input id="setNewsUrl" value="${esc(state.newsUrl || "./news.json")}" />
-              <div class="small-muted" style="margin-top:4px;">Mặc định là <code>./news.json</code> khi chạy trên GitHub Pages.</div>
-            </div>
-            <div style="display:flex; gap:8px;">
-              <button class="btn btn-sm btn-primary" id="saveNewsUrlBtn">Lưu & Tải lại tin</button>
-              <button class="btn btn-sm" id="resetNewsUrlBtn">Về mặc định</button>
             </div>
 
             <div class="divider"></div>
@@ -10852,18 +11246,6 @@ Nếu chỉ thấy số lượng cuốn mà không đọc rõ số tập từng 
             setUndoBtn.addEventListener("click", () => performUndo());
           }
 
-                    body.querySelector("#saveNewsUrlBtn").addEventListener("click", () => {
-            state.newsUrl = body.querySelector("#setNewsUrl").value.trim() || "./news.json";
-            saveState();
-            fetchNews(true);
-            closeModal();
-          });
-          body.querySelector("#resetNewsUrlBtn").addEventListener("click", () => {
-            state.newsUrl = "./news.json";
-            body.querySelector("#setNewsUrl").value = "./news.json";
-            saveState();
-            fetchNews(true);
-          });
           const lastBkEl = body.querySelector("#lastBackupMeta");
           if (lastBkEl) {
             lastBkEl.textContent = state.lastBackupAt
