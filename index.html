@@ -2529,13 +2529,54 @@ body::before {
 }
 
 /* ============================
-   4. CHẾ ĐỘ XEM KỆ MANGA HIỆN ĐẠI (TANKOBON SPINE SHELF)
+   4. CHẾ ĐỘ XEM KỆ GỖ (WOODEN BOOKCASE + TANKOBON SPINE)
    ============================ */
+.shelf-section-group {
+  margin-bottom: 22px;
+}
+
+.shelf-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0 0 8px;
+  padding: 0 4px;
+}
+
+.shelf-section-title span.mono {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Khung tủ gỗ bao quanh các tầng kệ */
+.shelf-bookcase {
+  background: linear-gradient(90deg, #5C3D24 0%, #7A5230 14px, #3E2716 14px, #2E1D11 calc(100% - 14px), #7A5230 calc(100% - 14px), #4B301B 100%);
+  border: 1.5px solid #4A2F1B;
+  border-radius: 5px;
+  padding: 12px 12px 14px;
+  box-shadow:
+    inset 0 8px 18px rgba(0, 0, 0, 0.45),
+    0 10px 24px rgba(24, 16, 10, 0.22);
+}
+
+[data-theme="dark"] .shelf-bookcase, [data-theme="midnight"] .shelf-bookcase {
+  background: linear-gradient(90deg, #3A2618 0%, #4E3422 14px, #1D1510 14px, #16100C calc(100% - 14px), #4E3422 calc(100% - 14px), #311F13 100%);
+  border-color: #4D3422;
+  box-shadow:
+    inset 0 10px 22px rgba(0, 0, 0, 0.65),
+    0 12px 28px rgba(0, 0, 0, 0.52);
+}
+
 .shelf-wrap {
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  padding-top: 4px;
+  gap: 16px;
 }
 
 .shelf-unit {
@@ -2546,10 +2587,10 @@ body::before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2px 4px;
-  font-size: 10.5px;
-  color: var(--muted);
-  letter-spacing: 0.04em;
+  padding: 0 4px 4px;
+  font-size: 10px;
+  color: rgba(245, 232, 212, 0.68);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
@@ -2557,39 +2598,54 @@ body::before {
   display: flex;
   align-items: flex-end;
   gap: 7px;
-  padding: 14px 10px 0;
-  min-height: 204px;
+  padding: 10px 8px 0;
+  min-height: 198px;
   overflow-x: auto;
   scrollbar-width: none;
-  background: linear-gradient(180deg, transparent 52%, rgba(0, 0, 0, 0.045) 100%);
-  border-radius: 3px 3px 0 0;
-}
-
-[data-theme="dark"] .shelf-row, [data-theme="midnight"] .shelf-row {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.01) 0%, rgba(0, 0, 0, 0.34) 100%);
+  background:
+    radial-gradient(ellipse 90% 45% at 50% 0%, rgba(255, 224, 172, 0.09) 0%, transparent 72%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0.04) 45%, rgba(0, 0, 0, 0.34) 100%);
+  border-radius: 2px 2px 0 0;
 }
 
 .shelf-row::-webkit-scrollbar {
   display: none;
 }
 
-/* Thanh kệ tối giản hiện đại (Architectural matte shelf slab) */
+/* Thanh ván gỗ ngang (Oak / Walnut plank) */
 .shelf-plank {
-  height: 10px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #E3DDD2 0%, #CFC7B9 55%, #B8AFA0 100%);
-  border-top: 1px solid rgba(255, 255, 255, 0.72);
-  box-shadow: 0 8px 18px rgba(24, 20, 16, 0.14), 0 2px 3px rgba(24, 20, 16, 0.14);
+  height: 12px;
+  border-radius: 1.5px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 235, 205, 0.05) 0px,
+      rgba(255, 235, 205, 0.05) 18px,
+      rgba(0, 0, 0, 0.06) 18px,
+      rgba(0, 0, 0, 0.06) 36px
+    ),
+    linear-gradient(180deg, #B58354 0%, #8E5F36 48%, #6B4323 100%);
+  border-top: 1px solid rgba(255, 236, 204, 0.42);
+  border-bottom: 1px solid rgba(28, 16, 8, 0.7);
+  box-shadow: 0 7px 14px rgba(0, 0, 0, 0.48), inset 0 -2px 3px rgba(0, 0, 0, 0.32);
   position: relative;
 }
 
 [data-theme="dark"] .shelf-plank, [data-theme="midnight"] .shelf-plank {
-  background: linear-gradient(180deg, #322E2A 0%, #24211E 55%, #181614 100%);
-  border-top: 1px solid rgba(255, 245, 232, 0.12);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.62), 0 2px 4px rgba(0, 0, 0, 0.55);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 235, 205, 0.035) 0px,
+      rgba(255, 235, 205, 0.035) 18px,
+      rgba(0, 0, 0, 0.08) 18px,
+      rgba(0, 0, 0, 0.08) 36px
+    ),
+    linear-gradient(180deg, #7A5335 0%, #5B3B24 50%, #3E2716 100%);
+  border-top: 1px solid rgba(255, 224, 182, 0.24);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.65), inset 0 -2px 3px rgba(0, 0, 0, 0.42);
 }
 
-/* Cụm 1 bộ sách trên kệ: 1 gáy chính sắc nét + các lớp tập xếp phía sau */
+/* Cụm 1 bộ sách trên kệ */
 .shelf-book-group {
   position: relative;
   flex: 0 0 auto;
@@ -2631,7 +2687,6 @@ body::before {
   z-index: 3;
 }
 
-/* Viền vàng tinh tế phía trên cho bộ có bản ĐB / Boxset / Limited */
 .shelf-spine-main.sp-gold {
   border-top: 2px solid #E5C16C;
   box-shadow:
@@ -2641,7 +2696,6 @@ body::before {
     2px 0 6px rgba(0, 0, 0, 0.28);
 }
 
-/* Các lát tập xếp phía sau (tạo cảm giác độ dày thật theo số tập) */
 .shelf-stack-slices {
   display: inline-flex;
   align-items: flex-end;
@@ -2658,7 +2712,6 @@ body::before {
   box-shadow: inset 1px 0 2px rgba(255, 255, 255, 0.12);
 }
 
-/* Phần đầu gáy: Dải màu NXB gọn gàng tách biệt hoàn toàn với chữ */
 .sp-top-cap {
   width: 100%;
   height: 18px;
@@ -2666,13 +2719,13 @@ body::before {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  font-size: 8px;
+  font-size: 7.5px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   background: rgba(0, 0, 0, 0.28);
   border-bottom: 1.5px solid var(--sp-accent, #9E472A);
-  color: rgba(255, 252, 246, 0.9);
+  color: rgba(255, 252, 246, 0.92);
   flex-shrink: 0;
 }
 
@@ -2682,7 +2735,6 @@ body::before {
   line-height: 1;
 }
 
-/* Ô ảnh bìa thu nhỏ kiểu gáy truyện Nhật (Tankobon spine inset) */
 .sp-thumb-win {
   position: relative;
   z-index: 3;
@@ -2704,7 +2756,7 @@ body::before {
   display: block;
 }
 
-/* Tên bộ dọc: tự co giãn vừa khoảng trống giữa ảnh & số tập, tự xuống 2 dòng khi dài, không bao giờ bị che */
+/* Chữ dọc theo gáy sách (vertical-rl chuẩn trên iOS Safari): dài quá tự xuống 2 dòng dọc cạnh nhau, không bị bẻ ngang */
 .sp-title-vert {
   position: relative;
   z-index: 2;
@@ -2713,34 +2765,31 @@ body::before {
   justify-content: center;
   width: 100%;
   margin: 4px 0;
-  padding: 2px 2px;
+  padding: 2px 3px;
   overflow: hidden;
   flex: 1 1 auto;
   min-height: 0;
 }
 
 .sp-title-vert span {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  display: block;
   writing-mode: vertical-rl;
   -webkit-writing-mode: vertical-rl;
   text-orientation: mixed;
-  margin: 0 auto;
-  font-size: 9.2px;
+  font-size: 9px;
   font-weight: 600;
-  line-height: 1.18;
+  line-height: 1.2;
   max-height: 100%;
-  max-width: 100%;
+  max-width: 24px;
   overflow: hidden;
   white-space: normal;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: break-word;
   text-align: center;
   letter-spacing: 0.01em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.48);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Số tập đóng khung gọn ở chân gáy giống truyện thật */
 .sp-vol-box {
   position: relative;
   z-index: 3;
@@ -3623,46 +3672,28 @@ body::before {
         <div id="merchContainer"></div>
       </section>
 
-      <!-- TAB 3: TIN NXB -->
+      <!-- TAB 3: SĂN KÈO / WISHLIST & LẤP LỖ -->
       <section class="view" id="view-news">
-        <div class="news-status-bar">
-          <div>
-            <div style="font-weight:600;" id="newsSyncTitle">Tin 4 NXB (Gemini AI Search)</div>
-            <div class="small-muted mono" id="newsSyncMeta">Nguồn: Gemini Google Search</div>
-          </div>
-          <div style="display:flex; gap:6px; flex-shrink:0;">
-            <button class="btn btn-sm" id="manualPinBtn">+ Ghim tay</button>
-            <button class="btn btn-sm btn-primary" id="refreshNewsBtn">Quét tin AI</button>
-          </div>
+        <div class="gift-kpi-row" id="wishlistSummaryKpis"></div>
+
+        <div class="toolbar">
+          <input type="search" class="search-input" id="wishlistSearch" placeholder="Tìm kèo săn, tập thiếu, NXB..." />
+          <button class="btn btn-primary" id="manualPinBtn">+ Thêm kèo săn</button>
         </div>
 
-        <div class="scope-switch" id="newsScopeSwitch">
-          <button class="active" data-scope="shelf" id="scopeShelfBtn">Theo tủ của tôi <span class="mono" id="scopeShelfCount">(0)</span></button>
-          <button data-scope="all" id="scopeAllBtn">Tất cả 4 NXB <span class="mono" id="scopeAllCount">(0)</span></button>
+        <div class="scope-switch-3" id="newsScopeSwitch">
+          <button class="active" data-scope="all" id="scopeAllBtn">Tất cả <span class="mono" id="scopeAllCount">(0)</span></button>
+          <button data-scope="missing" id="scopeMissingBtn">Lấp lỗ <span class="mono" id="scopeMissingCount">(0)</span></button>
+          <button data-scope="wishlist" id="scopeWishlistBtn">Wishlist <span class="mono" id="scopeWishlistCount">(0)</span></button>
         </div>
 
         <div class="chip-row" id="newsPubChips">
-          <button class="chip active" data-pub="Tất cả">4 NXB</button>
+          <button class="chip active" data-pub="Tất cả">Mọi NXB</button>
           <button class="chip" data-pub="Trẻ">Trẻ</button>
           <button class="chip" data-pub="Kim Đồng">Kim Đồng</button>
           <button class="chip" data-pub="IPM">IPM</button>
           <button class="chip" data-pub="Nhã Nam">Nhã Nam</button>
-        </div>
-
-        <div class="chip-row" id="newsTypeChips">
-          <button class="chip active" data-type="Tất cả">Tất cả tin</button>
-          <button class="chip" data-type="new">Truyện mới</button>
-          <button class="chip" data-type="reprint">Tái bản</button>
-          <button class="chip" data-type="gift">Quà / Bản ĐB</button>
-          <button class="chip" data-type="fes">Fes / Sự kiện</button>
-        </div>
-
-        <div class="chip-row" id="newsChanChips">
-          <button class="chip active" data-chan="Tất cả">Mọi kênh</button>
-          <button class="chip" data-chan="Web">Web</button>
-          <button class="chip" data-chan="FB">FB</button>
-          <button class="chip" data-chan="IG">IG</button>
-          <button class="chip" data-chan="TikTok">TikTok</button>
+          <button class="chip" data-pub="Khác">Khác</button>
         </div>
 
         <div id="newsContainer"></div>
@@ -3743,8 +3774,8 @@ body::before {
         </button>
         <button class="tab-btn" data-tab="news">
           <span class="tab-dot" id="newsDot"></span>
-          <svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
-          <span>Tin NXB</span>
+          <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <span>Săn kèo</span>
         </button>
         <button class="tab-btn" data-tab="spending">
           <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -4245,7 +4276,8 @@ const filters = {
   newsPub: "Tất cả",
   newsType: "Tất cả",
   newsChan: "Tất cả",
-  newsScope: "shelf",
+  newsScope: "all",
+  wishlistSearch: "",
 };
 
 function loadFromLocalStorageLegacy() {
@@ -5967,55 +5999,87 @@ function renderBooks() {
       .join("")}</div>`;
   } else if (state.bookView === "shelf") {
     const perShelf = window.innerWidth >= 720 ? 10 : 6;
-    const rows = [];
-    for (let i = 0; i < list.length; i += perShelf) {
-      rows.push(list.slice(i, i + perShelf));
+    const renderBookcaseGroup = (groupTitle, items, baseOffset) => {
+      if (!items.length) return "";
+      const rows = [];
+      for (let i = 0; i < items.length; i += perShelf) {
+        rows.push(items.slice(i, i + perShelf));
+      }
+      const grpVolTotal = items.reduce((a, s) => a + getAllSeriesVolumes(s).length, 0);
+      return `
+        <div class="shelf-section-group">
+          <div class="shelf-section-title">
+            <span>${esc(groupTitle)}</span>
+            <span class="mono">${items.length} bộ · ${grpVolTotal} tập</span>
+          </div>
+          <div class="shelf-bookcase">
+            <div class="shelf-wrap">${rows
+              .map((rowItems, rIdx) => {
+                const rowVolTotal = rowItems.reduce((a, s) => a + getAllSeriesVolumes(s).length, 0);
+                return `
+                  <div class="shelf-unit">
+                    <div class="shelf-bay-meta mono">
+                      <span>Tầng ${rIdx + 1}</span>
+                      <span>${rowItems.length} bộ · ${rowVolTotal} tập</span>
+                    </div>
+                    <div class="shelf-row">
+                      ${rowItems
+                        .map((s, idx) => {
+                          const vols = getAllSeriesVolumes(s);
+                          const vCount = vols.length;
+                          const holo = isSpecialSeries(s);
+                          const coverSrc = resolveImg(s.cover);
+                          const sliceCount = vCount >= 30 ? 3 : vCount >= 15 ? 2 : vCount >= 5 ? 1 : 0;
+                          const heightPx = 186;
+                          const pubShort =
+                            s.publisher === "Kim Đồng"
+                              ? "KĐ"
+                              : s.publisher === "Nhã Nam"
+                              ? "NN"
+                              : s.publisher === "Khác"
+                              ? "Khác"
+                              : s.publisher.slice(0, 3);
+                          const pal = rgbToSpinePalette(pubFallbackRGB(s.publisher));
+                          const slicesHtml = sliceCount
+                            ? `<span class="shelf-stack-slices">${Array.from(
+                                { length: sliceCount },
+                                (_, k) => `<span class="shelf-slice" style="height:${heightPx - 3 - k * 2}px; opacity:${(0.88 - k * 0.14).toFixed(2)};"></span>`
+                              ).join("")}</span>`
+                            : "";
+                          return `
+                            <button type="button" class="shelf-book-group fx-card-in" style="--stagger:${baseOffset + rIdx * perShelf + idx}; --sp-bg:${pal.bg}; --sp-slice:${pal.slice}; --sp-accent:${pal.accent};" data-shelf-id="${s.id}" title="${esc(s.title)} (${vCount} tập)">
+                              <span class="shelf-spine-main ${holo ? "sp-gold" : ""}" style="height:${heightPx}px;">
+                                <span class="sp-top-cap mono">${esc(pubShort)}${holo ? '<span class="sp-gold-dot">✦</span>' : ""}</span>
+                                ${coverSrc ? `<span class="sp-thumb-win"><img src="${esc(coverSrc)}" alt="" loading="lazy" /></span>` : ""}
+                                <span class="sp-title-vert"><span>${esc(s.title)}</span></span>
+                                <span class="sp-vol-box mono">${vCount}</span>
+                              </span>
+                              ${slicesHtml}
+                            </button>`;
+                        })
+                        .join("")}
+                    </div>
+                    <div class="shelf-plank"></div>
+                  </div>`;
+              })
+              .join("")}</div>
+          </div>
+        </div>`;
+    };
+
+    const mangaList = list.filter((s) => !isBookItem(s));
+    const bookList = list.filter((s) => isBookItem(s));
+    let shelfHtml = "";
+    if (mangaList.length && bookList.length) {
+      shelfHtml =
+        renderBookcaseGroup("Kệ Truyện / Manga", mangaList, 0) +
+        renderBookcaseGroup("Kệ Sách chữ", bookList, mangaList.length);
+    } else if (mangaList.length) {
+      shelfHtml = renderBookcaseGroup("Kệ Truyện / Manga", mangaList, 0);
+    } else {
+      shelfHtml = renderBookcaseGroup("Kệ Sách chữ", bookList, 0);
     }
-    container.innerHTML = `<div class="shelf-wrap">${rows
-      .map((rowItems, rIdx) => {
-        const rowVolTotal = rowItems.reduce((a, s) => a + getAllSeriesVolumes(s).length, 0);
-        return `
-          <div class="shelf-unit">
-            <div class="shelf-bay-meta mono">
-              <span>Kệ ${rIdx + 1}</span>
-              <span>${rowItems.length} bộ · ${rowVolTotal} tập</span>
-            </div>
-            <div class="shelf-row">
-              ${rowItems
-                .map((s, idx) => {
-                  const vols = getAllSeriesVolumes(s);
-                  const vCount = vols.length;
-                  const holo = isSpecialSeries(s);
-                  const coverSrc = resolveImg(s.cover);
-                  // Số lát sách xếp phía sau thể hiện độ dày thật của bộ (1-4: 0 lát, 5-14: 1 lát, 15-29: 2 lát, 30+: 3 lát)
-                  const sliceCount = vCount >= 30 ? 3 : vCount >= 15 ? 2 : vCount >= 5 ? 1 : 0;
-                  const heightPx = 186;
-                  const pubShort =
-                    s.publisher === "Kim Đồng" ? "KĐ" : s.publisher === "Nhã Nam" ? "NN" : s.publisher.slice(0, 3);
-                  const pal = rgbToSpinePalette(pubFallbackRGB(s.publisher));
-                  const slicesHtml = sliceCount
-                    ? `<span class="shelf-stack-slices">${Array.from(
-                        { length: sliceCount },
-                        (_, k) => `<span class="shelf-slice" style="height:${heightPx - 3 - k * 2}px; opacity:${(0.88 - k * 0.14).toFixed(2)};"></span>`
-                      ).join("")}</span>`
-                    : "";
-                  return `
-                    <button type="button" class="shelf-book-group fx-card-in" style="--stagger:${rIdx * perShelf + idx}; --sp-bg:${pal.bg}; --sp-slice:${pal.slice}; --sp-accent:${pal.accent};" data-shelf-id="${s.id}" title="${esc(s.title)} (${vCount} tập)">
-                      <span class="shelf-spine-main ${holo ? "sp-gold" : ""}" style="height:${heightPx}px;">
-                        <span class="sp-top-cap mono">${esc(pubShort)}${holo ? '<span class="sp-gold-dot">✦</span>' : ""}</span>
-                        ${coverSrc ? `<span class="sp-thumb-win"><img src="${esc(coverSrc)}" alt="" loading="lazy" /></span>` : ""}
-                        <span class="sp-title-vert"><span>${esc(s.title)}</span></span>
-                        <span class="sp-vol-box mono">${vCount}</span>
-                      </span>
-                      ${slicesHtml}
-                    </button>`;
-                })
-                .join("")}
-            </div>
-            <div class="shelf-plank"></div>
-          </div>`;
-      })
-      .join("")}</div>`;
+    container.innerHTML = shelfHtml;
 
     // Nhuộm màu gáy từ ảnh bìa thật (giữ màu trong trẻo, không xỉn)
     container.querySelectorAll("[data-shelf-id]").forEach((el) => {
@@ -9880,421 +9944,13 @@ function openGiftItemForm(groupId, giftId = null) {
 
   </script>
   <script>
-/* ===== news.js ===== */
+/* ===== news.js (Tab 3: Săn kèo / Wishlist & Lấp lỗ) ===== */
 "use strict";
 
-// ============================
-// TAB 3: TIN NXB (Mặc định CHỈ lọc theo tủ sách + chặn tin rác)
-// ============================
-const CLIENT_SPAM_KEYWORDS = [
-  "ipmate",
-  "ma giam gia",
-  "voucher shopee",
-  "voucher lazada",
-  "black friday",
-  "flash sale",
-  "mega live",
-  "tiktok shop",
-  "creator tren tiktok",
-  "group danh rieng cho cac creator",
-  "tuyen dung",
-  "thong bao nghi le",
-  "bao tri he thong",
-  "minigame",
-  "giveaway",
-];
-
-function isJunkNewsItem(item) {
-  if (!item || item.manual) return false;
-  const hay = normVN(`${item.title || ""} ${item.summary || ""}`);
-  return CLIENT_SPAM_KEYWORDS.some((kw) => hay.includes(kw));
-}
-
-function extractSeriesKeywords(seriesObj) {
-  const rawParts = [];
-  if (seriesObj.title) {
-    rawParts.push(seriesObj.title);
-    // Tách tên Việt / Anh / phụ đề qua dấu —, –, -, :, /, ngoặc
-    seriesObj.title.split(/[—–\-:\/()|]+/).forEach((p) => rawParts.push(p));
-  }
-  if (seriesObj.aliases) {
-    seriesObj.aliases.split(/[,;|]+/).forEach((p) => rawParts.push(p));
-  }
-
-  const tokens = new Set();
-  for (const part of rawParts) {
-    let t = normVN(part);
-    if (!t) continue;
-    // Bỏ các hậu tố tập/phần/phiên bản để khớp rộng hơn
-    t = t
-      .replace(/\b(phan|tap|vol|volume|season|quyen|bo|boxset|ban dac biet|ban db|limited|tai ban)\s*\d*\b/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (t.length >= 3) tokens.add(t);
-  }
-  return [...tokens];
-}
-
-function findMatchedSeries(item) {
-  if (!state.series.length) return null;
-  const hay = normVN(
-    `${item.title || ""} ${item.series || ""} ${item.summary || ""} ${item.gift || ""} ${item.searchText || ""}`
-  );
-  if (!hay) return null;
-  const paddedHay = ` ${hay} `;
-
-  for (const s of state.series) {
-    const keywords = extractSeriesKeywords(s);
-    for (const kw of keywords) {
-      if (kw.length <= 4) {
-        // Từ khoá ngắn (VD: jojo, orv, opm) bắt buộc khớp nguyên từ để tránh trùng nhầm
-        if (paddedHay.includes(` ${kw} `)) return s;
-      } else {
-        if (hay.includes(kw)) return s;
-      }
-    }
-  }
-  return null;
-}
-
-function matchesUserShelf(item) {
-  return Boolean(findMatchedSeries(item));
-}
-
-const NEWS_AUTO_INTERVAL_MS = 12 * 60 * 60 * 1000; // Tự động quét mỗi 12 giờ
-const NEWS_FAIL_COOLDOWN_MS = 30 * 60 * 1000; // Nếu lỗi/429 thì nghỉ 30 phút mới tự thử lại
-let lastNewsFailAt = 0;
-let newsAutoTimer = null;
-let newsNoticeTimer = null;
-
-function restoreNewsSyncHeader() {
-  const titleEl = document.getElementById("newsSyncTitle");
-  const metaEl = document.getElementById("newsSyncMeta");
-  if (!titleEl || !metaEl) return;
-
-  const key = (state.geminiApiKey || "").trim();
-  const autoShelfMatchedCount = newsItems.filter((it) => matchesUserShelf(it)).length;
-
-  if (!key) {
-    titleEl.textContent = "Chưa gắn Gemini API Key";
-    metaEl.textContent = "Vào Cài đặt dán API Key miễn phí để AI tự quét tin 4 NXB.";
-    return;
-  }
-
-  if (newsMeta.updatedAt) {
-    const timeStr = new Date(newsMeta.updatedAt).toLocaleString("vi-VN", { hour12: false });
-    titleEl.textContent = state.series.length
-      ? `${autoShelfMatchedCount} tin khớp tủ · ${newsItems.length} tin sạch từ 4 NXB`
-      : `Đã quét ${newsItems.length} tin sạch từ 4 NXB`;
-    metaEl.textContent = `Cập nhật: ${timeStr} · Tự quét 12h/lần`;
-  } else {
-    titleEl.textContent = "Tin 4 NXB (Gemini AI Search)";
-    metaEl.textContent = "Tự quét 12 giờ/lần · Bấm Quét tin AI để tìm ngay";
-  }
-}
-
-function flashNewsTransientNotice(titleText, metaText, durationMs = 3000) {
-  const titleEl = document.getElementById("newsSyncTitle");
-  const metaEl = document.getElementById("newsSyncMeta");
-  if (titleEl && titleText) titleEl.textContent = titleText;
-  if (metaEl && metaText) metaEl.textContent = metaText;
-  clearTimeout(newsNoticeTimer);
-  newsNoticeTimer = setTimeout(() => {
-    newsNoticeTimer = null;
-    if (!isFetchingNews) restoreNewsSyncHeader();
-  }, durationMs);
-}
-
-function scheduleNewsAutoScan(delayMs = NEWS_AUTO_INTERVAL_MS) {
-  clearTimeout(newsAutoTimer);
-  const safeDelay = Math.max(15000, Math.min(NEWS_AUTO_INTERVAL_MS, delayMs));
-  newsAutoTimer = setTimeout(() => {
-    if (!document.hidden && (state.geminiApiKey || "").trim()) {
-      fetchNews(false);
-    } else {
-      scheduleNewsAutoScan(NEWS_AUTO_INTERVAL_MS);
-    }
-  }, safeDelay);
-}
-
-async function callGeminiSearchNews(apiKey, onProgress = null) {
-  const key = String(apiKey || "").trim();
-  if (!key) throw new Error("Chưa nhập Gemini API Key trong Cài đặt.");
-
-  const now = new Date();
-  const todayStr = todayISO();
-  const ymText = `tháng ${now.getMonth() + 1}/${now.getFullYear()}`;
-  const nextM = now.getMonth() === 11 ? 1 : now.getMonth() + 2;
-  const nextY = now.getMonth() === 11 ? now.getFullYear() + 1 : now.getFullYear();
-  const nextYmText = `tháng ${nextM}/${nextY}`;
-
-  const activeSeries = (state.series || [])
-    .filter((s) => s.status !== "Tạm ngưng")
-    .sort((a, b) => (a.status === "Đang theo" ? -1 : 1) - (b.status === "Đang theo" ? -1 : 1))
-    .slice(0, 40)
-    .map((s) => (s.aliases ? `${s.title} (${s.aliases.split(",")[0].trim()})` : s.title));
-
-  const shelfHint = activeSeries.length
-    ? `NHIỆM VỤ ƯU TIÊN SỐ 1 — Quét kỹ lịch phát hành tập mới, thông báo tái bản, bản đặc biệt/limited, boxset, quà tặng kèm (postcard, standee, shikishi, obi, bookmark) và Fes cho danh sách các bộ trong tủ sau: ${activeSeries.join(", ")}.
-NHIỆM VỤ 2 — Bổ sung các tin lịch phát hành manga, light novel, sách văn học mới/tái bản/bản đặc biệt/sự kiện Fes nổi bật nhất của đủ 4 NXB trong ${ymText} và ${nextYmText}.`
-    : `Tìm thật kỹ lịch phát hành manga, light novel, sách mới, tái bản, bản đặc biệt có quà tặng và sự kiện Fes nổi bật nhất của đủ cả 4 NXB trong ${ymText} và ${nextYmText}.`;
-
-  const promptText = `Hôm nay là ${todayStr}. Hãy dùng Google Search tìm kiếm THẬT KỸ các thông tin phát hành manga, light novel và sách mới nhất tại Việt Nam từ đủ 4 nhà xuất bản:
-1) NXB Kim Đồng (nxbkimdong.com.vn, fanpage NXB Kim Đồng, lịch phát hành truyện tranh Kim Đồng ${ymText} và ${nextYmText})
-2) NXB Trẻ (nxbtre.com.vn, fanpage Truyện Tranh NXB Trẻ, lịch phát hành NXB Trẻ ${ymText} và ${nextYmText})
-3) IPM (ipm.vn, fanpage IPM, lịch phát hành IPM ${ymText} và ${nextYmText})
-4) Nhã Nam (nhanam.vn, fanpage Nhã Nam, lịch phát hành / bản đặc biệt Nhã Nam ${ymText} và ${nextYmText})
-Có thể tra chéo thêm Fahasa, các trang tổng hợp lịch phát hành manga Việt Nam uy tín để lấy đủ ngày phát hành, giá bìa và quà kèm chính xác.
-
-${shelfHint}
-
-YÊU CẦU CHẤT LƯỢNG:
-- Chỉ lấy tin có thật, có thông tin cụ thể (tên truyện/sách, số tập hoặc bản tái bản/bản ĐB/quà/Fes), ưu tiên tin mới trong ${ymText} và ${nextYmText}.
-- Bỏ qua hoàn toàn tin rác, mã giảm giá Shopee/Lazada, flash sale, tuyển dụng, minigame, giveaway.
-- Cố gắng phủ đều cả 4 NXB và không bỏ sót bộ nào khớp tủ của người dùng.
-- Trả về DUY NHẤT 1 mảng JSON thuần (không bọc markdown, không giải thích thêm), tối đa 28 tin chất lượng & chính xác nhất, mỗi phần tử đúng cấu trúc:
-{"publisher":"Kim Đồng|Trẻ|IPM|Nhã Nam","type":"new|reprint|gift|fes","channel":"Web|FB|IG|TikTok","title":"Tiêu đề rõ tên truyện/sách và số tập hoặc sự kiện","series":"Tên bộ gốc","summary":"Tóm tắt ngắn gọn 1-2 câu đầy đủ thông tin","gift":"Chi tiết quà kèm / bản ĐB nếu có hoặc chuỗi rỗng","releaseDate":"YYYY-MM-DD hoặc chuỗi rỗng","price":0,"url":"Link bài viết gốc (nếu có)"}`;
-
-  // Chỉ gọi duy nhất 1 model Gemini 3.5 (gemini-3.5-flash-lite) để tránh spam quota
-  const modelsToTry = ["gemini-3.5-flash-lite"];
-
-  let lastErr = "Không kết nối được Gemini Search.";
-  let hitRateLimit = false;
-
-  for (let i = 0; i < modelsToTry.length; i++) {
-    const model = modelsToTry[i];
-    if (typeof onProgress === "function") {
-      onProgress(
-        i === 0
-          ? `Đang quét sâu 4 NXB & ${activeSeries.length || "toàn bộ"} đầu sách (${model})...`
-          : `Đang chuyển model dự phòng (${model}) để quét tiếp...`
-      );
-    }
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: promptText }] }],
-          tools: [{ google_search: {} }],
-          generationConfig: {
-            temperature: 0.15,
-            maxOutputTokens: 4096,
-          },
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const msg = data?.error?.message || `HTTP ${res.status}`;
-        lastErr = `[${model}] ${msg}`;
-        if (/API_KEY_INVALID|API key not valid|invalid api key/i.test(msg)) {
-          throw new Error("API Key không hợp lệ — kiểm tra lại trong Cài đặt.");
-        }
-        if (res.status === 429) {
-          hitRateLimit = true;
-          // Chờ nhẹ 1.2s rồi tự thử model tiếp theo (mỗi model Gemini có hạn mức riêng!)
-          if (i < modelsToTry.length - 1) {
-            await new Promise((r) => setTimeout(r, 1200));
-          }
-          continue;
-        }
-        continue;
-      }
-
-      const respParts = data?.candidates?.[0]?.content?.parts || [];
-      const textParts = respParts.filter((p) => !p.thought && typeof p.text === "string");
-      const rawText = (textParts.length ? textParts : respParts).map((p) => p.text || "").join("\n").trim();
-      if (!rawText) {
-        lastErr = `[${model}] AI không trả về kết quả.`;
-        continue;
-      }
-
-      const parsed = extractJsonFromText(rawText);
-      const arr = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.items) ? parsed.items : [];
-      const groundingChunks = data?.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-      const fallbackUrls = groundingChunks.map((c) => c?.web?.uri).filter(Boolean);
-
-      const validPubs = ["Trẻ", "Kim Đồng", "IPM", "Nhã Nam"];
-      const validTypes = ["new", "reprint", "gift", "fes"];
-      const validChans = ["Web", "FB", "IG", "TikTok"];
-
-      const seenKeys = new Set();
-      const normalized = arr
-        .map((it, idx) => {
-          let pub = String(it.publisher || "").trim();
-          if (/trẻ|tre/i.test(pub)) pub = "Trẻ";
-          else if (/kim/i.test(pub)) pub = "Kim Đồng";
-          else if (/ipm/i.test(pub)) pub = "IPM";
-          else if (/nhã|nha/i.test(pub)) pub = "Nhã Nam";
-          if (!validPubs.includes(pub)) pub = "Kim Đồng";
-
-          const type = validTypes.includes(it.type) ? it.type : "new";
-          let chan = validChans.includes(it.channel) ? it.channel : "Web";
-          let itemUrl = String(it.url || "").trim();
-          if (!/^https?:\/\//i.test(itemUrl)) itemUrl = fallbackUrls[idx] || "";
-          if (/facebook\.com|fb\.com/i.test(itemUrl)) chan = "FB";
-          else if (/instagram\.com/i.test(itemUrl)) chan = "IG";
-          else if (/tiktok\.com/i.test(itemUrl)) chan = "TikTok";
-
-          return {
-            id: "ai_" + hashStringFast(`${pub}_${it.title || idx}`),
-            publisher: pub,
-            type,
-            channel: chan,
-            title: String(it.title || "").trim(),
-            series: String(it.series || "").trim(),
-            summary: String(it.summary || "").trim(),
-            gift: String(it.gift || "").trim(),
-            releaseDate: /^\d{4}-\d{2}-\d{2}$/.test(String(it.releaseDate || "").trim())
-              ? String(it.releaseDate).trim()
-              : "",
-            price: Math.max(0, Math.round(Number(it.price) || 0)),
-            url: itemUrl,
-            image: "",
-            manual: false,
-          };
-        })
-        .filter((x) => {
-          if (!x.title || isJunkNewsItem(x)) return false;
-          const dedup = `${x.publisher}::${normVN(x.title)}`;
-          if (seenKeys.has(dedup)) return false;
-          seenKeys.add(dedup);
-          return true;
-        });
-
-      if (!normalized.length && i < modelsToTry.length - 1) {
-        lastErr = `[${model}] Chưa tìm thấy tin phù hợp.`;
-        continue;
-      }
-
-      return { items: normalized, model };
-    } catch (err) {
-      lastErr = err?.message || String(err);
-      if (/API Key không hợp lệ/i.test(lastErr)) throw err;
-    }
-  }
-
-  if (hitRateLimit) {
-    const rateErr = new Error("API đang tạm chạm giới hạn — thử quét lại sau chút nhé.");
-    rateErr.isRateLimit = true;
-    throw rateErr;
-  }
-  throw new Error(lastErr);
-}
-
-let isFetchingNews = false;
-
-async function fetchNews(manual = false) {
-  if (isFetchingNews) return;
-  const titleEl = document.getElementById("newsSyncTitle");
-  const metaEl = document.getElementById("newsSyncMeta");
-  const refreshBtn = document.getElementById("refreshNewsBtn");
-
-  const cache = state.aiNewsCache || { updatedAt: "", items: [] };
-  const cacheAgeMs = cache.updatedAt ? Date.now() - new Date(cache.updatedAt).getTime() : Infinity;
-
-  // Nạp cache sẵn ra màn hình để không bị trống trong lúc chờ quét
-  if (Array.isArray(cache.items) && cache.items.length > 0 && !newsItems.length) {
-    newsItems = cache.items.filter((it) => !isJunkNewsItem(it));
-    newsMeta = { updatedAt: cache.updatedAt, loaded: true, error: "" };
-  }
-
-  // Tự động quét đúng 30 phút 1 lần (trừ khi người dùng chủ động bấm Quét tin AI)
-  if (!manual && Array.isArray(cache.items) && cache.items.length > 0 && cacheAgeMs < NEWS_AUTO_INTERVAL_MS) {
-    newsItems = cache.items.filter((it) => !isJunkNewsItem(it));
-    newsMeta = { updatedAt: cache.updatedAt, loaded: true, error: "" };
-    restoreNewsSyncHeader();
-    renderNews();
-    scheduleNewsAutoScan(NEWS_AUTO_INTERVAL_MS - cacheAgeMs);
-    return;
-  }
-
-  const key = (state.geminiApiKey || "").trim();
-  if (!key) {
-    newsItems = Array.isArray(cache.items) ? cache.items : [];
-    newsMeta = { updatedAt: cache.updatedAt || "", loaded: false, error: "" };
-    restoreNewsSyncHeader();
-    renderNews();
-    if (manual) {
-      showToast("Hãy dán Gemini API Key trong Cài đặt trước nhé.", { duration: 3000 });
-      openSettingsModal();
-    }
-    return;
-  }
-
-  clearTimeout(newsNoticeTimer);
-  isFetchingNews = true;
-  if (refreshBtn) {
-    refreshBtn.disabled = true;
-    refreshBtn.textContent = "Đang quét...";
-  }
-  if (titleEl) titleEl.textContent = "Gemini AI đang quét kỹ tin 4 NXB...";
-  if (metaEl) metaEl.textContent = "Đang dò lịch phát hành, tái bản, quà & Fes (có thể mất ~10-20s)...";
-
-  try {
-    const res = await callGeminiSearchNews(key, (progressMsg) => {
-      if (metaEl) metaEl.textContent = progressMsg;
-    });
-    newsItems = res.items;
-    const nowIso = new Date().toISOString();
-    state.aiNewsCache = { updatedAt: nowIso, items: newsItems };
-    saveState();
-    newsMeta = { updatedAt: nowIso, loaded: true, error: "" };
-    restoreNewsSyncHeader();
-    scheduleNewsAutoScan(NEWS_AUTO_INTERVAL_MS);
-    if (manual) {
-      SFX.success();
-      showToast(`Quét xong ${newsItems.length} tin sạch từ 4 NXB!`, { duration: 3000 });
-    }
-  } catch (err) {
-    lastNewsFailAt = Date.now();
-    if (Array.isArray(cache.items) && cache.items.length > 0) {
-      newsItems = cache.items.filter((it) => !isJunkNewsItem(it));
-      newsMeta = { updatedAt: cache.updatedAt || "", loaded: true, error: "" };
-    } else {
-      newsMeta = { updatedAt: cache.updatedAt || "", loaded: false, error: "" };
-    }
-
-    const isRate = Boolean(err?.isRateLimit || /429|giới hạn/i.test(err?.message || ""));
-    const shortMsg = isRate
-      ? "API tạm chạm giới hạn — sẽ tự thử lại sau."
-      : err?.message || "Chưa kết nối được Gemini AI.";
-
-    // Hiện thông báo giới hạn đúng 3 giây rồi tự ẩn sạch, không bám dính trên giao diện!
-    flashNewsTransientNotice(
-      isRate ? "API tạm chạm giới hạn" : "Chưa quét được tin mới",
-      shortMsg,
-      3000
-    );
-    scheduleNewsAutoScan(NEWS_AUTO_INTERVAL_MS);
-
-    if (manual) {
-      SFX.error();
-      showToast(shortMsg, { duration: 3000 });
-    }
-  } finally {
-    isFetchingNews = false;
-    if (refreshBtn) {
-      refreshBtn.disabled = false;
-      refreshBtn.textContent = "Quét tin AI";
-    }
-  }
+function fetchNews() {
+  // Đã chuyển Tab 3 sang Săn kèo / Wishlist (không tốn API)
   renderNews();
 }
-
-// Khi mở lại app từ nền: nếu đã quá 30 phút từ lần quét trước -> tự quét lại
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState !== "visible") return;
-  if (!appReady || isFetchingNews) return;
-  if (!(state.geminiApiKey || "").trim()) return;
-  if (lastNewsFailAt && Date.now() - lastNewsFailAt < NEWS_FAIL_COOLDOWN_MS) return;
-  const cache = state.aiNewsCache || {};
-  const age = cache.updatedAt ? Date.now() - new Date(cache.updatedAt).getTime() : Infinity;
-  if (age >= NEWS_AUTO_INTERVAL_MS) {
-    fetchNews(false);
-  }
-});
 
 function countdownText(dateStr) {
   if (!dateStr) return "";
@@ -10308,264 +9964,317 @@ function countdownText(dateStr) {
   return dateStr;
 }
 
+function collectAllMissingGaps() {
+  const gaps = [];
+  (state.series || []).forEach((s) => {
+    (s.sections || []).forEach((sec) => {
+      const missing = findMissingVolumes(sec.volumes || []);
+      if (missing.length) {
+        const lastVol = (sec.volumes || [])[(sec.volumes || []).length - 1];
+        const estUnit = lastVol ? Number(lastVol.paidPrice) || 30000 : 30000;
+        gaps.push({
+          seriesId: s.id,
+          sectionId: sec.id,
+          title: s.title,
+          sectionName: sec.name,
+          publisher: s.publisher || "Khác",
+          cover: resolveImg(s.cover),
+          missing,
+          estTotal: estUnit * missing.length,
+        });
+      }
+    });
+  });
+  return gaps;
+}
+
 function renderNews() {
   const container = document.getElementById("newsContainer");
-  const titleEl = document.getElementById("newsSyncTitle");
+  const kpiEl = document.getElementById("wishlistSummaryKpis");
+  if (!container) return;
 
-  const manualPins = state.pinned
-    .filter((p) => p.manual)
-    .map((p) => ({
-      id: p.id,
-      publisher: p.publisher,
-      type: p.type,
-      channel: p.channel || "Ghim tay",
-      title: p.title,
-      series: p.series || "",
-      summary: p.note || "",
-      gift: p.gift || "",
-      releaseDate: p.releaseDate || "",
-      price: p.estPrice || 0,
-      url: p.url || "",
-      image: "",
-      manual: true,
-    }));
+  const q = normVN(filters.wishlistSearch || "");
+  const scope = filters.newsScope || "all";
+  const allGaps = collectAllMissingGaps();
+  const totalMissingVols = allGaps.reduce((a, g) => a + g.missing.length, 0);
+  const allWishlist = state.pinned || [];
+  const totalEstWish = allWishlist.reduce((a, p) => a + (Number(p.estPrice) || 0), 0);
 
-  const combined = [...manualPins, ...newsItems];
-  const shelfMatchedList = combined.filter((it) => it.manual || matchesUserShelf(it));
-
-  // Cập nhật số đếm trên 2 tab chuyển chế độ + chấm thông báo đỏ CHỈ khi có tin khớp tủ
-  const shelfCountEl = document.getElementById("scopeShelfCount");
-  const allCountEl = document.getElementById("scopeAllCount");
-  if (shelfCountEl) shelfCountEl.textContent = `(${shelfMatchedList.length})`;
-  if (allCountEl) allCountEl.textContent = `(${combined.length})`;
-
-  const autoShelfMatchedCount = newsItems.filter((it) => matchesUserShelf(it)).length;
-  document.getElementById("newsDot").classList.toggle("show", autoShelfMatchedCount > 0);
-
-  if (!isFetchingNews && !newsNoticeTimer) {
-    restoreNewsSyncHeader();
+  if (kpiEl) {
+    kpiEl.innerHTML = `
+      <div class="gift-kpi">
+        <div class="gift-kpi-label">Tập bị lủng</div>
+        <div class="gift-kpi-val mono">${totalMissingVols}</div>
+        <div class="small-muted" style="font-size:10.5px;">${allGaps.length} mục cần lấp</div>
+      </div>
+      <div class="gift-kpi">
+        <div class="gift-kpi-label">Kèo Wishlist</div>
+        <div class="gift-kpi-val mono">${allWishlist.length}</div>
+        <div class="small-muted" style="font-size:10.5px;">Đang chờ săn</div>
+      </div>
+      <div class="gift-kpi">
+        <div class="gift-kpi-label">Dự chi săn</div>
+        <div class="gift-kpi-val mono">${fmtMoney(totalEstWish)}</div>
+        <div class="small-muted" style="font-size:10.5px;">Theo Wishlist</div>
+      </div>`;
   }
 
-  const baseList = filters.newsScope === "shelf" ? shelfMatchedList : combined;
+  const cAll = document.getElementById("scopeAllCount");
+  const cMis = document.getElementById("scopeMissingCount");
+  const cWis = document.getElementById("scopeWishlistCount");
+  if (cAll) cAll.textContent = `(${totalMissingVols + allWishlist.length})`;
+  if (cMis) cMis.textContent = `(${totalMissingVols})`;
+  if (cWis) cWis.textContent = `(${allWishlist.length})`;
 
-  const filtered = baseList.filter((it) => {
-    if (filters.newsPub !== "Tất cả" && it.publisher !== filters.newsPub) return false;
-    if (filters.newsType !== "Tất cả" && it.type !== filters.newsType) return false;
-    if (filters.newsChan !== "Tất cả" && it.channel !== filters.newsChan) return false;
+  const dot = document.getElementById("newsDot");
+  if (dot) dot.classList.toggle("show", totalMissingVols > 0 || allWishlist.length > 0);
+
+  const matchPub = (pub) => {
+    if (filters.newsPub === "Tất cả") return true;
+    const known = ["Trẻ", "Kim Đồng", "IPM", "Nhã Nam"];
+    if (filters.newsPub === "Khác") return !known.includes(pub);
+    return pub === filters.newsPub;
+  };
+
+  const filteredGaps = allGaps.filter((g) => {
+    if (!matchPub(g.publisher)) return false;
+    if (q && !normVN(`${g.title} ${g.sectionName} ${g.publisher}`).includes(q)) return false;
     return true;
   });
 
-  if (!filtered.length) {
-    if (filters.newsScope === "shelf" && !state.series.length) {
-      container.innerHTML = `
-        <div class="empty">
-          <div class="empty-title">Tủ sách đang trống</div>
-          <div class="empty-desc">
-            Tab này mặc định chỉ hiện tin tập mới, tái bản, quà kèm và Fes liên quan đến <strong>truyện & sách bạn đang có</strong>. Thêm sách vào tủ trước để app tự lọc tin cho bạn.
-          </div>
-          <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
-            <button class="btn btn-sm btn-primary" id="emptyGoAddBook">+ Thêm bộ vào tủ</button>
-            <button class="btn btn-sm" id="emptySwitchAll">Xem tất cả tin 4 NXB</button>
-          </div>
-        </div>`;
-      container.querySelector("#emptyGoAddBook").addEventListener("click", () => {
-        document.querySelector('.tab-btn[data-tab="books"]').click();
-        openSeriesForm();
-      });
-      container.querySelector("#emptySwitchAll").addEventListener("click", () => {
-        document.getElementById("scopeAllBtn").click();
-      });
-      return;
-    }
+  const filteredWish = allWishlist.filter((p) => {
+    if (!matchPub(p.publisher || "Khác")) return false;
+    if (q && !normVN(`${p.title} ${p.publisher} ${p.gift || ""} ${p.note || ""}`).includes(q)) return false;
+    return true;
+  });
 
-    if (filters.newsScope === "shelf" && state.series.length) {
-      container.innerHTML = `
-        <div class="empty">
-          <div class="empty-title">Chưa có tin mới liên quan tới tủ của bạn</div>
-          <div class="empty-desc">
-            Hiện chưa có bài mới nào từ Trẻ, Kim Đồng, IPM, Nhã Nam nhắc tới ${state.series.length} đầu sách trong tủ. Mẹo: vào sửa bộ sách và điền thêm <strong>Tên khác / từ khoá</strong> (VD: tên tiếng Anh/Nhật) nếu NXB hay dùng tên khác.
-          </div>
-          <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
-            <button class="btn btn-sm" id="emptySwitchAll2">Xem tất cả tin 4 NXB</button>
-            <button class="btn btn-sm" id="emptyManualPin">+ Tự ghim lịch săn</button>
-          </div>
-        </div>`;
-      container.querySelector("#emptySwitchAll2").addEventListener("click", () => {
-        document.getElementById("scopeAllBtn").click();
-      });
-      container.querySelector("#emptyManualPin").addEventListener("click", openManualPinForm);
-      return;
-    }
+  let htmlParts = [];
 
-    container.innerHTML = `
-      <div class="empty">
-        <div class="empty-title">${combined.length ? "Không có tin khớp bộ lọc" : "Chưa có tin từ 4 NXB"}</div>
-        <div class="empty-desc">${
-          combined.length
-            ? "Thử chọn lại NXB, loại tin hoặc kênh khác."
-            : "Bấm nút Quét tin AI ở góc trên để Gemini tự tìm lịch phát hành mới nhất từ 4 NXB."
-        }</div>
-        <button class="btn btn-sm" id="emptyManualPin">+ Tự ghim lịch săn</button>
-      </div>`;
-    const btn = document.getElementById("emptyManualPin");
-    if (btn) btn.addEventListener("click", openManualPinForm);
-    return;
+  // PHẦN 1: LẤP LỖ TẬP THIẾU
+  if (scope === "all" || scope === "missing") {
+    if (filteredGaps.length) {
+      htmlParts.push(`
+        <div style="margin-bottom:14px;">
+          <div class="panel-title" style="margin-bottom:8px;">Tập bị lủng trong tủ (${filteredGaps.reduce((a, g) => a + g.missing.length, 0)} tập)</div>
+          <div class="news-list">
+            ${filteredGaps
+              .map(
+                (g, idx) => `
+              <article class="news-card fx-card-in" style="--stagger:${idx}; border-left:3px solid var(--amber);">
+                <div class="news-head">
+                  <span class="tag" style="border-left:2px solid ${pubColorVar(g.publisher)}">${esc(g.publisher)}</span>
+                  <span class="tag tag-amber">Thiếu ${g.missing.length} tập</span>
+                  <button type="button" class="btn btn-sm" style="margin-left:auto; height:24px; font-size:11px;" data-open-gap-sec="${g.seriesId}::${g.sectionId}">Mở mục →</button>
+                </div>
+                <div style="font-size:14px; font-weight:600;">${esc(g.title)} <span class="small-muted" style="font-weight:400;">· ${esc(g.sectionName)}</span></div>
+                <div class="missing-chips" style="margin-top:8px;">
+                  ${g.missing
+                    .slice(0, 18)
+                    .map((n) => `<button type="button" class="missing-chip mono" data-fill-gap="${g.seriesId}::${g.sectionId}::${n}">+ Tập ${n}</button>`)
+                    .join("")}
+                  ${g.missing.length > 18 ? `<span class="small-muted mono">...+${g.missing.length - 18} tập</span>` : ""}
+                </div>
+              </article>`
+              )
+              .join("")}
+          </div>
+        </div>`);
+    } else if (scope === "missing") {
+      htmlParts.push(`
+        <div class="empty">
+          <div class="empty-title">Tủ sách không bị lủng tập nào!</div>
+          <div class="empty-desc">Tất cả các bộ trong tủ đều liền mạch số tập. Quá đỉnh!</div>
+        </div>`);
+    }
   }
 
-  const pinnedIds = new Set(state.pinned.map((p) => p.id));
+  // PHẦN 2: WISHLIST / KÈO ĐANG SĂN
+  if (scope === "all" || scope === "wishlist") {
+    if (filteredWish.length) {
+      htmlParts.push(`
+        <div>
+          <div class="panel-title" style="margin-bottom:8px;">Wishlist & Kèo đang săn (${filteredWish.length})</div>
+          <div class="news-list">
+            ${filteredWish
+              .map((it, idx) => {
+                const cd = countdownText(it.releaseDate);
+                return `
+                  <article class="news-card fx-card-in matched" style="--stagger:${idx}">
+                    <div class="news-head">
+                      <span class="tag" style="border-left:2px solid ${pubColorVar(it.publisher)}">${esc(it.publisher || "Khác")}</span>
+                      <span class="tag ${typeTagClass(it.type)}">${typeLabel(it.type)}</span>
+                      ${cd ? `<span class="small-muted mono" style="margin-left:auto;">${esc(cd)}</span>` : ""}
+                    </div>
+                    <div class="news-body">
+                      <div class="news-text">
+                        <h3 class="news-title">${esc(it.title)}</h3>
+                        ${it.estPrice ? `<div class="mono small-muted" style="margin-top:3px;">Dự chi: <strong>${fmtMoney(it.estPrice)}</strong></div>` : ""}
+                      </div>
+                    </div>
+                    ${it.gift ? `<div class="news-gift"><strong>Quà / Ghi chú:</strong> ${esc(it.gift)}</div>` : ""}
+                    <div class="news-actions">
+                      <button class="btn btn-sm btn-primary" data-import-wish="${esc(it.id)}">Đã mua → Vào tủ</button>
+                      <button class="btn btn-sm" data-edit-wish="${esc(it.id)}">Sửa</button>
+                      <button class="btn btn-sm btn-danger" data-del-wish="${esc(it.id)}">Xoá</button>
+                      ${
+                        it.url
+                          ? `<a class="btn btn-sm" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer" style="margin-left:auto;">Link</a>`
+                          : ""
+                      }
+                    </div>
+                  </article>`;
+              })
+              .join("")}
+          </div>
+        </div>`);
+    } else if (scope === "wishlist" || (scope === "all" && !filteredGaps.length)) {
+      htmlParts.push(`
+        <div class="empty">
+          <div class="empty-title">Chưa có kèo săn / Wishlist nào</div>
+          <div class="empty-desc">Lưu các bộ sắp ra, boxset giới hạn, kèo tái bản hoặc quà Fes bạn đang nhắm để theo dõi ngày mở bán & dự chi.</div>
+          <button class="btn btn-sm btn-primary" id="emptyAddWishBtn">+ Thêm kèo săn đầu tiên</button>
+        </div>`);
+    }
+  }
 
-  container.innerHTML = `<div class="news-list">${filtered
-    .map((it, idx) => {
-      const matchedSeries = findMatchedSeries(it);
-      const isPinned = pinnedIds.has(it.id);
-      const cd = countdownText(it.releaseDate);
-      return `
-        <article class="news-card fx-card-in ${matchedSeries ? "matched" : ""}" style="--stagger:${idx}">
-          <div class="news-head">
-            <span class="tag" style="border-left:2px solid ${pubColorVar(it.publisher)}">${esc(it.publisher)}</span>
-            <span class="tag ${typeTagClass(it.type)}">${typeLabel(it.type)}</span>
-            <span class="tag mono">${esc(it.channel || "Web")}</span>
-            ${matchedSeries ? `<span class="tag tag-accent">Khớp: ${esc(matchedSeries.title.slice(0, 26))}</span>` : ""}
-            ${cd ? `<span class="small-muted mono" style="margin-left:auto;">${esc(cd)}</span>` : ""}
-          </div>
-          <div class="news-body">
-            <div class="news-text">
-              <h3 class="news-title">${esc(it.title)}</h3>
-              ${it.summary ? `<p class="news-summary">${esc(it.summary)}</p>` : ""}
-              ${it.price ? `<div class="mono small-muted" style="margin-top:5px;">Giá dự kiến: ${fmtMoney(it.price)}</div>` : ""}
-            </div>
-            ${it.image ? `<img class="news-thumb" src="${esc(it.image)}" alt="" loading="lazy" onerror="this.style.display='none'" />` : ""}
-          </div>
-          ${it.gift ? `<div class="news-gift"><strong>Quà / Kèm:</strong> ${esc(it.gift)}</div>` : ""}
-          <div class="news-actions">
-            <button class="btn btn-sm ${isPinned ? "btn-accent" : ""}" data-pin="${esc(it.id)}">
-              ${isPinned ? "Đã ghim dự chi" : "Ghim dự chi"}
-            </button>
-            <button class="btn btn-sm" data-import-news="${esc(it.id)}">Đã mua → Vào tủ</button>
-            ${
-              it.url
-                ? `<a class="btn btn-sm" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer" style="margin-left:auto;">Xem gốc</a>`
-                : ""
-            }
-          </div>
-        </article>`;
-    })
-    .join("")}</div>`;
+  container.innerHTML = htmlParts.join("");
 
-  container.querySelectorAll("[data-pin]").forEach((btn) => {
+  const emptyAddBtn = container.querySelector("#emptyAddWishBtn");
+  if (emptyAddBtn) emptyAddBtn.addEventListener("click", () => openManualPinForm());
+
+  container.querySelectorAll("[data-open-gap-sec]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const id = btn.dataset.pin;
-      const existing = state.pinned.find((p) => p.id === id);
-      if (existing) {
-        state.pinned = state.pinned.filter((p) => p.id !== id);
-        saveState();
-        renderNews();
-        renderSpending();
-        showToast("Đã bỏ ghim.");
-        return;
-      }
-      const item = combined.find((x) => x.id === id);
-      if (!item) return;
-      state.pinned.unshift({
-        id: item.id,
-        title: item.title,
-        publisher: item.publisher,
-        type: item.type,
-        channel: item.channel,
-        releaseDate: item.releaseDate || "",
-        estPrice: Number(item.price) || 0,
-        gift: item.gift || "",
-        url: item.url || "",
-        manual: false,
-      });
-      saveState();
-      renderNews();
-      renderSpending();
-      showToast("Đã ghim vào Dự chi.");
+      const [sid, secId] = btn.dataset.openGapSec.split("::");
+      SFX.openBook();
+      openSectionDetail(sid, secId);
     });
   });
 
-  container.querySelectorAll("[data-import-news]").forEach((btn) => {
+  container.querySelectorAll("[data-fill-gap]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const item = combined.find((x) => x.id === btn.dataset.importNews);
-      if (item) openQuickImportFromNews(item);
+      const [sid, secId, numStr] = btn.dataset.fillGap.split("::");
+      SFX.openBook();
+      openVolumeForm(sid, secId, null, Number(numStr));
+    });
+  });
+
+  container.querySelectorAll("[data-import-wish]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const item = state.pinned.find((x) => x.id === btn.dataset.importWish);
+      if (item) {
+        openQuickImportFromNews({
+          ...item,
+          price: item.estPrice || 0,
+          series: item.title,
+        });
+      }
+    });
+  });
+
+  container.querySelectorAll("[data-edit-wish]").forEach((btn) => {
+    btn.addEventListener("click", () => openManualPinForm(btn.dataset.editWish));
+  });
+
+  container.querySelectorAll("[data-del-wish]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const item = state.pinned.find((x) => x.id === btn.dataset.delWish);
+      if (!item) return;
+      pushUndo(`xoá kèo "${item.title}"`);
+      state.pinned = state.pinned.filter((x) => x.id !== item.id);
+      saveState();
+      renderNews();
+      renderSpending();
+      SFX.del();
+      showToast(`Đã xoá "${item.title}".`, { undoable: true });
     });
   });
 }
 
-function openManualPinForm() {
+function openManualPinForm(editId = null) {
+  const existing = editId ? state.pinned.find((x) => x.id === editId) : null;
   const html = `
     <form id="manualPinForm" class="form-grid">
       <div class="field">
-        <label>Tiêu đề tin / Lịch săn *</label>
-        <input name="title" required placeholder="VD: Dungeon Meshi tập 14 bản ĐB, Booth Kim Đồng Fes..." />
+        <label>Tên bộ / Kèo cần săn *</label>
+        <input name="title" required value="${esc(existing?.title || "")}" placeholder="VD: Naruto Boxset 4-5-6, Dungeon Meshi tập 14 ĐB..." />
       </div>
       <div class="form-row-2">
         <div class="field">
           <label>Nhà xuất bản</label>
           <select name="publisher">
-            <option value="Trẻ">Trẻ</option>
-            <option value="Kim Đồng">Kim Đồng</option>
-            <option value="IPM">IPM</option>
-            <option value="Nhã Nam">Nhã Nam</option>
+            ${["Kim Đồng", "Trẻ", "IPM", "Nhã Nam", "Khác"]
+              .map((p) => `<option value="${p}" ${(existing?.publisher || "Kim Đồng") === p ? "selected" : ""}>${p}</option>`)
+              .join("")}
           </select>
         </div>
         <div class="field">
-          <label>Loại tin</label>
+          <label>Loại kèo</label>
           <select name="type">
-            <option value="new">Truyện mới</option>
-            <option value="reprint">Tái bản</option>
-            <option value="gift">Quà / Bản ĐB</option>
-            <option value="fes">Fes / Sự kiện</option>
+            ${[
+              ["new", "Truyện / Tập mới"],
+              ["reprint", "Tái bản / Boxset"],
+              ["gift", "Bản ĐB / Quà"],
+              ["fes", "Fes / Sự kiện"],
+            ]
+              .map(([val, lbl]) => `<option value="${val}" ${(existing?.type || "new") === val ? "selected" : ""}>${lbl}</option>`)
+              .join("")}
           </select>
         </div>
       </div>
       <div class="form-row-2">
         <div class="field">
-          <label>Ngày ra mắt / Fes</label>
-          <input name="releaseDate" type="date" />
+          <label>Ngày mở bán / Fes (tuỳ chọn)</label>
+          <input name="releaseDate" type="date" value="${esc(existing?.releaseDate || "")}" />
         </div>
         <div class="field">
           <label>Dự chi (VNĐ)</label>
-          <input name="estPrice" type="number" min="0" value="0" />
+          <input name="estPrice" type="number" min="0" value="${existing?.estPrice ?? 0}" />
         </div>
       </div>
       <div class="field">
         <label>Quà kèm / Ghi chú</label>
-        <input name="gift" placeholder="VD: Kèm standee + postcard" />
+        <input name="gift" value="${esc(existing?.gift || "")}" placeholder="VD: Kèm tranh Metalize, săn trên Fahasa 0h..." />
       </div>
       <div class="field">
-        <label>Link bài gốc (tuỳ chọn)</label>
-        <input name="url" type="url" placeholder="https://..." />
+        <label>Link bài Facebook / TikTok / Shopee (tuỳ chọn)</label>
+        <input name="url" type="url" value="${esc(existing?.url || "")}" placeholder="https://..." />
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-sm" id="cancelPinBtn">Huỷ</button>
-        <button type="submit" class="btn btn-sm btn-primary">Ghim lịch</button>
+        <button type="submit" class="btn btn-sm btn-primary">${existing ? "Lưu thay đổi" : "Lưu kèo săn"}</button>
       </div>
     </form>`;
 
-  openModal("Ghim lịch săn tay", html, (body) => {
+  openModal(existing ? "Sửa kèo săn" : "Thêm kèo săn / Wishlist", html, (body) => {
     body.querySelector("#cancelPinBtn").addEventListener("click", closeModal);
     body.querySelector("#manualPinForm").addEventListener("submit", (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      state.pinned.unshift({
-        id: "man_" + uid(),
+      const rec = {
+        id: existing?.id || "man_" + uid(),
         title: fd.get("title").trim(),
         publisher: fd.get("publisher"),
         type: fd.get("type"),
-        channel: "Ghim tay",
+        channel: "Wishlist",
         releaseDate: fd.get("releaseDate") || "",
         estPrice: Math.max(0, Number(fd.get("estPrice")) || 0),
         gift: fd.get("gift").trim(),
         url: fd.get("url").trim(),
         manual: true,
-      });
+      };
+      if (!rec.title) return;
+      if (existing) {
+        const idx = state.pinned.findIndex((x) => x.id === existing.id);
+        state.pinned[idx] = rec;
+      } else {
+        state.pinned.unshift(rec);
+      }
       saveState();
       renderNews();
       renderSpending();
       closeModal();
-      showToast("Đã ghim lịch săn.");
+      SFX.success();
+      showToast(existing ? "Đã cập nhật kèo săn." : `Đã thêm "${rec.title}" vào Wishlist.`);
     });
   });
 }
@@ -10653,7 +10362,7 @@ function openQuickImportFromNews(item) {
         qiPaid.value = Math.round(cp * (1 - pct / 100));
       });
     });
-              body.querySelector("#qiCancel").addEventListener("click", closeModal);
+    body.querySelector("#qiCancel").addEventListener("click", closeModal);
     body.querySelector("#quickImportForm").addEventListener("submit", (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
@@ -10747,10 +10456,10 @@ function openQuickImportFromNews(item) {
       renderNews();
       renderSpending();
       closeModal();
+      SFX.success();
     });
   });
 }
-
   </script>
   <script>
 /* ===== spending.js ===== */
@@ -13139,8 +12848,7 @@ document.getElementById("settingsBtn").addEventListener("click", openSettingsMod
 document.getElementById("quickCoverBtn").addEventListener("click", () => openQuickCoverModal("single"));
 document.getElementById("addSeriesBtn").addEventListener("click", () => openSeriesForm());
 document.getElementById("addGiftGroupBtn").addEventListener("click", () => openGiftGroupForm());
-document.getElementById("manualPinBtn").addEventListener("click", openManualPinForm);
-document.getElementById("refreshNewsBtn").addEventListener("click", () => fetchNews(true));
+document.getElementById("manualPinBtn").addEventListener("click", () => openManualPinForm());
 
 document.getElementById("editBudgetBtn").addEventListener("click", () => {
   const val = prompt("Nhập hạn mức chi tiêu tháng (VNĐ):", String(state.budgetLimit || 1000000));
@@ -13237,27 +12945,19 @@ document.getElementById("newsPubChips").addEventListener("click", (e) => {
   renderNews();
 });
 
-document.getElementById("newsTypeChips").addEventListener("click", (e) => {
-  const btn = e.target.closest(".chip");
-  if (!btn) return;
-  filters.newsType = btn.dataset.type;
-  document.querySelectorAll("#newsTypeChips .chip").forEach((c) => c.classList.toggle("active", c === btn));
-  renderNews();
-});
+const wishlistSearchEl = document.getElementById("wishlistSearch");
+if (wishlistSearchEl) {
+  wishlistSearchEl.addEventListener("input", (e) => {
+    filters.wishlistSearch = e.target.value;
+    renderNews();
+  });
+}
 
 document.getElementById("newsScopeSwitch").addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-scope]");
   if (!btn) return;
   filters.newsScope = btn.dataset.scope;
   document.querySelectorAll("#newsScopeSwitch button").forEach((b) => b.classList.toggle("active", b === btn));
-  renderNews();
-});
-
-document.getElementById("newsChanChips").addEventListener("click", (e) => {
-  const btn = e.target.closest(".chip");
-  if (!btn) return;
-  filters.newsChan = btn.dataset.chan;
-  document.querySelectorAll("#newsChanChips .chip[data-chan]").forEach((c) => c.classList.toggle("active", c === btn));
   renderNews();
 });
 
