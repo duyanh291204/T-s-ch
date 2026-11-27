@@ -7,8 +7,12 @@ const MERCH_STATUSES = ["Đã có", "Đang ship", "Đang săn"];
 
 let cabinetAnimId = null;
 let cabinetIsOpen = false;
-let cabinetPaused = false;
-let cabinetSimTime = 0;
+let cabinetHoverTime = 0;
+let cabinetRotY = 0.28;
+let cabinetRotX = -0.14;
+let cabinetVelY = 0;
+let cabinetVelX = 0;
+let cabinetDragging = false;
 let cabinetActiveStage = null;
 let cabinetActiveSpecs = [];
 
@@ -25,31 +29,40 @@ function stopCabinetOrbit() {
   }
 }
 
-function layoutCabinetItems(stageEl, specs, simTime) {
+function layoutCabinetItems(stageEl, specs, hoverTime) {
   const sw = stageEl.clientWidth || 320;
-  const sh = stageEl.clientHeight || 360;
+  const sh = stageEl.clientHeight || 376;
   const cx = sw * 0.5;
-  const cy = sh * 0.52;
-  const outerRx = Math.max(66, sw * 0.34);
-  const outerRy = Math.max(62, sh * 0.26);
-  const innerRx = Math.max(36, sw * 0.17);
-  const innerRy = Math.max(34, sh * 0.13);
+  const cy = sh * 0.49;
+  const radius = Math.max(78, Math.min(sw * 0.34, sh * 0.32, 126));
+  const cosY = Math.cos(cabinetRotY);
+  const sinY = Math.sin(cabinetRotY);
+  const cosX = Math.cos(cabinetRotX);
+  const sinX = Math.sin(cabinetRotX);
+  const rich = isRichFx();
 
   for (let i = 0; i < specs.length; i++) {
     const sp = specs[i];
-    const ang = sp.phase + simTime * sp.speed;
-    const rx = sp.isOuter ? outerRx : innerRx;
-    const ry = sp.isOuter ? outerRy : innerRy;
-    const x = cx + Math.cos(ang) * rx;
-    const y = cy + Math.sin(ang) * ry + Math.sin(simTime * sp.bobFreq + sp.phase) * sp.bobAmp;
-    const depth = (Math.sin(ang) + 1) * 0.5; // 0 (phía sau) -> 1 (phía trước)
-    const scale = (sp.isOuter ? 0.80 : 0.76) + depth * 0.28;
-    const tilt = Math.cos(ang) * sp.tiltFactor;
-    const alpha = 0.72 + depth * 0.28;
+    // Xoay điểm trên hình cầu theo góc kéo tay (Y ngang, X dọc)
+    const x1 = sp.ux * cosY + sp.uz * sinY;
+    const z1 = -sp.ux * sinY + sp.uz * cosY;
+    const y2 = sp.uy * cosX - z1 * sinX;
+    const z2 = sp.uy * sinX + z1 * cosX;
 
-    sp.el.style.transform = `translate3d(${(x - 39).toFixed(1)}px, ${(y - 46).toFixed(1)}px, 0) scale(${scale.toFixed(3)}) rotate(${tilt.toFixed(1)}deg)`;
-    sp.el.style.zIndex = String(10 + Math.round(depth * 80));
+    const depth = (z2 + 1) * 0.5; // 0 (mặt sau cầu) -> 1 (mặt trước cầu)
+    const persp = 460 / (460 - z2 * radius);
+    const bobY = rich ? Math.sin(hoverTime * sp.bobFreq + sp.phase) * 2.8 : 0;
+
+    const px = cx + x1 * radius * persp;
+    const py = cy + y2 * radius * persp + bobY;
+    const scale = 0.62 + depth * 0.46;
+    const alpha = 0.44 + depth * 0.56;
+    const bright = 0.72 + depth * 0.28;
+
+    sp.el.style.transform = `translate3d(${(px - 38).toFixed(1)}px, ${(py - 45).toFixed(1)}px, 0) scale(${scale.toFixed(3)})`;
+    sp.el.style.zIndex = String(10 + Math.round(depth * 90));
     sp.el.style.opacity = alpha.toFixed(2);
+    sp.el.style.filter = `brightness(${bright.toFixed(2)})`;
   }
 }
 
@@ -71,11 +84,20 @@ function resumeCabinetOrbitIfVisible() {
     const dt = Math.min(0.05, (now - lastTs) / 1000);
     lastTs = now;
 
-    // Khi mở tủ: giảm tốc bay xuống chậm rãi cho dễ chạm chọn từng món (hoặc dừng hẳn nếu bấm Dừng bay)
-    const speedMult = cabinetPaused ? 0 : cabinetIsOpen ? 0.32 : 1.0;
-    cabinetSimTime += dt * speedMult;
+    // Chỉ có quán tính nhẹ sau khi hất tay kéo — tuyệt đối không tự quay!
+    if (!cabinetDragging && (Math.abs(cabinetVelY) > 0.001 || Math.abs(cabinetVelX) > 0.001)) {
+      cabinetRotY += cabinetVelY * dt;
+      cabinetRotX = Math.max(-1.18, Math.min(1.18, cabinetRotX + cabinetVelX * dt));
+      const damp = Math.exp(-5.6 * dt);
+      cabinetVelY *= damp;
+      cabinetVelX *= damp;
+      if (Math.abs(cabinetVelY) < 0.004) cabinetVelY = 0;
+      if (Math.abs(cabinetVelX) < 0.004) cabinetVelX = 0;
+    }
 
-    layoutCabinetItems(stageEl, specs, cabinetSimTime);
+    // Lơ lửng nhấp nhô tại chỗ nhẹ nhàng
+    cabinetHoverTime += dt;
+    layoutCabinetItems(stageEl, specs, cabinetHoverTime);
     cabinetAnimId = requestAnimationFrame(tick);
   };
   cabinetAnimId = requestAnimationFrame(tick);
@@ -87,27 +109,41 @@ function startCabinetOrbit(stageEl, itemEls) {
   cabinetActiveSpecs = [];
   if (!stageEl || !itemEls.length) return;
   const n = itemEls.length;
-  // Chia quỹ đạo thành 1 hoặc 2 vòng elip đồng tâm để dù ít hay nhiều quà vẫn bay đẹp không đè nhau
-  const outerCount = n <= 6 ? n : Math.ceil(n * 0.62);
-  const innerCount = n - outerCount;
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+
+  // Xếp các món quà đều quanh mặt cầu 3D (Fibonacci Sphere)
   const specs = itemEls.map((el, i) => {
-    const isOuter = i < outerCount;
-    const idxInRing = isOuter ? i : i - outerCount;
-    const ringTotal = isOuter ? outerCount : Math.max(1, innerCount);
+    let ux = 0;
+    let uy = 0;
+    let uz = 0.35;
+    if (n === 1) {
+      ux = 0; uy = 0; uz = 0.35;
+    } else if (n === 2) {
+      const side = i === 0 ? -1 : 1;
+      ux = side * 0.78;
+      uy = side * 0.1;
+      uz = -side * 0.56;
+    } else {
+      const y = 1 - ((i + 0.5) * 2) / n;
+      const r = Math.sqrt(Math.max(0, 1 - y * y));
+      const theta = goldenAngle * i;
+      ux = Math.cos(theta) * r;
+      uy = y * 0.92;
+      uz = Math.sin(theta) * r;
+    }
     return {
       el,
-      isOuter,
-      phase: (idxInRing / ringTotal) * Math.PI * 2,
-      speed: isOuter ? 0.34 : -0.46,
-      bobFreq: isOuter ? 1.4 : 1.9,
-      bobAmp: isOuter ? 6 : 5,
-      tiltFactor: isOuter ? 4 : -4,
+      ux,
+      uy,
+      uz,
+      phase: i * 1.15,
+      bobFreq: 1.35 + (i % 3) * 0.22,
     };
   });
 
   cabinetActiveStage = stageEl;
   cabinetActiveSpecs = specs;
-  layoutCabinetItems(stageEl, specs, cabinetSimTime);
+  layoutCabinetItems(stageEl, specs, cabinetHoverTime);
   resumeCabinetOrbitIfVisible();
 }
 
@@ -253,24 +289,28 @@ function renderMerch() {
       <div class="cabinet-wrap">
         <div class="cabinet-frame ${cabinetIsOpen ? "is-open" : ""}" id="giftCabinetFrame">
           <div class="cabinet-stage" id="giftCabinetStage">
+            <div class="cabinet-backdrop"></div>
+            <div class="cabinet-arch"></div>
+            <div class="cabinet-spot cabinet-spot-left"></div>
+            <div class="cabinet-spot cabinet-spot-right"></div>
+            <div class="cabinet-sphere-aura"></div>
+            <div class="cabinet-sphere-equator"></div>
             <div class="cabinet-led"></div>
-            <div class="cabinet-orbit-ring" style="width:68%; height:52%;"></div>
-            ${allCards.length > 6 ? `<div class="cabinet-orbit-ring" style="width:36%; height:28%;"></div>` : ""}
-            <div class="cabinet-floor"></div>
+            <div class="cabinet-floor"><div class="cabinet-floor-glow"></div></div>
             ${itemsHtml}
-            <div class="cabinet-doors" id="giftCabinetDoors" title="Chạm để mở tủ kính">
+            <div class="cabinet-doors" id="giftCabinetDoors">
               <div class="cabinet-door cabinet-door-left"><span class="cabinet-handle"></span></div>
               <div class="cabinet-door cabinet-door-right"><span class="cabinet-handle"></span></div>
             </div>
-            <div class="cabinet-open-hint">Chạm vào tủ kính để mở · ${allCards.length} món</div>
+            <div class="cabinet-open-hint">Chạm mở tủ · Kéo tay xoay 3D · ${allCards.length} món</div>
           </div>
         </div>
         <div class="cabinet-bar">
           <span class="small-muted" id="cabinetStateHint">${
-            cabinetIsOpen ? "Tủ đang mở — chạm vào từng món quà để xem" : "Tủ đang đóng — chạm vào cửa kính để mở"
+            cabinetIsOpen ? "Kéo tay để xoay khối cầu · Chạm món quà để xem" : "Chạm cửa kính để mở · Kéo để xoay khối cầu"
           }</span>
           <div style="display:flex; gap:6px; flex-shrink:0;">
-            <button type="button" class="btn btn-sm" id="cabinetPauseBtn">${cabinetPaused ? "Tiếp tục bay" : "Dừng bay"}</button>
+            <button type="button" class="btn btn-sm" id="cabinetResetAngleBtn">Góc gốc</button>
             <button type="button" class="btn btn-sm btn-primary" id="cabinetToggleDoorBtn">${cabinetIsOpen ? "Đóng tủ" : "Mở tủ"}</button>
           </div>
         </div>
@@ -278,17 +318,16 @@ function renderMerch() {
 
     const frameEl = container.querySelector("#giftCabinetFrame");
     const stageEl = container.querySelector("#giftCabinetStage");
-    const doorsEl = container.querySelector("#giftCabinetDoors");
     const toggleDoorBtn = container.querySelector("#cabinetToggleDoorBtn");
-    const pauseBtn = container.querySelector("#cabinetPauseBtn");
+    const resetAngleBtn = container.querySelector("#cabinetResetAngleBtn");
     const stateHint = container.querySelector("#cabinetStateHint");
 
     const syncDoorUI = () => {
       frameEl.classList.toggle("is-open", cabinetIsOpen);
       toggleDoorBtn.textContent = cabinetIsOpen ? "Đóng tủ" : "Mở tủ";
       stateHint.textContent = cabinetIsOpen
-        ? "Tủ đang mở — chạm vào từng món quà để xem"
-        : "Tủ đang đóng — chạm vào cửa kính để mở";
+        ? "Kéo tay để xoay khối cầu · Chạm món quà để xem"
+        : "Chạm cửa kính để mở · Kéo để xoay khối cầu";
     };
 
     const setCabinetOpen = (openVal) => {
@@ -299,30 +338,104 @@ function renderMerch() {
       syncDoorUI();
     };
 
-    doorsEl.addEventListener("click", () => setCabinetOpen(true));
     toggleDoorBtn.addEventListener("click", () => setCabinetOpen(!cabinetIsOpen));
-    pauseBtn.addEventListener("click", () => {
-      cabinetPaused = !cabinetPaused;
+    resetAngleBtn.addEventListener("click", () => {
       SFX.filter();
-      pauseBtn.textContent = cabinetPaused ? "Tiếp tục bay" : "Dừng bay";
+      cabinetRotY = 0.28;
+      cabinetRotX = -0.14;
+      cabinetVelY = 0;
+      cabinetVelX = 0;
+      if (cabinetActiveStage && cabinetActiveSpecs.length) {
+        layoutCabinetItems(cabinetActiveStage, cabinetActiveSpecs, cabinetHoverTime);
+      }
     });
 
-    const itemEls = [...stageEl.querySelectorAll(".cabinet-item")];
-    itemEls.forEach((btn) => {
-      btn.addEventListener("click", () => {
+    // Kéo tay xoay khối cầu 3D (có quán tính) + phân biệt rõ kéo vs chạm mở tủ / chạm món quà
+    let activePtrId = null;
+    let startX = 0;
+    let startY = 0;
+    let lastX = 0;
+    let lastY = 0;
+    let lastMoveTs = 0;
+    let didDrag = false;
+    let downTarget = null;
+
+    stageEl.addEventListener("pointerdown", (e) => {
+      if (activePtrId !== null) return;
+      activePtrId = e.pointerId;
+      startX = lastX = e.clientX;
+      startY = lastY = e.clientY;
+      lastMoveTs = performance.now();
+      didDrag = false;
+      downTarget = e.target;
+      cabinetVelY = 0;
+      cabinetVelX = 0;
+      stageEl.setPointerCapture?.(e.pointerId);
+    });
+
+    stageEl.addEventListener("pointermove", (e) => {
+      if (e.pointerId !== activePtrId) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      const totalDist = Math.hypot(e.clientX - startX, e.clientY - startY);
+      if (!didDrag && totalDist > 6) {
+        didDrag = true;
+        cabinetDragging = true;
+        stageEl.classList.add("is-dragging");
+      }
+      if (!didDrag) return;
+      e.preventDefault();
+
+      const now = performance.now();
+      const dt = Math.max(0.008, (now - lastMoveTs) / 1000);
+      lastMoveTs = now;
+      lastX = e.clientX;
+      lastY = e.clientY;
+
+      const dRotY = dx * 0.0092;
+      const dRotX = -dy * 0.0082;
+      cabinetRotY += dRotY;
+      cabinetRotX = Math.max(-1.18, Math.min(1.18, cabinetRotX + dRotX));
+      cabinetVelY = Math.max(-6, Math.min(6, dRotY / dt));
+      cabinetVelX = Math.max(-5, Math.min(5, dRotX / dt));
+
+      if (cabinetActiveStage && cabinetActiveSpecs.length) {
+        layoutCabinetItems(cabinetActiveStage, cabinetActiveSpecs, cabinetHoverTime);
+      }
+    });
+
+    const finishDrag = (e, isCancel) => {
+      if (e.pointerId !== activePtrId) return;
+      activePtrId = null;
+      cabinetDragging = false;
+      stageEl.classList.remove("is-dragging");
+      if (performance.now() - lastMoveTs > 90) {
+        cabinetVelY = 0;
+        cabinetVelX = 0;
+      }
+      if (!didDrag && !isCancel) {
         if (!cabinetIsOpen) {
           setCabinetOpen(true);
-          return;
+        } else {
+          const itemBtn = downTarget && downTarget.closest ? downTarget.closest(".cabinet-item") : null;
+          if (itemBtn && itemBtn.dataset.cabItem) {
+            const [gid, iid] = itemBtn.dataset.cabItem.split("::");
+            const g = state.giftGroups.find((x) => x.id === gid);
+            const it = g && (g.gifts || []).find((x) => x.id === iid);
+            if (g && it) {
+              SFX.openBook();
+              openGiftItemForm(gid, iid);
+            }
+          }
         }
-        const [gid, iid] = btn.dataset.cabItem.split("::");
-        const g = state.giftGroups.find((x) => x.id === gid);
-        const it = g && (g.gifts || []).find((x) => x.id === iid);
-        if (!g || !it) return;
-        SFX.openBook();
-        openGiftItemForm(gid, iid);
-      });
-    });
+      }
+      downTarget = null;
+    };
 
+    stageEl.addEventListener("pointerup", (e) => finishDrag(e, false));
+    stageEl.addEventListener("pointercancel", (e) => finishDrag(e, true));
+
+    const itemEls = [...stageEl.querySelectorAll(".cabinet-item")];
     startCabinetOrbit(stageEl, itemEls);
     return;
   }

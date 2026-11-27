@@ -968,15 +968,14 @@ body::before {
   z-index: 5;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 5px;
+  padding: 2px 5.5px;
   font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.06em;
   line-height: 1.1;
   color: #F6F5F1;
-  background: rgba(20, 19, 18, 0.8);
+  background: rgba(20, 19, 18, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 1.5px;
   -webkit-backdrop-filter: blur(4px);
@@ -984,15 +983,6 @@ body::before {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.32);
   pointer-events: none;
   text-transform: uppercase;
-}
-
-.hanko-full::before {
-  content: "";
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #5FB39C;
-  flex-shrink: 0;
 }
 
 .hanko-inline {
@@ -1033,7 +1023,7 @@ body::before {
   background: var(--forest);
 }
 
-/* Chế độ Tủ kính trưng bày (Quà trôi nổi theo quỹ đạo + Cửa kính mở 3D) */
+/* Chế độ Tủ kính trưng bày (Hình cầu 3D xoay bằng tay + Nền tủ sang trọng + Cửa kính mở 3D) */
 .cabinet-wrap {
   display: flex;
   flex-direction: column;
@@ -1042,42 +1032,157 @@ body::before {
 
 .cabinet-frame {
   position: relative;
-  border-radius: 6px;
+  border-radius: 7px;
   padding: 11px;
-  background: linear-gradient(155deg, #47392E 0%, #2C231C 52%, #1D1713 100%);
-  border: 1.5px solid rgba(255, 232, 200, 0.14);
+  background: linear-gradient(155deg, #4E3E31 0%, #2D231C 52%, #1B1511 100%);
+  border: 1.5px solid rgba(255, 232, 200, 0.16);
   box-shadow:
-    0 14px 32px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 240, 215, 0.24),
-    inset 0 -2px 6px rgba(0, 0, 0, 0.45);
+    0 14px 34px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 240, 215, 0.25),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.48);
   user-select: none;
   -webkit-user-select: none;
 }
 
 [data-theme="midnight"] .cabinet-frame {
-  background: linear-gradient(155deg, #25344E 0%, #162134 55%, #0D1422 100%);
-  border-color: rgba(150, 195, 255, 0.18);
+  background: linear-gradient(155deg, #273754 0%, #162135 55%, #0C1320 100%);
+  border-color: rgba(150, 195, 255, 0.2);
 }
 
 .cabinet-stage {
   position: relative;
   width: 100%;
-  height: 360px;
+  height: 376px;
   border-radius: 3px;
   overflow: hidden;
   perspective: 980px;
-  background:
-    radial-gradient(ellipse 78% 42% at 50% 0%, rgba(255, 236, 198, 0.26) 0%, rgba(255, 224, 170, 0.06) 52%, transparent 78%),
-    radial-gradient(circle at 50% 54%, #25211E 0%, #151311 72%, #0E0D0C 100%);
+  touch-action: none;
+  cursor: grab;
+  background: linear-gradient(180deg, #27201B 0%, #191512 58%, #100D0B 100%);
   box-shadow:
-    inset 0 10px 24px rgba(0, 0, 0, 0.65),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    inset 0 12px 26px rgba(0, 0, 0, 0.68),
+    inset 0 0 0 1px rgba(255, 238, 212, 0.1);
+}
+
+.cabinet-stage.is-dragging {
+  cursor: grabbing;
 }
 
 [data-theme="midnight"] .cabinet-stage {
+  background: linear-gradient(180deg, #18253C 0%, #101A2B 58%, #09101C 100%);
+  box-shadow:
+    inset 0 12px 26px rgba(0, 0, 0, 0.72),
+    inset 0 0 0 1px rgba(155, 198, 255, 0.12);
+}
+
+/* Nền hậu tủ kính (Vách gỗ sọc dọc + khung vòm trưng bày + ánh đèn spotlight) */
+.cabinet-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
   background:
-    radial-gradient(ellipse 78% 42% at 50% 0%, rgba(130, 192, 255, 0.24) 0%, rgba(104, 168, 234, 0.05) 52%, transparent 78%),
-    radial-gradient(circle at 50% 54%, #172338 0%, #0D1523 74%, #080E18 100%);
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 232, 200, 0.038) 0px,
+      rgba(255, 232, 200, 0.038) 2px,
+      rgba(0, 0, 0, 0.16) 2px,
+      rgba(0, 0, 0, 0.16) 6px,
+      transparent 6px,
+      transparent 16px
+    ),
+    radial-gradient(ellipse 84% 58% at 50% 48%, rgba(190, 134, 84, 0.16) 0%, rgba(42, 32, 24, 0.06) 56%, rgba(8, 7, 6, 0.56) 100%);
+}
+
+[data-theme="midnight"] .cabinet-backdrop {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(165, 208, 255, 0.04) 0px,
+      rgba(165, 208, 255, 0.04) 2px,
+      rgba(0, 0, 0, 0.18) 2px,
+      rgba(0, 0, 0, 0.18) 6px,
+      transparent 6px,
+      transparent 16px
+    ),
+    radial-gradient(ellipse 84% 58% at 50% 48%, rgba(104, 168, 234, 0.18) 0%, rgba(20, 34, 56, 0.08) 56%, rgba(5, 9, 16, 0.6) 100%);
+}
+
+/* Hốc vòm kính sang trọng phía sau */
+.cabinet-arch {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 14px;
+  bottom: 34px;
+  border-radius: 140px 140px 4px 4px;
+  border: 1px solid rgba(255, 235, 202, 0.13);
+  background: radial-gradient(ellipse 75% 70% at 50% 42%, rgba(255, 236, 204, 0.07) 0%, rgba(18, 15, 13, 0.24) 70%, rgba(8, 7, 6, 0.44) 100%);
+  box-shadow: inset 0 1px 16px rgba(0, 0, 0, 0.42);
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-theme="midnight"] .cabinet-arch {
+  border-color: rgba(155, 202, 255, 0.15);
+  background: radial-gradient(ellipse 75% 70% at 50% 42%, rgba(132, 194, 255, 0.09) 0%, rgba(12, 20, 34, 0.26) 70%, rgba(5, 10, 18, 0.48) 100%);
+}
+
+/* Luồng đèn spotlight rọi từ nóc tủ xuống khối cầu */
+.cabinet-spot {
+  position: absolute;
+  top: -10px;
+  width: 58%;
+  height: 76%;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(ellipse 50% 72% at 50% 0%, rgba(255, 236, 196, 0.22) 0%, rgba(255, 224, 170, 0.05) 55%, transparent 82%);
+  transition: opacity 0.35s ease;
+}
+
+.cabinet-spot-left { left: 4%; transform: rotate(-7deg); }
+.cabinet-spot-right { right: 4%; transform: rotate(7deg); }
+
+[data-theme="midnight"] .cabinet-spot {
+  background: radial-gradient(ellipse 50% 72% at 50% 0%, rgba(145, 202, 255, 0.22) 0%, rgba(104, 168, 234, 0.05) 55%, transparent 82%);
+}
+
+.cabinet-frame.is-open .cabinet-spot {
+  opacity: 1;
+}
+
+/* Vầng cầu ánh sáng mờ giúp định hình không gian hình cầu 3D */
+.cabinet-sphere-aura {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 244px;
+  height: 244px;
+  border-radius: 50%;
+  transform: translate(-50%, -52%);
+  border: 1px solid rgba(255, 240, 214, 0.1);
+  background: radial-gradient(circle at 38% 32%, rgba(255, 244, 224, 0.06) 0%, rgba(255, 232, 195, 0.02) 48%, transparent 74%);
+  box-shadow: inset 0 0 28px rgba(255, 236, 200, 0.05);
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-theme="midnight"] .cabinet-sphere-aura {
+  border-color: rgba(155, 205, 255, 0.12);
+  background: radial-gradient(circle at 38% 32%, rgba(155, 208, 255, 0.08) 0%, rgba(104, 168, 234, 0.02) 48%, transparent 74%);
+}
+
+.cabinet-sphere-equator {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 244px;
+  height: 76px;
+  border-radius: 50%;
+  transform: translate(-50%, -52%);
+  border: 1px dashed rgba(255, 242, 218, 0.09);
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Đèn LED thanh mảnh trên nóc tủ */
@@ -1095,47 +1200,60 @@ body::before {
   transition: opacity 0.35s ease, box-shadow 0.35s ease;
 }
 
+[data-theme="midnight"] .cabinet-led {
+  background: linear-gradient(90deg, transparent, #CFE8FF 22%, #FFFFFF 50%, #CFE8FF 78%, transparent);
+  box-shadow: 0 2px 14px 3px rgba(120, 185, 255, 0.52);
+}
+
 .cabinet-frame.is-open .cabinet-led {
-  box-shadow: 0 3px 20px 5px rgba(255, 236, 190, 0.78);
+  box-shadow: 0 3px 20px 5px rgba(255, 236, 190, 0.8);
 }
 
-/* Đường quỹ đạo elip mờ làm điểm nhấn thị giác */
-.cabinet-orbit-ring {
-  position: absolute;
-  left: 50%;
-  top: 52%;
-  border-radius: 50%;
-  border: 1px dashed rgba(255, 244, 224, 0.11);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Bệ đáy tủ kính */
+/* Bệ đáy tủ kính có ánh hắt nhẹ bên dưới hình cầu */
 .cabinet-floor {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 26px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0.42) 100%);
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  height: 34px;
+  background: linear-gradient(180deg, rgba(255, 240, 214, 0.09) 0%, rgba(28, 22, 18, 0.82) 32%, rgba(10, 8, 7, 0.96) 100%);
+  border-top: 1px solid rgba(255, 238, 210, 0.16);
   pointer-events: none;
   z-index: 1;
 }
 
-/* Vật phẩm quà trôi nổi bên trong tủ */
+[data-theme="midnight"] .cabinet-floor {
+  background: linear-gradient(180deg, rgba(160, 206, 255, 0.1) 0%, rgba(14, 24, 40, 0.85) 34%, rgba(6, 11, 20, 0.96) 100%);
+  border-top-color: rgba(155, 202, 255, 0.18);
+}
+
+.cabinet-floor-glow {
+  position: absolute;
+  left: 50%;
+  top: 5px;
+  width: 58%;
+  height: 16px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 232, 188, 0.24) 0%, transparent 72%);
+}
+
+[data-theme="midnight"] .cabinet-floor-glow {
+  background: radial-gradient(ellipse at center, rgba(126, 192, 255, 0.24) 0%, transparent 72%);
+}
+
+/* Vật phẩm quà lơ lửng theo hình cầu 3D */
 .cabinet-item {
   position: absolute;
   left: 0;
   top: 0;
-  width: 78px;
+  width: 76px;
   padding: 0;
-  border: 1.5px solid rgba(255, 255, 255, 0.24);
+  border: 1.5px solid rgba(255, 244, 226, 0.26);
   border-radius: 6px;
-  background: rgba(34, 31, 28, 0.92);
+  background: rgba(34, 31, 28, 0.94);
   overflow: hidden;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.52), 0 0 0 1px rgba(0, 0, 0, 0.3);
   will-change: transform, opacity;
   cursor: pointer;
   display: flex;
@@ -1168,6 +1286,7 @@ body::before {
   height: 100%;
   object-fit: cover;
   display: block;
+  pointer-events: none;
 }
 
 .cabinet-item-fallback {
@@ -1187,7 +1306,7 @@ body::before {
   font-size: 9.5px;
   font-weight: 600;
   color: #F6F5F1;
-  background: rgba(16, 15, 14, 0.88);
+  background: rgba(16, 15, 14, 0.9);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1222,17 +1341,13 @@ body::before {
 .cabinet-item-dot[data-status="Đang ship"] { background: #D4AA62; }
 .cabinet-item-dot[data-status="Đang săn"] { background: #E06B66; }
 
-/* 2 Cánh cửa kính đóng/mở 3D */
+/* 2 Cánh cửa kính đóng/mở 3D (pointer-events: none để kéo xoay cầu ngay cả khi đóng & chạm để mở) */
 .cabinet-doors {
   position: absolute;
   inset: 0;
   z-index: 200;
   display: flex;
   transform-style: preserve-3d;
-  cursor: pointer;
-}
-
-.cabinet-frame.is-open .cabinet-doors {
   pointer-events: none;
 }
 
@@ -1247,8 +1362,8 @@ body::before {
     rgba(255, 255, 255, 0.11) 52%,
     rgba(255, 255, 255, 0.03) 100%
   );
-  -webkit-backdrop-filter: blur(1.4px);
-  backdrop-filter: blur(1.4px);
+  -webkit-backdrop-filter: blur(1.2px);
+  backdrop-filter: blur(1.2px);
   border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.06);
   transition: transform 0.68s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s ease;
@@ -1290,16 +1405,16 @@ body::before {
 .cabinet-door-left .cabinet-handle { right: 8px; }
 .cabinet-door-right .cabinet-handle { left: 8px; }
 
-/* Nhãn nhắc "Chạm tủ để mở" khi tủ đang đóng */
+/* Nhãn nhắc "Chạm mở · Kéo xoay 3D" khi tủ đang đóng */
 .cabinet-open-hint {
   position: absolute;
   left: 50%;
-  bottom: 14px;
+  bottom: 12px;
   transform: translateX(-50%);
   z-index: 210;
   padding: 5px 11px;
   border-radius: 99px;
-  background: rgba(20, 19, 18, 0.82);
+  background: rgba(20, 19, 18, 0.84);
   border: 1px solid rgba(255, 240, 210, 0.26);
   color: #F6F5F1;
   font-size: 11px;
@@ -1307,7 +1422,7 @@ body::before {
   letter-spacing: 0.02em;
   pointer-events: none;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.38);
   transition: opacity 0.28s ease, transform 0.28s ease;
 }
 

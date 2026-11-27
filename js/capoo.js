@@ -466,7 +466,8 @@ function updateCapooPhysics(dt) {
 
   const dx = capoo.targetX - capoo.x;
   const dist = Math.abs(dx);
-  const sleepDelay = isLateNightHour() ? 2.8 : 5.0;
+  const lateNight = isLateNightHour();
+  const sleepDelay = 4.2; // Chỉ đi ngủ sau 23h (23:00–05:00)
 
   if (capoo.isPetting) {
     capoo.idleTimer = 0;
@@ -575,26 +576,32 @@ function updateCapooPhysics(dt) {
       }
       if (capoo.exprTimer <= 0) {
         capoo.expr = "none";
-        capoo.exprCooldown = 2.0 + Math.random() * 1.4;
+        capoo.exprCooldown = lateNight ? 2.0 + Math.random() * 1.2 : 2.6 + Math.random() * 2.2;
       }
-    } else if (capoo.idleTimer < sleepDelay - 1.0) {
+    } else if (!lateNight || capoo.idleTimer < sleepDelay - 1.0) {
       capoo.exprCooldown -= dt;
       if (capoo.exprCooldown <= 0) {
-        if (isOverMonthlyBudget() && Math.random() < 0.4) {
-          triggerCapooExpression("pout", 1.7, false);
+        if (isOverMonthlyBudget() && Math.random() < 0.35) {
+          triggerCapooExpression("pout", 1.8, false);
         } else {
-          triggerCapooExpression("", 1.75, false);
+          triggerCapooExpression("", 1.85, false);
         }
       }
     }
 
-    if (capoo.idleTimer >= sleepDelay) {
+    // Chỉ đi ngủ sau 23h đêm (23:00–05:00); giờ bình thường chỉ dừng nghỉ & làm biểu cảm
+    if (lateNight && capoo.idleTimer >= sleepDelay) {
       capoo.state = "sleep";
       capoo.expr = "none";
       capoo.exprTimer = 0;
       capoo.zzzCD = 0.45;
     }
   } else if (capoo.state === "sleep") {
+    if (!lateNight) {
+      capoo.state = "idle";
+      capoo.idleTimer = 0;
+      capoo.exprCooldown = 1.6;
+    }
     capoo.vx = 0;
     capoo.x = smooth(capoo.x, capoo.targetX, 10);
     capoo.stamina = Math.min(100, capoo.stamina + dt * 28);
