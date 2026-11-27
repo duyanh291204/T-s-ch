@@ -2476,32 +2476,34 @@ body::before {
 }
 
 /* ============================
-   3. AMBIENT GLOW HERO TRONG MODAL CHI TIẾT
+   3. AMBIENT GLOW HERO TRONG MODAL CHI TIẾT (LOANG NHẠT HẾT CẢ TRANG)
    ============================ */
+.modal-body.has-ambient {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--amb-rgb, 158, 71, 42), 0.16) 0%,
+    rgba(var(--amb-rgb, 158, 71, 42), 0.08) 45%,
+    rgba(var(--amb-rgb, 158, 71, 42), 0.03) 100%
+  );
+  transition: background 0.45s ease;
+}
+
+[data-theme="dark"] .modal-body.has-ambient, [data-theme="midnight"] .modal-body.has-ambient {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--amb-rgb, 206, 110, 78), 0.22) 0%,
+    rgba(var(--amb-rgb, 206, 110, 78), 0.11) 48%,
+    rgba(var(--amb-rgb, 206, 110, 78), 0.04) 100%
+  );
+}
+
 .ambient-hero {
   position: relative;
   margin: -14px -16px 12px;
   padding: 16px 16px 14px;
   border-bottom: 1px solid var(--line);
   overflow: hidden;
-  background: radial-gradient(
-    ellipse 130% 130% at 22% 24%,
-    rgba(var(--amb-rgb, 158, 71, 42), 0.42) 0%,
-    rgba(var(--amb-rgb, 158, 71, 42), 0.20) 52%,
-    rgba(var(--amb-rgb, 158, 71, 42), 0.05) 82%,
-    transparent 100%
-  );
-  transition: background 0.45s ease;
-}
-
-[data-theme="dark"] .ambient-hero, [data-theme="midnight"] .ambient-hero {
-  background: radial-gradient(
-    ellipse 130% 130% at 22% 24%,
-    rgba(var(--amb-rgb, 206, 110, 78), 0.58) 0%,
-    rgba(var(--amb-rgb, 206, 110, 78), 0.28) 52%,
-    rgba(var(--amb-rgb, 206, 110, 78), 0.09) 82%,
-    transparent 100%
-  );
+  background: transparent;
 }
 
 .ambient-cover {
@@ -2554,62 +2556,22 @@ body::before {
   color: var(--muted);
 }
 
-/* Khung tủ gỗ tự nhiên có vân gỗ, phào chỉ trên & thành gỗ hai bên */
+/* Khung tủ gỗ vuông vức, đồng bộ màu gỗ trầm sang trọng của Tủ kính */
 .shelf-bookcase {
   position: relative;
-  border-radius: 6px;
-  padding: 13px 13px 15px;
-  background-color: #5E3B20;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.35' numOctaves='3' seed='7'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23w)' opacity='0.18'/%3E%3C/svg%3E"),
-    linear-gradient(
-      90deg,
-      #4A2C16 0px,
-      #8A5A34 4px,
-      #6E4524 10px,
-      #3A2212 13px,
-      #27170C 14px,
-      #2E1C10 50%,
-      #24150B calc(100% - 14px),
-      #3A2212 calc(100% - 13px),
-      #6E4524 calc(100% - 10px),
-      #8A5A34 calc(100% - 4px),
-      #4A2C16 100%
-    );
-  border: 2px solid #7C4F2B;
-  border-top-color: #9E6A40;
-  border-bottom-color: #3D2310;
+  border-radius: 2px;
+  padding: 11px 11px 13px;
+  background: linear-gradient(155deg, #4E3E31 0%, #2D231C 52%, #1B1511 100%);
+  border: 1.5px solid rgba(255, 232, 200, 0.18);
   box-shadow:
-    inset 0 10px 20px rgba(0, 0, 0, 0.52),
-    inset 0 1px 0 rgba(255, 224, 184, 0.25),
-    0 12px 26px rgba(20, 12, 6, 0.28);
+    0 12px 28px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 240, 215, 0.22),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.48);
 }
 
-[data-theme="dark"] .shelf-bookcase, [data-theme="midnight"] .shelf-bookcase {
-  background-color: #3D2515;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.35' numOctaves='3' seed='7'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23w)' opacity='0.16'/%3E%3C/svg%3E"),
-    linear-gradient(
-      90deg,
-      #2B190D 0px,
-      #664024 4px,
-      #4E301A 10px,
-      #23140B 13px,
-      #160E09 14px,
-      #1D130C 50%,
-      #140D08 calc(100% - 14px),
-      #23140B calc(100% - 13px),
-      #4E301A calc(100% - 10px),
-      #664024 calc(100% - 4px),
-      #2B190D 100%
-    );
-  border-color: #5C3A20;
-  border-top-color: #7D5130;
-  border-bottom-color: #24140A;
-  box-shadow:
-    inset 0 12px 24px rgba(0, 0, 0, 0.72),
-    inset 0 1px 0 rgba(255, 220, 178, 0.16),
-    0 14px 30px rgba(0, 0, 0, 0.56);
+[data-theme="midnight"] .shelf-bookcase {
+  background: linear-gradient(155deg, #273754 0%, #162135 55%, #0C1320 100%);
+  border-color: rgba(150, 195, 255, 0.2);
 }
 
 .shelf-wrap {
@@ -2633,7 +2595,7 @@ body::before {
   text-transform: uppercase;
 }
 
-/* Hốc tủ gỗ có vách hậu kẻ nan gỗ dọc + đèn hắt ấm nhẹ từ trên xuống */
+/* Hốc tủ gỗ sâu vuông vức giống nền Tủ kính */
 .shelf-row {
   display: flex;
   align-items: flex-end;
@@ -2642,90 +2604,89 @@ body::before {
   min-height: 200px;
   overflow-x: auto;
   scrollbar-width: none;
+  perspective: 720px;
   background:
-    radial-gradient(ellipse 85% 40% at 50% 0%, rgba(255, 218, 160, 0.14) 0%, transparent 72%),
+    radial-gradient(ellipse 85% 42% at 50% 0%, rgba(255, 232, 196, 0.12) 0%, transparent 72%),
     repeating-linear-gradient(
       90deg,
-      rgba(255, 226, 186, 0.025) 0px,
-      rgba(255, 226, 186, 0.025) 28px,
-      rgba(0, 0, 0, 0.2) 28px,
-      rgba(0, 0, 0, 0.2) 30px
+      rgba(255, 232, 200, 0.03) 0px,
+      rgba(255, 232, 200, 0.03) 2px,
+      rgba(0, 0, 0, 0.16) 2px,
+      rgba(0, 0, 0, 0.16) 6px,
+      transparent 6px,
+      transparent 16px
     ),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.32) 0%, rgba(0, 0, 0, 0.06) 36%, rgba(0, 0, 0, 0.36) 100%);
-  border-radius: 2px 2px 0 0;
-  box-shadow: inset 0 8px 14px rgba(0, 0, 0, 0.42);
+    linear-gradient(180deg, #27201B 0%, #191512 58%, #100D0B 100%);
+  border-radius: 1px 1px 0 0;
+  box-shadow: inset 0 10px 18px rgba(0, 0, 0, 0.62), inset 0 0 0 1px rgba(255, 238, 212, 0.08);
+}
+
+[data-theme="midnight"] .shelf-row {
+  background:
+    radial-gradient(ellipse 85% 42% at 50% 0%, rgba(145, 202, 255, 0.12) 0%, transparent 72%),
+    linear-gradient(180deg, #18253C 0%, #101A2B 58%, #09101C 100%);
 }
 
 .shelf-row::-webkit-scrollbar {
   display: none;
 }
 
-/* Tấm ván gỗ ngang dày dặn, có mép vát trên sáng & bóng đổ dày xuống tầng dưới */
+/* Tấm ván gỗ ngang vuông vức đồng bộ màu gỗ tủ kính */
 .shelf-plank {
-  height: 15px;
-  margin: 0 -2px;
-  border-radius: 2px;
-  background-color: #7D502D;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='30'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015 0.45' numOctaves='3' seed='3'/%3E%3C/filter%3E%3Crect width='220' height='30' filter='url(%23g)' opacity='0.22'/%3E%3C/svg%3E"),
-    linear-gradient(180deg, #C79260 0px, #A56E40 2.5px, #85542D 55%, #5C371C 100%);
-  border-top: 1px solid rgba(255, 238, 210, 0.5);
-  border-bottom: 1.5px solid rgba(22, 12, 6, 0.85);
+  height: 13px;
+  margin: 0;
+  border-radius: 1px;
+  background: linear-gradient(180deg, #564538 0px, #3F3127 2.5px, #2B211A 65%, #1B1511 100%);
+  border-top: 1px solid rgba(255, 236, 210, 0.26);
+  border-bottom: 1px solid rgba(10, 8, 6, 0.85);
   box-shadow:
-    0 9px 16px rgba(0, 0, 0, 0.55),
-    0 3px 4px rgba(0, 0, 0, 0.45),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.35);
+    0 8px 16px rgba(0, 0, 0, 0.56),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.4);
   position: relative;
   z-index: 4;
 }
 
-[data-theme="dark"] .shelf-plank, [data-theme="midnight"] .shelf-plank {
-  background-color: #5C3A20;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='30'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015 0.45' numOctaves='3' seed='3'/%3E%3C/filter%3E%3Crect width='220' height='30' filter='url(%23g)' opacity='0.2'/%3E%3C/svg%3E"),
-    linear-gradient(180deg, #986841 0px, #774E2D 2.5px, #5A391F 55%, #3B2312 100%);
-  border-top: 1px solid rgba(255, 226, 186, 0.3);
-  box-shadow:
-    0 10px 20px rgba(0, 0, 0, 0.72),
-    0 3px 5px rgba(0, 0, 0, 0.55),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.45);
+[data-theme="midnight"] .shelf-plank {
+  background: linear-gradient(180deg, #2D3F5F 0px, #1E2C45 3px, #141E30 100%);
+  border-top-color: rgba(155, 202, 255, 0.24);
 }
 
-/* Cụm 1 bộ sách trên kệ + hiệu ứng rút sách mượt mà kiểu 3D spring */
+/* Cụm 1 bộ sách trên kệ + hiệu ứng nghiêng rút sách 3D về phía người xem */
 .shelf-book-group {
   position: relative;
   flex: 0 0 auto;
   display: inline-flex;
   align-items: flex-end;
   cursor: pointer;
-  transform-origin: bottom center;
+  transform-origin: center 88%;
+  transform-style: preserve-3d;
   padding: 0;
   background: none;
   border: none;
   will-change: transform, filter;
   transition:
-    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.28s ease;
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.24s ease;
 }
 
 .shelf-book-group:hover {
-  transform: translateY(-7px) scale(1.02);
+  transform: perspective(540px) rotateX(-6deg) translateY(-3px) scale(1.03);
   z-index: 6;
 }
 
 .shelf-book-group.pulled {
-  transform: translateY(-16px) scale(1.07) rotateZ(-2.5deg);
-  filter: drop-shadow(0 14px 16px rgba(0, 0, 0, 0.62));
+  transform: perspective(540px) rotateX(-16deg) rotateY(8deg) translateY(-6px) scale(1.12);
+  filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.72)) brightness(1.12);
   z-index: 12;
 }
 
 .shelf-book-group .shelf-slice {
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+  transition: transform 0.26s ease, opacity 0.24s ease;
 }
 
 .shelf-book-group.pulled .shelf-slice {
-  transform: translateX(2px) translateY(3px);
-  opacity: 0.55 !important;
+  transform: translateX(3px);
+  opacity: 0.4 !important;
 }
 
 .shelf-spine-main {
@@ -3750,7 +3711,7 @@ body::before {
 
         <div class="scope-switch-3" id="newsScopeSwitch">
           <button class="active" data-scope="all" id="scopeAllBtn">Tất cả <span class="mono" id="scopeAllCount">(0)</span></button>
-          <button data-scope="missing" id="scopeMissingBtn">Lấp lỗ <span class="mono" id="scopeMissingCount">(0)</span></button>
+          <button data-scope="missing" id="scopeMissingBtn">Còn thiếu <span class="mono" id="scopeMissingCount">(0)</span></button>
           <button data-scope="wishlist" id="scopeWishlistBtn">Wishlist <span class="mono" id="scopeWishlistCount">(0)</span></button>
         </div>
 
@@ -5497,6 +5458,8 @@ function openModal(title, html, onMount, onClose = null) {
   const wasAlreadyOpen = modalBackdrop.classList.contains("open") && !modalBackdrop.classList.contains("closing");
   modalBackdrop.classList.remove("closing");
   modalTitleEl.textContent = title;
+  modalBodyEl.classList.remove("has-ambient");
+  modalBodyEl.style.removeProperty("--amb-rgb");
   modalBodyEl.innerHTML = html;
   modalBodyEl.scrollTop = 0;
   if (!wasAlreadyOpen) SFX.open();
@@ -6988,9 +6951,14 @@ function openSeriesDetail(seriesId) {
   openModal(s.title, html, (body) => {
     const heroEl = body.querySelector("#seriesAmbientHero");
     const heroCov = body.querySelector("#seriesHeroCover");
+    body.classList.add("has-ambient");
+    body.style.setProperty("--amb-rgb", fbRgb.join(","));
     if (heroEl && seriesCoverSrc) {
       extractDominantColor(seriesCoverSrc, s.publisher).then((rgb) => {
-        if (heroEl.isConnected) heroEl.style.setProperty("--amb-rgb", rgb.join(","));
+        if (heroEl.isConnected) {
+          body.style.setProperty("--amb-rgb", rgb.join(","));
+          heroEl.style.setProperty("--amb-rgb", rgb.join(","));
+        }
       });
     }
     if (heroCov) {
@@ -10101,9 +10069,9 @@ function renderNews() {
   if (kpiEl) {
     kpiEl.innerHTML = `
       <div class="gift-kpi">
-        <div class="gift-kpi-label">Tập bị lủng</div>
+        <div class="gift-kpi-label">Tập còn thiếu</div>
         <div class="gift-kpi-val mono">${totalMissingVols}</div>
-        <div class="small-muted" style="font-size:10.5px;">${allGaps.length} mục cần lấp</div>
+        <div class="small-muted" style="font-size:10.5px;">${allGaps.length} mục còn thiếu</div>
       </div>
       <div class="gift-kpi">
         <div class="gift-kpi-label">Kèo Wishlist</div>
@@ -10153,7 +10121,7 @@ function renderNews() {
     if (filteredGaps.length) {
       htmlParts.push(`
         <div style="margin-bottom:14px;">
-          <div class="panel-title" style="margin-bottom:8px;">Tập bị lủng trong tủ (${filteredGaps.reduce((a, g) => a + g.missing.length, 0)} tập)</div>
+          <div class="panel-title" style="margin-bottom:8px;">Tập còn thiếu trong tủ (${filteredGaps.reduce((a, g) => a + g.missing.length, 0)} tập)</div>
           <div class="news-list">
             ${filteredGaps
               .map(
@@ -10180,7 +10148,7 @@ function renderNews() {
     } else if (scope === "missing") {
       htmlParts.push(`
         <div class="empty">
-          <div class="empty-title">Tủ sách không bị lủng tập nào!</div>
+          <div class="empty-title">Tủ sách không còn thiếu tập nào!</div>
           <div class="empty-desc">Tất cả các bộ trong tủ đều liền mạch số tập. Quá đỉnh!</div>
         </div>`);
     }
