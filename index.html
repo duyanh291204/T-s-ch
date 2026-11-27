@@ -9719,8 +9719,7 @@ Trả về DUY NHẤT 1 mảng JSON thuần (không bọc markdown, không giả
 
             const respParts = data?.candidates?.[0]?.content?.parts || [];
             const textParts = respParts.filter((p) => !p.thought && typeof p.text === "string");
-            const rawText = (textParts.length ? textParts : respParts).map((p) => p.text || "").join("
-").trim();
+            const rawText = (textParts.length ? textParts : respParts).map((p) => p.text || "").join("\n").trim();
             if (!rawText) {
               lastErr = `[${model}] AI không trả về kết quả.`;
               continue;
