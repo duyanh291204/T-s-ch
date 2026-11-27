@@ -1,0 +1,1481 @@
+/* Tủ Sách — Visual FX, Shelf, 3D Cabinet & Capoo Styles */
+
+/* ============================
+   HIỆU ỨNG PHONG PHÚ (STAGGER, SHEEN, PARTICLES, THEME WAVE, COUNTERS)
+   ============================ */
+body {
+  transition: background-color 0.28s ease, color 0.24s ease;
+}
+
+.topbar {
+  transition: background-color 0.28s ease, border-color 0.24s ease, box-shadow 0.22s ease;
+}
+
+.topbar.scrolled {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .topbar.scrolled, [data-theme="midnight"] .topbar.scrolled {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.42);
+}
+
+.panel, .kpi-card, .gift-kpi, .news-card, .merch-card, .gift-group-card, .book-cover, .section-card {
+  transition: background-color 0.26s ease, border-color 0.22s ease, transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+}
+
+/* Staggered card entrance */
+.fx-card-in {
+  animation: cardPopIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(min(var(--stagger, 0), 16) * 26ms);
+}
+
+@keyframes cardPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Diagonal gloss / paper sheen sweep on book covers & volume cards */
+.book-cover::after,
+.vol-card-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    118deg,
+    transparent 32%,
+    rgba(255, 255, 255, 0.26) 48%,
+    rgba(255, 255, 255, 0.08) 56%,
+    transparent 68%
+  );
+  transform: translateX(-130%);
+  pointer-events: none;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.book-card:hover .book-cover::after,
+.book-card.is-pressed .book-cover::after,
+.vol-card:hover .vol-card-media::after,
+.vol-card.is-pressed .vol-card-media::after {
+  transform: translateX(130%);
+}
+
+.book-card:hover .book-cover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  border-color: var(--line-strong);
+}
+
+/* Smooth animated bars on Tab Chi tiêu */
+.bar-fill {
+  transition: width 0.62s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.progress-fill {
+  transition: width 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.progress-fill.over {
+  box-shadow: 0 0 10px rgba(166, 50, 41, 0.45);
+  animation: overBudgetPulse 2.2s ease-in-out infinite;
+}
+
+@keyframes overBudgetPulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.18); }
+}
+
+/* Micro-interactions: Undo wiggle, Save flash, Status flip */
+.undo-wiggle {
+  animation: undoWiggleAnim 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes undoWiggleAnim {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.08) rotate(-8deg); }
+  55% { transform: scale(1.06) rotate(6deg); }
+  80% { transform: scale(1.02) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.save-flash {
+  animation: saveFlashPop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: var(--forest) !important;
+}
+
+@keyframes saveFlashPop {
+  0% { transform: scale(0.88); opacity: 0.5; }
+  50% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.status-pop {
+  animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0.78); }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* Cropper smooth entrance */
+.crop-backdrop {
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: fadeOverlayIn 0.2s ease both;
+}
+
+.crop-backdrop.open .crop-modal {
+  animation: cropPopIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fadeOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cropPopIn {
+  from { opacity: 0; transform: scale(0.93) translateY(14px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Theme Radial Light Switch Wash */
+.theme-wave {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  animation: themeWaveFade 0.46s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes themeWaveFade {
+  0% { opacity: 0.55; transform: scale(0.15); }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+
+/* Celebration Paper Confetti Particles */
+.fx-particle {
+  position: fixed;
+  z-index: 98;
+  pointer-events: none;
+  border-radius: 1.5px;
+  will-change: transform, opacity;
+  animation: fxBurst 0.62s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fxBurst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  75% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.35);
+  }
+}
+
+/* Chế độ Gọn nhẹ (Minimal Motion) hoặc Reduced Motion */
+[data-fx="minimal"] .fx-card-in,
+[data-fx="minimal"] .view.active,
+[data-fx="minimal"] .modal,
+[data-fx="minimal"] .modal-body.step-in,
+[data-fx="minimal"] .tab-btn.active svg,
+[data-fx="minimal"] .progress-fill.over,
+[data-fx="minimal"] .undo-wiggle {
+  animation: none !important;
+}
+
+[data-fx="minimal"] .book-cover::after,
+[data-fx="minimal"] .vol-card-media::after,
+[data-fx="minimal"] .tap-ripple,
+[data-fx="minimal"] .fx-particle,
+[data-fx="minimal"] .theme-wave {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-card-in, .view.active, .modal, .modal-body.step-in, .progress-fill.over {
+    animation: none !important;
+  }
+}
+
+/* Topbar Undo auto-hide (chỉ hiện 5s sau thao tác xoá/sửa) */
+#undoBtn {
+  display: none;
+}
+
+#undoBtn.undo-visible {
+  display: inline-flex;
+  animation: undoPopIn 0.24s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes undoPopIn {
+  from { opacity: 0; transform: scale(0.82); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+
+/* Sound toggle button on topbar */
+.icon-btn.sound-off {
+  color: var(--muted);
+  opacity: 0.72;
+}
+
+/* Quick Cover AI Modal Styles */
+.qc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.qc-slot {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.qc-slot-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+}
+
+.qc-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.qc-preview.has-img {
+  border-style: solid;
+  padding: 0;
+}
+
+.qc-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.qc-slot-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.qc-slot-btns .btn-sm {
+  padding: 0 5px;
+  font-size: 11.5px;
+}
+
+.qc-status-box {
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  border-radius: var(--radius);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.qc-status-box.ok {
+  border-left-color: var(--forest);
+  background: var(--forest-soft);
+}
+
+.qc-status-box.err {
+  border-left-color: var(--danger);
+}
+
+.qc-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--line-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: qcSpin 0.7s linear infinite;
+  vertical-align: -2px;
+  margin-right: 6px;
+}
+
+@keyframes qcSpin {
+  to { transform: rotate(360deg); }
+}
+
+.btn-ai-cam svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.75;
+}
+
+
+/* ============================
+   1. VÂN GIẤY MỸ THUẬT (PAPER GRAIN)
+   ============================ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  pointer-events: none;
+  opacity: 0.055;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+[data-theme="dark"] body::before, [data-theme="midnight"] body::before {
+  opacity: 0.045;
+  mix-blend-mode: screen;
+}
+
+[data-fx="minimal"] body::before {
+  display: none;
+}
+
+/* ============================
+   2. RÃNH GÁY SÁCH + BÓNG IN THẬT (BOOK CREASE) + 3D TILT + HOLOGRAM FOIL
+   ============================ */
+.book-cover,
+.vol-card-media,
+.ambient-cover {
+  box-shadow: 0 3px 10px rgba(24, 20, 16, 0.14), 0 1px 2px rgba(24, 20, 16, 0.08);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+[data-theme="dark"] .book-cover, [data-theme="midnight"] .book-cover,
+[data-theme="dark"] .vol-card-media, [data-theme="midnight"] .vol-card-media,
+[data-theme="dark"] .ambient-cover, [data-theme="midnight"] .ambient-cover {
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Rãnh gáy sách bên trái (creased gutter shadow + highlight ridge) */
+.book-cover::before,
+.vol-card-media::before,
+.ambient-cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.28) 0px,
+    rgba(0, 0, 0, 0.10) 3px,
+    rgba(255, 255, 255, 0.24) 5px,
+    rgba(0, 0, 0, 0.14) 7px,
+    rgba(255, 255, 255, 0.08) 9px,
+    transparent 14px,
+    transparent calc(100% - 2px),
+    rgba(0, 0, 0, 0.12) 100%
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+}
+
+/* Vệt ánh kim Hologram cho bản Limited / ĐB / Boxset / Artbook */
+.is-holo::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: -25% !important;
+  z-index: 3 !important;
+  pointer-events: none !important;
+  background: linear-gradient(
+    118deg,
+    transparent 24%,
+    rgba(255, 110, 180, 0.26) 36%,
+    rgba(255, 232, 128, 0.34) 44%,
+    rgba(110, 245, 215, 0.32) 52%,
+    rgba(140, 170, 255, 0.28) 60%,
+    transparent 72%
+  ) !important;
+  mix-blend-mode: color-dodge;
+  opacity: 0.72;
+  transform: translateX(calc((var(--mx, 0.5) - 0.5) * 90%)) translateY(calc((var(--my, 0.5) - 0.5) * 40%)) !important;
+  transition: transform 0.16s ease-out, opacity 0.25s ease !important;
+  animation: holoIdleDrift 5.5s ease-in-out infinite;
+}
+
+.is-holo.tilting::after {
+  animation: none;
+  opacity: 0.95;
+}
+
+@keyframes holoIdleDrift {
+  0%, 100% { transform: translateX(-34%) translateY(-6%); opacity: 0.42; }
+  50% { transform: translateX(34%) translateY(6%); opacity: 0.78; }
+}
+
+.holo-pill {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 4;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 1px 5px;
+  border-radius: 1px;
+  color: #1A1612;
+  background: linear-gradient(120deg, #F6E08E 0%, #FFEFC2 45%, #D9B762 100%);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+[data-fx="minimal"] .is-holo::after {
+  animation: none !important;
+  display: none !important;
+}
+
+/* ============================
+   3. AMBIENT GLOW HERO TRONG MODAL CHI TIẾT
+   ============================ */
+.ambient-hero {
+  position: relative;
+  margin: -14px -16px 12px;
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+  background: radial-gradient(
+    ellipse 115% 110% at 18% 20%,
+    rgba(var(--amb-rgb, 158, 71, 42), 0.24) 0%,
+    rgba(var(--amb-rgb, 158, 71, 42), 0.08) 52%,
+    transparent 88%
+  );
+  transition: background 0.45s ease;
+}
+
+[data-theme="dark"] .ambient-hero, [data-theme="midnight"] .ambient-hero {
+  background: radial-gradient(
+    ellipse 115% 110% at 18% 20%,
+    rgba(var(--amb-rgb, 206, 110, 78), 0.34) 0%,
+    rgba(var(--amb-rgb, 206, 110, 78), 0.11) 54%,
+    transparent 90%
+  );
+}
+
+.ambient-cover {
+  position: relative;
+  width: 74px;
+  height: 111px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--muted);
+  flex-shrink: 0;
+  box-shadow: 0 8px 22px rgba(var(--amb-rgb, 20, 18, 16), 0.34), 0 2px 5px rgba(0, 0, 0, 0.22);
+}
+
+.ambient-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ============================
+   4. CHẾ ĐỘ XEM KỆ MANGA HIỆN ĐẠI (TANKOBON SPINE SHELF)
+   ============================ */
+.shelf-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-top: 4px;
+}
+
+.shelf-unit {
+  position: relative;
+}
+
+.shelf-bay-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2px 4px;
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.shelf-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  padding: 14px 10px 0;
+  min-height: 204px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: linear-gradient(180deg, transparent 52%, rgba(0, 0, 0, 0.045) 100%);
+  border-radius: 3px 3px 0 0;
+}
+
+[data-theme="dark"] .shelf-row, [data-theme="midnight"] .shelf-row {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.01) 0%, rgba(0, 0, 0, 0.34) 100%);
+}
+
+.shelf-row::-webkit-scrollbar {
+  display: none;
+}
+
+/* Thanh kệ tối giản hiện đại (Architectural matte shelf slab) */
+.shelf-plank {
+  height: 10px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #E3DDD2 0%, #CFC7B9 55%, #B8AFA0 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 18px rgba(24, 20, 16, 0.14), 0 2px 3px rgba(24, 20, 16, 0.14);
+  position: relative;
+}
+
+[data-theme="dark"] .shelf-plank, [data-theme="midnight"] .shelf-plank {
+  background: linear-gradient(180deg, #322E2A 0%, #24211E 55%, #181614 100%);
+  border-top: 1px solid rgba(255, 245, 232, 0.12);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.62), 0 2px 4px rgba(0, 0, 0, 0.55);
+}
+
+/* Cụm 1 bộ sách trên kệ: 1 gáy chính sắc nét + các lớp tập xếp phía sau */
+.shelf-book-group {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: flex-end;
+  cursor: pointer;
+  transform-origin: bottom center;
+  padding: 0;
+  background: none;
+  border: none;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.shelf-book-group:hover,
+.shelf-book-group.pulled {
+  transform: translateY(-11px);
+  z-index: 6;
+}
+
+.shelf-spine-main {
+  position: relative;
+  width: 42px;
+  border-radius: 2.5px 2px 0 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 0 6px;
+  color: var(--sp-ink, #F7F4EE);
+  background: var(--sp-bg, #2B2825);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  box-shadow:
+    inset 4px 0 6px rgba(255, 255, 255, 0.12),
+    inset -4px 0 7px rgba(0, 0, 0, 0.32),
+    0 -1px 0 rgba(255, 255, 255, 0.12),
+    2px 0 6px rgba(0, 0, 0, 0.28);
+  z-index: 3;
+}
+
+/* Viền vàng tinh tế phía trên cho bộ có bản ĐB / Boxset / Limited */
+.shelf-spine-main.sp-gold {
+  border-top: 2px solid #E5C16C;
+  box-shadow:
+    inset 4px 0 6px rgba(255, 240, 200, 0.16),
+    inset -4px 0 7px rgba(0, 0, 0, 0.34),
+    0 0 10px rgba(229, 193, 108, 0.2),
+    2px 0 6px rgba(0, 0, 0, 0.28);
+}
+
+/* Các lát tập xếp phía sau (tạo cảm giác độ dày thật theo số tập) */
+.shelf-stack-slices {
+  display: inline-flex;
+  align-items: flex-end;
+  height: 100%;
+  z-index: 1;
+}
+
+.shelf-slice {
+  width: 5px;
+  border-radius: 0 1.5px 0 0;
+  background: var(--sp-slice, #23201D);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-right: 1px solid rgba(0, 0, 0, 0.45);
+  box-shadow: inset 1px 0 2px rgba(255, 255, 255, 0.12);
+}
+
+/* Phần đầu gáy: Dải màu NXB gọn gàng tách biệt hoàn toàn với chữ */
+.sp-top-cap {
+  width: 100%;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.28);
+  border-bottom: 1.5px solid var(--sp-accent, #9E472A);
+  color: rgba(255, 252, 246, 0.9);
+  flex-shrink: 0;
+}
+
+.sp-gold-dot {
+  color: #F2D07D;
+  font-size: 8px;
+  line-height: 1;
+}
+
+/* Ô ảnh bìa thu nhỏ kiểu gáy truyện Nhật (Tankobon spine inset) */
+.sp-thumb-win {
+  position: relative;
+  z-index: 3;
+  width: 30px;
+  height: 36px;
+  margin-top: 5px;
+  border-radius: 1.5px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.42);
+  flex: 0 0 36px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.sp-thumb-win img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Tên bộ dọc: cố định chiều cao cứng, cắt sạch từ trên xuống dưới -> tuyệt đối KHÔNG đè ảnh trên iOS Safari */
+.sp-title-vert {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  margin: 6px 0 4px;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+.sp-title-vert span {
+  display: block;
+  writing-mode: vertical-rl;
+  -webkit-writing-mode: vertical-rl;
+  text-orientation: mixed;
+  margin: 0 auto;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.15;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.48);
+}
+
+/* Số tập đóng khung gọn ở chân gáy giống truyện thật */
+.sp-vol-box {
+  position: relative;
+  z-index: 3;
+  margin-top: auto;
+  font-size: 9.5px;
+  font-weight: 700;
+  min-width: 24px;
+  height: 16px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1.5px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #FFFDF8;
+  flex: 0 0 16px;
+}
+
+/* Sound pack selector pills in Settings */
+.sound-pack-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.sound-pack-btn {
+  padding: 8px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sound-pack-btn.active {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+.sound-pack-btn .sp-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sound-pack-btn .sp-desc {
+  font-size: 10px;
+  opacity: 0.72;
+}
+
+.sound-map-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.sound-map-row {
+  display: grid;
+  grid-template-columns: 1fr auto 32px;
+  gap: 6px;
+  align-items: center;
+}
+
+.sound-map-lbl {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sound-map-sel {
+  height: 28px;
+  padding: 0 6px !important;
+  font-size: 11.5px !important;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  width: auto !important;
+  min-width: 112px;
+}
+
+.sound-map-play {
+  height: 28px;
+  width: 32px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sound-map-play:active {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* Batch shelf scan checklist */
+.qc-batch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 46dvh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.qc-batch-row {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.qc-batch-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+/* ============================
+   5. QUY ĐỔI VẬT LÝ + HOÁ ĐƠN HIỆU SÁCH
+   ============================ */
+.phys-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.phys-stat {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px 9px;
+  text-align: center;
+}
+
+.phys-val {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.phys-lbl {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.receipt-preview-box {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.receipt-preview-box img {
+  max-width: 100%;
+  max-height: 58dvh;
+  object-fit: contain;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  border-radius: 1px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--line);
+  margin: 12px 0;
+}
+
+.small-muted {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* ============================
+   6. MÈO BÉO CAPOO NGỒI & CHẠY NGAY TRÊN VIỀN Ô TẤT CẢ / TRUYỆN / SÁCH
+   ============================ */
+.group-switch-stage {
+  position: relative;
+  padding-top: 34px;
+  margin-bottom: 8px;
+}
+
+.group-switch-stage.no-cat {
+  padding-top: 0;
+}
+
+.group-switch-stage .scope-switch-3 {
+  margin-bottom: 0;
+}
+
+.capoo-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 41px;
+  display: block;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.group-switch-stage.no-cat .capoo-canvas {
+  display: none;
+}
+
+.capoo-hit {
+  position: absolute;
+  top: 1px;
+  left: 0;
+  width: 54px;
+  height: 36px;
+  z-index: 7;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  background: transparent;
+}
+
+/* Nhãn FULL tinh gọn, đồng bộ với bìa sách & thanh tiến độ */
+.hanko-full {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 5.5px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  color: #F6F5F1;
+  background: rgba(20, 19, 18, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1.5px;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.32);
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+.hanko-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 5px;
+  height: 17px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--forest);
+  border: 1px solid var(--forest);
+  border-radius: 1.5px;
+  background: var(--forest-soft);
+  flex-shrink: 0;
+}
+
+.book-prog-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(20, 19, 18, 0.36);
+  z-index: 4;
+  pointer-events: none;
+}
+
+.book-prog-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.book-prog-fill.is-done {
+  background: var(--forest);
+}
+
+/* Chế độ Tủ kính trưng bày (Hình cầu 3D xoay bằng tay + Nền tủ sang trọng + Cửa kính mở 3D) */
+.cabinet-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cabinet-frame {
+  position: relative;
+  border-radius: 7px;
+  padding: 11px;
+  background: linear-gradient(155deg, #4E3E31 0%, #2D231C 52%, #1B1511 100%);
+  border: 1.5px solid rgba(255, 232, 200, 0.16);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 240, 215, 0.25),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.48);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+[data-theme="midnight"] .cabinet-frame {
+  background: linear-gradient(155deg, #273754 0%, #162135 55%, #0C1320 100%);
+  border-color: rgba(150, 195, 255, 0.2);
+}
+
+.cabinet-stage {
+  position: relative;
+  width: 100%;
+  height: 376px;
+  border-radius: 3px;
+  overflow: hidden;
+  perspective: 980px;
+  touch-action: none;
+  cursor: grab;
+  background: linear-gradient(180deg, #27201B 0%, #191512 58%, #100D0B 100%);
+  box-shadow:
+    inset 0 12px 26px rgba(0, 0, 0, 0.68),
+    inset 0 0 0 1px rgba(255, 238, 212, 0.1);
+}
+
+.cabinet-stage.is-dragging {
+  cursor: grabbing;
+}
+
+[data-theme="midnight"] .cabinet-stage {
+  background: linear-gradient(180deg, #18253C 0%, #101A2B 58%, #09101C 100%);
+  box-shadow:
+    inset 0 12px 26px rgba(0, 0, 0, 0.72),
+    inset 0 0 0 1px rgba(155, 198, 255, 0.12);
+}
+
+/* Nền hậu tủ kính (Vách gỗ sọc dọc + khung vòm trưng bày + ánh đèn spotlight) */
+.cabinet-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 232, 200, 0.038) 0px,
+      rgba(255, 232, 200, 0.038) 2px,
+      rgba(0, 0, 0, 0.16) 2px,
+      rgba(0, 0, 0, 0.16) 6px,
+      transparent 6px,
+      transparent 16px
+    ),
+    radial-gradient(ellipse 84% 58% at 50% 48%, rgba(190, 134, 84, 0.16) 0%, rgba(42, 32, 24, 0.06) 56%, rgba(8, 7, 6, 0.56) 100%);
+}
+
+[data-theme="midnight"] .cabinet-backdrop {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(165, 208, 255, 0.04) 0px,
+      rgba(165, 208, 255, 0.04) 2px,
+      rgba(0, 0, 0, 0.18) 2px,
+      rgba(0, 0, 0, 0.18) 6px,
+      transparent 6px,
+      transparent 16px
+    ),
+    radial-gradient(ellipse 84% 58% at 50% 48%, rgba(104, 168, 234, 0.18) 0%, rgba(20, 34, 56, 0.08) 56%, rgba(5, 9, 16, 0.6) 100%);
+}
+
+/* Hốc vòm kính sang trọng phía sau */
+.cabinet-arch {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 14px;
+  bottom: 34px;
+  border-radius: 140px 140px 4px 4px;
+  border: 1px solid rgba(255, 235, 202, 0.13);
+  background: radial-gradient(ellipse 75% 70% at 50% 42%, rgba(255, 236, 204, 0.07) 0%, rgba(18, 15, 13, 0.24) 70%, rgba(8, 7, 6, 0.44) 100%);
+  box-shadow: inset 0 1px 16px rgba(0, 0, 0, 0.42);
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-theme="midnight"] .cabinet-arch {
+  border-color: rgba(155, 202, 255, 0.15);
+  background: radial-gradient(ellipse 75% 70% at 50% 42%, rgba(132, 194, 255, 0.09) 0%, rgba(12, 20, 34, 0.26) 70%, rgba(5, 10, 18, 0.48) 100%);
+}
+
+/* Luồng đèn spotlight rọi từ nóc tủ xuống khối cầu */
+.cabinet-spot {
+  position: absolute;
+  top: -10px;
+  width: 58%;
+  height: 76%;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(ellipse 50% 72% at 50% 0%, rgba(255, 236, 196, 0.22) 0%, rgba(255, 224, 170, 0.05) 55%, transparent 82%);
+  transition: opacity 0.35s ease;
+}
+
+.cabinet-spot-left { left: 4%; transform: rotate(-7deg); }
+.cabinet-spot-right { right: 4%; transform: rotate(7deg); }
+
+[data-theme="midnight"] .cabinet-spot {
+  background: radial-gradient(ellipse 50% 72% at 50% 0%, rgba(145, 202, 255, 0.22) 0%, rgba(104, 168, 234, 0.05) 55%, transparent 82%);
+}
+
+.cabinet-frame.is-open .cabinet-spot {
+  opacity: 1;
+}
+
+/* Vầng cầu ánh sáng mờ giúp định hình không gian hình cầu 3D */
+.cabinet-sphere-aura {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 244px;
+  height: 244px;
+  border-radius: 50%;
+  transform: translate(-50%, -52%);
+  border: 1px solid rgba(255, 240, 214, 0.1);
+  background: radial-gradient(circle at 38% 32%, rgba(255, 244, 224, 0.06) 0%, rgba(255, 232, 195, 0.02) 48%, transparent 74%);
+  box-shadow: inset 0 0 28px rgba(255, 236, 200, 0.05);
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-theme="midnight"] .cabinet-sphere-aura {
+  border-color: rgba(155, 205, 255, 0.12);
+  background: radial-gradient(circle at 38% 32%, rgba(155, 208, 255, 0.08) 0%, rgba(104, 168, 234, 0.02) 48%, transparent 74%);
+}
+
+.cabinet-sphere-equator {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 244px;
+  height: 76px;
+  border-radius: 50%;
+  transform: translate(-50%, -52%);
+  border: 1px dashed rgba(255, 242, 218, 0.09);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Đèn LED thanh mảnh trên nóc tủ */
+.cabinet-led {
+  position: absolute;
+  top: 0;
+  left: 16%;
+  right: 16%;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg, transparent, #FFF3D4 22%, #FFFFFF 50%, #FFF3D4 78%, transparent);
+  box-shadow: 0 2px 14px 3px rgba(255, 232, 180, 0.55);
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 0.35s ease, box-shadow 0.35s ease;
+}
+
+[data-theme="midnight"] .cabinet-led {
+  background: linear-gradient(90deg, transparent, #CFE8FF 22%, #FFFFFF 50%, #CFE8FF 78%, transparent);
+  box-shadow: 0 2px 14px 3px rgba(120, 185, 255, 0.52);
+}
+
+.cabinet-frame.is-open .cabinet-led {
+  box-shadow: 0 3px 20px 5px rgba(255, 236, 190, 0.8);
+}
+
+/* Bệ đáy tủ kính có ánh hắt nhẹ bên dưới hình cầu */
+.cabinet-floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34px;
+  background: linear-gradient(180deg, rgba(255, 240, 214, 0.09) 0%, rgba(28, 22, 18, 0.82) 32%, rgba(10, 8, 7, 0.96) 100%);
+  border-top: 1px solid rgba(255, 238, 210, 0.16);
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-theme="midnight"] .cabinet-floor {
+  background: linear-gradient(180deg, rgba(160, 206, 255, 0.1) 0%, rgba(14, 24, 40, 0.85) 34%, rgba(6, 11, 20, 0.96) 100%);
+  border-top-color: rgba(155, 202, 255, 0.18);
+}
+
+.cabinet-floor-glow {
+  position: absolute;
+  left: 50%;
+  top: 5px;
+  width: 58%;
+  height: 16px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 232, 188, 0.24) 0%, transparent 72%);
+}
+
+[data-theme="midnight"] .cabinet-floor-glow {
+  background: radial-gradient(ellipse at center, rgba(126, 192, 255, 0.24) 0%, transparent 72%);
+}
+
+/* Vật phẩm quà lơ lửng theo hình cầu 3D */
+.cabinet-item {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 76px;
+  padding: 0;
+  border: 1.5px solid rgba(255, 244, 226, 0.26);
+  border-radius: 6px;
+  background: rgba(34, 31, 28, 0.94);
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.52), 0 0 0 1px rgba(0, 0, 0, 0.3);
+  will-change: transform, opacity;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cabinet-item:active {
+  border-color: #F6E08E;
+  box-shadow: 0 0 16px rgba(246, 224, 142, 0.55);
+}
+
+.cabinet-item-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: linear-gradient(145deg, #2B2723 0%, #191715 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  overflow: hidden;
+}
+
+.cabinet-item-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.cabinet-item-fallback {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #EFEAE0;
+  text-align: center;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cabinet-item-name {
+  padding: 3px 5px 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #F6F5F1;
+  background: rgba(16, 15, 14, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cabinet-item-qty {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  z-index: 3;
+  background: rgba(16, 15, 14, 0.84);
+  color: #F6F5F1;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+/* 2 Cánh cửa kính đóng/mở 3D (pointer-events: none để kéo xoay cầu ngay cả khi đóng & chạm để mở) */
+.cabinet-doors {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.cabinet-door {
+  position: relative;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.04) 38%,
+    rgba(255, 255, 255, 0.11) 52%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  -webkit-backdrop-filter: blur(1.2px);
+  backdrop-filter: blur(1.2px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.06);
+  transition: transform 0.68s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s ease;
+  backface-visibility: hidden;
+}
+
+.cabinet-door-left {
+  transform-origin: left center;
+  border-right: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.cabinet-door-right {
+  transform-origin: right center;
+  border-left: 1px solid rgba(0, 0, 0, 0.35);
+}
+
+.cabinet-frame.is-open .cabinet-door-left {
+  transform: rotateY(-104deg);
+  opacity: 0.35;
+}
+
+.cabinet-frame.is-open .cabinet-door-right {
+  transform: rotateY(104deg);
+  opacity: 0.35;
+}
+
+/* Tay nắm kim loại ở giữa 2 cánh cửa kính */
+.cabinet-handle {
+  position: absolute;
+  top: 50%;
+  width: 4px;
+  height: 36px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #E8D5B0 0%, #B89A64 55%, #7D6438 100%);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+  transform: translateY(-50%);
+}
+
+.cabinet-door-left .cabinet-handle { right: 8px; }
+.cabinet-door-right .cabinet-handle { left: 8px; }
+
+/* Nhãn nhắc "Chạm mở · Kéo xoay 3D" khi tủ đang đóng */
+.cabinet-open-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  z-index: 210;
+  padding: 5px 11px;
+  border-radius: 99px;
+  background: rgba(20, 19, 18, 0.84);
+  border: 1px solid rgba(255, 240, 210, 0.26);
+  color: #F6F5F1;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.38);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.cabinet-frame.is-open .cabinet-open-hint {
+  opacity: 0;
+  transform: translate(-50%, 8px);
+}
+
+/* Thanh điều khiển gọn bên dưới tủ kính */
+.cabinet-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+
+/* 5-Theme swatch picker */
+.theme-dot-mini {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.group-switch-stage.no-cat .capoo-hit {
+  display: none;
+}
+
+.cat-color-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.cat-color-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 7px 4px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.cat-color-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 700;
+}
+
+.cat-swatch-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #383840;
+  display: inline-block;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.14);
+}
