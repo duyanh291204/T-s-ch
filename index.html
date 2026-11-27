@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Tủ Sách" />
-  <meta name="theme-color" content="#F6F5F1" id="metaThemeColor" />
+  <meta name="theme-color" content="#FBF4E2" id="metaThemeColor" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
   <link rel="manifest" href="./manifest.json" />
   <title>Tủ Sách — Manga, Sách & Quà</title>
@@ -18,25 +18,25 @@
 /* Tủ Sách — Base Theme, Layout & Components */
 
 :root {
-  --bg: #F6F5F1;
-  --surface: #FFFFFF;
-  --surface-2: #EFECE4;
-  --ink: #1C1B19;
-  --muted: #6E6A63;
-  --line: #DCD8CE;
-  --line-strong: #B9B3A6;
-  --accent: #9E472A;
-  --accent-soft: #F5E8E3;
-  --forest: #2F5D50;
-  --forest-soft: #E5EFEA;
-  --amber: #8F6424;
-  --amber-soft: #F4ECDF;
-  --danger: #A63229;
+  --bg: #FBF4E2;
+  --surface: #FFFBF0;
+  --surface-2: #F2E5C9;
+  --ink: #3B2818;
+  --muted: #7C6046;
+  --line: #E4D3B4;
+  --line-strong: #C9AE84;
+  --accent: #9C4E24;
+  --accent-soft: #F5E3D2;
+  --forest: #356352;
+  --forest-soft: #E6EFE8;
+  --amber: #966520;
+  --amber-soft: #F7EAD0;
+  --danger: #A83528;
   --pub-tre: #A83A2F;
   --pub-kim: #2E5278;
   --pub-ipm: #2F5D50;
   --pub-nn: #8F6424;
-  --pub-other: #5E5B55;
+  --pub-other: #6B533E;
   --radius: 2px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -2651,42 +2651,28 @@ body::before {
   border-top-color: rgba(155, 202, 255, 0.24);
 }
 
-/* Cụm 1 bộ sách trên kệ + hiệu ứng nghiêng rút sách 3D về phía người xem */
+/* Cụm 1 bộ sách trên kệ + hiệu ứng lấy sách tối giản (nhấc nhẹ gọn gàng) */
 .shelf-book-group {
   position: relative;
   flex: 0 0 auto;
   display: inline-flex;
   align-items: flex-end;
   cursor: pointer;
-  transform-origin: center 88%;
-  transform-style: preserve-3d;
   padding: 0;
   background: none;
   border: none;
-  will-change: transform, filter;
-  transition:
-    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.24s ease;
+  will-change: transform;
+  transition: transform 0.16s ease-out;
 }
 
 .shelf-book-group:hover {
-  transform: perspective(540px) rotateX(-6deg) translateY(-3px) scale(1.03);
+  transform: translateY(-4px);
   z-index: 6;
 }
 
 .shelf-book-group.pulled {
-  transform: perspective(540px) rotateX(-16deg) rotateY(8deg) translateY(-6px) scale(1.12);
-  filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.72)) brightness(1.12);
-  z-index: 12;
-}
-
-.shelf-book-group .shelf-slice {
-  transition: transform 0.26s ease, opacity 0.24s ease;
-}
-
-.shelf-book-group.pulled .shelf-slice {
-  transform: translateX(3px);
-  opacity: 0.4 !important;
+  transform: translateY(-8px);
+  z-index: 10;
 }
 
 .shelf-spine-main {
@@ -3593,7 +3579,6 @@ body::before {
       </div>
       <div class="topbar-actions">
         <button class="icon-btn undo-ready" id="undoBtn" title="Hoàn tác thao tác vừa rồi">
-          <svg viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
           <span id="undoBtnLabel">Hoàn tác</span>
         </button>
         <button class="icon-btn" id="soundBtn" title="Bật / tắt âm thanh" style="padding:0 8px;">
@@ -5415,7 +5400,7 @@ window.addEventListener(
 
 // 3 Bảng màu giấy (Giấy ấm, Đèn bàn, Xanh đêm)
 const THEME_LIST = [
-  { id: "light", label: "Giấy ấm", bg: "#F6F5F1", dot: "#EFE8D8", ink: "#1C1B19", dark: false },
+  { id: "light", label: "Giấy ấm", bg: "#FBF4E2", dot: "#F2D7A4", ink: "#3B2818", dark: false },
   { id: "dark", label: "Đèn bàn", bg: "#141312", dot: "#2A2622", ink: "#EDEAE3", dark: true },
   { id: "midnight", label: "Xanh đêm", bg: "#0E1521", dot: "#1E304D", ink: "#E8F0FA", dark: true },
 ];
@@ -6159,8 +6144,8 @@ function renderBooks() {
         el.classList.add("pulled");
         setTimeout(() => {
           openSeriesDetail(s.id);
-          setTimeout(() => el.classList.remove("pulled"), 180);
-        }, 230);
+          setTimeout(() => el.classList.remove("pulled"), 140);
+        }, 120);
       });
     });
     return;
@@ -7743,7 +7728,7 @@ function openBulkVolumeForm(seriesId, sectionId) {
       </label>
 
       <div class="modal-actions" style="justify-content:space-between;">
-        <button type="button" class="btn btn-sm" id="undoBulkActionBtn" ${typeof undoStack !== "undefined" && undoStack.length ? "" : "disabled"}>↩ Hoàn tác</button>
+        <button type="button" class="btn btn-sm" id="undoBulkActionBtn" ${typeof undoStack !== "undefined" && undoStack.length ? "" : "disabled"}>Hoàn tác</button>
         <div style="display:flex; gap:8px;">
           <button type="button" class="btn btn-sm" id="backBulkBtn">Quay lại</button>
           <button type="submit" class="btn btn-sm btn-primary">Thêm hàng loạt</button>
@@ -9764,6 +9749,15 @@ function openGiftGroupDetail(groupId, filterStatus = "Tất cả") {
     </div>`;
 
   openModal(`Quà — ${g.title}`, html, (body) => {
+    const ggAmbSrc = resolveImg(g.cover) || resolveImg((g.gifts || []).find((x) => resolveImg(x.image))?.image || "");
+    const ggFbRgb = pubFallbackRGB(g.publisher);
+    body.classList.add("has-ambient");
+    body.style.setProperty("--amb-rgb", ggFbRgb.join(","));
+    if (ggAmbSrc) {
+      extractDominantColor(ggAmbSrc, g.publisher).then((rgb) => {
+        if (body.isConnected) body.style.setProperty("--amb-rgb", rgb.join(","));
+      });
+    }
     body.querySelector("#addGiftItemBtn").addEventListener("click", () => openGiftItemForm(groupId));
     body.querySelector("#editGiftGroupBtn").addEventListener("click", () => openGiftGroupForm(groupId));
     body.querySelector("#delGiftGroupBtn").addEventListener("click", () => {
@@ -9903,11 +9897,25 @@ function openGiftItemForm(groupId, giftId = null) {
     const previewEl = body.querySelector("#giftImgPreview");
     const clearBtn = body.querySelector("#clearGiftImgBtn");
 
+    const applyGiftItemAmbient = (imgUrl) => {
+      const fbRgb = pubFallbackRGB(g.publisher);
+      body.classList.add("has-ambient");
+      body.style.setProperty("--amb-rgb", fbRgb.join(","));
+      const src = imgUrl || resolveImg(g.cover);
+      if (src) {
+        extractDominantColor(src, g.publisher).then((rgb) => {
+          if (body.isConnected) body.style.setProperty("--amb-rgb", rgb.join(","));
+        });
+      }
+    };
+    applyGiftItemAmbient(currentImage);
+
     const setGiftPreview = (url) => {
       currentImage = url || "";
       previewEl.innerHTML = currentImage ? `<img src="${esc(currentImage)}" alt="" />` : "Chưa có";
       previewEl.style.cursor = currentImage ? "zoom-in" : "default";
       clearBtn.style.display = currentImage ? "" : "none";
+      applyGiftItemAmbient(currentImage);
     };
 
     previewEl.addEventListener("click", () => {
