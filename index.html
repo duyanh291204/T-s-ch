@@ -2544,22 +2544,10 @@ body {
 }
 
 /* Khung tủ gỗ vuông vức, đồng bộ màu gỗ trầm sang trọng của Tủ kính */
-.shelf-cat-canvas {
-  position: absolute;
-  top: -35px;
-  left: 6px;
-  width: calc(100% - 12px);
-  height: 40px;
-  z-index: 15;
-  pointer-events: none;
-  display: block;
-}
-
 .shelf-bookcase {
   position: relative;
   border-radius: 2px;
   padding: 11px 11px 13px;
-  cursor: pointer;
   background: linear-gradient(155deg, #4E3E31 0%, #2D231C 52%, #1B1511 100%);
   border: 1.5px solid rgba(255, 232, 200, 0.18);
   box-shadow:
@@ -2596,6 +2584,7 @@ body {
 
 /* Hốc tủ gỗ sâu vuông vức giống nền Tủ kính */
 .shelf-row {
+  position: relative;
   display: flex;
   align-items: flex-end;
   gap: 7px;
@@ -2653,6 +2642,7 @@ body {
 /* Cụm 1 bộ sách trên kệ + hiệu ứng lấy sách tối giản (nhấc nhẹ gọn gàng) */
 .shelf-book-group {
   position: relative;
+  z-index: 3;
   flex: 0 0 auto;
   display: inline-flex;
   align-items: flex-end;
@@ -3579,7 +3569,71 @@ body {
   box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.14);
 }
 
-  </style>
+  
+/* Mèo Trốn Tìm sau kệ gỗ */
+.peek-cat-btn {
+  position: absolute;
+  bottom: 164px;
+  left: 24px;
+  width: 54px;
+  height: 36px;
+  z-index: 2;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  overflow: visible;
+}
+.peek-cat-btn canvas {
+  width: 54px;
+  height: 36px;
+  display: block;
+  pointer-events: none;
+}
+
+/* Mèo Gác Két trên thanh hạn mức tháng (Tab Chi tiêu) */
+.budget-cat-wrap {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  margin-bottom: -3px;
+  pointer-events: none;
+}
+.budget-cat-canvas {
+  width: 100%;
+  height: 40px;
+  display: block;
+}
+
+/* Mèo Thợ Săn trên thanh tìm kiếm (Tab Săn kèo) */
+.hunter-cat-stage {
+  position: relative;
+  padding-top: 34px;
+  margin-bottom: 10px;
+}
+.hunter-cat-stage .toolbar {
+  margin-bottom: 0;
+}
+.hunter-cat-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  z-index: 6;
+  pointer-events: none;
+  display: block;
+}
+
+/* Mèo Soi Kính Lúp khi tìm không thấy sách */
+.search-cat-canvas {
+  width: 220px;
+  height: 54px;
+  display: block;
+  margin: 0 auto 6px;
+}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -3701,9 +3755,12 @@ body {
       <section class="view" id="view-news">
         <div class="gift-kpi-row" id="wishlistSummaryKpis"></div>
 
-        <div class="toolbar">
-          <input type="search" class="search-input" id="wishlistSearch" placeholder="Tìm kèo săn, tập thiếu, NXB..." />
-          <button class="btn btn-primary" id="manualPinBtn">+ Thêm kèo săn</button>
+        <div class="hunter-cat-stage" id="hunterCatStage">
+          <canvas class="hunter-cat-canvas" id="hunterCatCanvas" aria-hidden="true"></canvas>
+          <div class="toolbar">
+            <input type="search" class="search-input" id="wishlistSearch" placeholder="Tìm kèo săn, tập thiếu, NXB..." />
+            <button class="btn btn-primary" id="manualPinBtn">+ Thêm kèo săn</button>
+          </div>
         </div>
 
         <div class="scope-switch-3" id="newsScopeSwitch">
@@ -3747,6 +3804,9 @@ body {
           <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:6px;">
             <span class="mono" id="budgetSpentText">0đ</span>
             <span class="mono small-muted" id="budgetLimitText">/ 1.000.000đ</span>
+          </div>
+          <div class="budget-cat-wrap" id="budgetCatWrap">
+            <canvas class="budget-cat-canvas" id="budgetCatCanvas" aria-hidden="true"></canvas>
           </div>
           <div class="progress-track">
             <div class="progress-fill" id="budgetBar" style="width:0%"></div>
@@ -5931,418 +5991,7 @@ function formatSpineTitleHtml(rawTitle, hasThumb) {
   return `<span class="sp-title-vert is-two-line"><span class="sp-line">${esc(title.slice(0, half))}</span><span class="sp-line">${esc(title.slice(half))}</span></span>`;
 }
 
-// ============================
-// MÈO CAPOO TUẦN TRA TRÊN NÓC KỆ GỖ (CHẠM VÀO KỆ GỖ ĐỂ GỌI MÈO LÊN TUẦN TRA!)
-// ============================
-const shelfCat = {
-  bookcaseEl: null,
-  canvas: null,
-  ctx: null,
-  w: 0,
-  h: 40,
-  dpr: 1,
-  x: 60,
-  dir: 1,
-  phase: "idle", // "idle" | "jumpIn" | "patrol" | "inspect" | "jumpOut"
-  timer: 0,
-  patrolTime: 0,
-  maxPatrolTime: 15,
-  inspectCooldown: 3.4,
-  gait: 0,
-  clock: 0,
-  blinkT: 2.0,
-  blinkDur: 0,
-  hopY: 0,
-  hopVel: 0,
-  sparkleT: 0,
-  rafId: null,
-  lastTs: 0,
-};
-
-function stopShelfCatPatrol() {
-  if (shelfCat.rafId !== null) {
-    cancelAnimationFrame(shelfCat.rafId);
-    shelfCat.rafId = null;
-  }
-  if (shelfCat.ctx && shelfCat.canvas) {
-    shelfCat.ctx.setTransform(shelfCat.dpr, 0, 0, shelfCat.dpr, 0, 0);
-    shelfCat.ctx.clearRect(0, 0, shelfCat.w, shelfCat.h);
-  }
-  shelfCat.phase = "idle";
-  shelfCat.bookcaseEl = null;
-  shelfCat.canvas = null;
-  shelfCat.ctx = null;
-}
-
-function syncShelfCatSize() {
-  if (!shelfCat.canvas) return false;
-  const cw = Math.round(shelfCat.canvas.clientWidth || 0);
-  if (cw < 40) return false;
-  const dpr = Math.min(window.devicePixelRatio || 1, 3);
-  if (cw === shelfCat.w && shelfCat.dpr === dpr && shelfCat.canvas.width === Math.round(cw * dpr)) {
-    return true;
-  }
-  const prevW = shelfCat.w;
-  shelfCat.w = cw;
-  shelfCat.h = 40;
-  shelfCat.dpr = dpr;
-  shelfCat.canvas.width = Math.round(cw * dpr);
-  shelfCat.canvas.height = Math.round(40 * dpr);
-  if (prevW >= 40) {
-    shelfCat.x = Math.max(24, Math.min(cw - 24, (shelfCat.x / prevW) * cw));
-  }
-  return true;
-}
-
-function drawShelfCatFrame(dt) {
-  const canvas = shelfCat.canvas;
-  const ctx = shelfCat.ctx;
-  if (!canvas || !ctx || !canvas.isConnected) return false;
-  if (state.catEnabled === false || state.bookView !== "shelf" || document.hidden) return false;
-  const booksView = document.getElementById("view-books");
-  if (!booksView || !booksView.classList.contains("active")) return false;
-  if (!syncShelfCatSize()) return true;
-
-  shelfCat.clock += dt;
-  shelfCat.blinkT -= dt;
-  if (shelfCat.blinkT <= 0) {
-    shelfCat.blinkDur = 0.13;
-    shelfCat.blinkT = 2.2 + Math.random() * 2.4;
-  }
-  if (shelfCat.blinkDur > 0) shelfCat.blinkDur -= dt;
-  if (shelfCat.sparkleT > 0) shelfCat.sparkleT -= dt;
-
-  // Vật lý nhảy bật nhẹ khi người dùng chạm tiếp lên kệ
-  if (shelfCat.hopY < 0 || shelfCat.hopVel !== 0) {
-    shelfCat.hopY += shelfCat.hopVel * dt;
-    shelfCat.hopVel += 380 * dt;
-    if (shelfCat.hopY >= 0) {
-      shelfCat.hopY = 0;
-      shelfCat.hopVel = 0;
-    }
-  }
-
-  const minX = 26;
-  const maxX = Math.max(minX + 10, shelfCat.w - 26);
-  let yOffset = 0;
-  let alpha = 1;
-
-  if (shelfCat.phase === "jumpIn") {
-    shelfCat.timer += dt;
-    const p = Math.min(1, shelfCat.timer / 0.34);
-    // Nhảy vòng cung từ sau nóc kệ lên đứng trên thanh gỗ
-    yOffset = (1 - p) * 18 - Math.sin(p * Math.PI) * 11;
-    alpha = Math.min(1, p * 1.6);
-    if (p >= 1) {
-      shelfCat.phase = "patrol";
-      shelfCat.timer = 0;
-      shelfCat.sparkleT = 0.45;
-    }
-  } else if (shelfCat.phase === "patrol") {
-    shelfCat.patrolTime += dt;
-    shelfCat.inspectCooldown -= dt;
-    const speed = 78;
-    shelfCat.gait += dt * 15;
-    shelfCat.x += shelfCat.dir * speed * dt;
-    if (shelfCat.x >= maxX) {
-      shelfCat.x = maxX;
-      shelfCat.dir = -1;
-    } else if (shelfCat.x <= minX) {
-      shelfCat.x = minX;
-      shelfCat.dir = 1;
-    }
-    if (shelfCat.patrolTime >= shelfCat.maxPatrolTime) {
-      shelfCat.phase = "jumpOut";
-      shelfCat.timer = 0;
-    } else if (shelfCat.inspectCooldown <= 0 && shelfCat.x > minX + 20 && shelfCat.x < maxX - 20) {
-      shelfCat.phase = "inspect";
-      shelfCat.timer = 0;
-      shelfCat.inspectCooldown = 3.2 + Math.random() * 2.4;
-    }
-  } else if (shelfCat.phase === "inspect") {
-    // Dừng lại ngó xuống kiểm tra hàng truyện trên kệ rồi đi tuần tiếp
-    shelfCat.timer += dt;
-    shelfCat.patrolTime += dt;
-    if (shelfCat.timer >= 1.25) {
-      shelfCat.phase = shelfCat.patrolTime >= shelfCat.maxPatrolTime ? "jumpOut" : "patrol";
-      shelfCat.timer = 0;
-      if (Math.random() < 0.35) shelfCat.dir *= -1;
-    }
-  } else if (shelfCat.phase === "jumpOut") {
-    shelfCat.timer += dt;
-    const p = Math.min(1, shelfCat.timer / 0.32);
-    yOffset = p * 18 - Math.sin(p * Math.PI) * 9;
-    alpha = Math.max(0, 1 - p * 1.25);
-    if (p >= 1) {
-      return false;
-    }
-  }
-
-  ctx.setTransform(shelfCat.dpr, 0, 0, shelfCat.dpr, 0, 0);
-  ctx.clearRect(0, 0, shelfCat.w, shelfCat.h);
-
-  const pal = (typeof CAT_COLORS !== "undefined" && typeof getCapooColorKey === "function" && CAT_COLORS[getCapooColorKey()]) || {
-    body: "#59CBF0",
-    belly: "#FFFFFF",
-    ink: "#363740",
-    eye: "#2C2D35",
-    eyeShine: "#FFFFFF",
-    mouthLine: "#2C2D35",
-    pink: "#FF7B89",
-    cheek: "#FF9AA6",
-    isBlack: false,
-  };
-  const outlineCol = pal.isBlack ? "#6A7082" : pal.ink;
-  const isWalking = shelfCat.phase === "patrol";
-  const isInspecting = shelfCat.phase === "inspect";
-  const groundY = shelfCat.h - 4;
-  const bounce = isWalking ? Math.abs(Math.sin(shelfCat.gait)) * 2.0 : Math.sin(shelfCat.clock * 3.0) * 0.35;
-  const tilt = isWalking ? shelfCat.dir * 0.065 : isInspecting ? Math.sin(shelfCat.timer * 4.5) * 0.06 : 0;
-
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.translate(shelfCat.x, groundY - bounce + shelfCat.hopY + yOffset);
-  ctx.rotate(tilt);
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-
-  // Bóng mờ dưới chân trên nóc tủ gỗ
-  if (shelfCat.phase === "patrol" || shelfCat.phase === "inspect") {
-    ctx.fillStyle = "rgba(0,0,0,0.3)";
-    ctx.beginPath();
-    ctx.ellipse(0, 1.3 + bounce * 0.35 - shelfCat.hopY * 0.2, isWalking ? 15.5 : 16.2, 2.2, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Bê nguyên 100% dáng thân, tai, bụng & mắt từ bé mèo bên Tủ sách
-  const rx = isWalking ? 17.5 : 16.6;
-  const ry = 9.7;
-  const earDroop = isWalking ? 0.16 : isInspecting ? 0.05 : 0;
-
-  const traceBody = () => {
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.bezierCurveTo(rx * 0.9, 0, rx * 1.12, -ry * 0.24, rx * 1.02, -ry * 0.96);
-    ctx.bezierCurveTo(rx * 0.92, -ry * 1.66, rx * 0.55, -ry * 1.92, 0, -ry * 1.92);
-    ctx.bezierCurveTo(-rx * 0.55, -ry * 1.92, -rx * 0.92, -ry * 1.66, -rx * 1.02, -ry * 0.96);
-    ctx.bezierCurveTo(-rx * 1.12, -ry * 0.24, -rx * 0.9, 0, 0, 0);
-    ctx.closePath();
-  };
-
-  const traceEar = (side) => {
-    const bx1 = side * rx * 0.2;
-    const bx2 = side * rx * 0.86;
-    const by1 = -ry * 1.64;
-    const by2 = -ry * 1.16;
-    const tx = side * rx * (0.64 + earDroop * 0.12);
-    const ty = -ry * 2.38 + earDroop * 4.0;
-    ctx.beginPath();
-    ctx.moveTo(bx1, by1);
-    ctx.quadraticCurveTo(side * rx * 0.42, ty - 0.5, tx, ty);
-    ctx.quadraticCurveTo(side * rx * 0.92, ty + 1.3, bx2, by2);
-    ctx.closePath();
-  };
-
-  const paintPass = (mode) => {
-    const apply = () => {
-      if (mode === "outline") {
-        ctx.fillStyle = outlineCol;
-        ctx.strokeStyle = outlineCol;
-        ctx.lineWidth = 3.5;
-        ctx.stroke();
-        ctx.fill();
-      } else {
-        ctx.fillStyle = pal.body;
-        ctx.fill();
-      }
-    };
-
-    traceEar(-1);
-    apply();
-    traceEar(1);
-    apply();
-
-    if (isWalking) {
-      const s1 = Math.sin(shelfCat.gait) * 2.2;
-      const s2 = Math.sin(shelfCat.gait + Math.PI) * 2.2;
-      [
-        { x: -9.2 + s1 * 0.55, y: -0.9 - Math.max(0, s1) * 0.8 },
-        { x: -4.4 + s2 * 0.55, y: -0.9 - Math.max(0, s2) * 0.8 },
-        { x: 4.4 + s1 * 0.55, y: -0.9 - Math.max(0, s1) * 0.8 },
-        { x: 9.2 + s2 * 0.55, y: -0.9 - Math.max(0, s2) * 0.8 },
-      ].forEach((p) => {
-        ctx.beginPath();
-        ctx.ellipse(p.x, p.y, 2.2, 2.7, 0, 0, Math.PI * 2);
-        apply();
-      });
-    } else {
-      ctx.beginPath();
-      ctx.ellipse(-4.9, -0.8, 2.3, 2.75, 0, 0, Math.PI * 2);
-      apply();
-      ctx.beginPath();
-      ctx.ellipse(4.9, -0.8, 2.3, 2.75, 0, 0, Math.PI * 2);
-      apply();
-    }
-
-    traceBody();
-    apply();
-  };
-
-  paintPass("outline");
-  paintPass("fill");
-
-  const lookX = isWalking ? shelfCat.dir * 3.4 : 0;
-  const lookY = isInspecting ? 1.4 : 0;
-
-  // Vòng lông bụng khác màu y hệt bên Tủ sách
-  ctx.save();
-  traceBody();
-  ctx.clip();
-  ctx.fillStyle = pal.belly;
-  ctx.beginPath();
-  ctx.ellipse(lookX * 0.55, 1.5, rx * 0.46, ry * 0.68, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-
-  // Khuôn mặt y hệt bên Tủ sách
-  ctx.save();
-  ctx.translate(lookX, -ry * 1.14 + lookY);
-
-  ctx.fillStyle = pal.cheek;
-  ctx.globalAlpha = 0.5;
-  ctx.beginPath();
-  ctx.ellipse(-8.4, 1.6, 2.0, 1.2, 0, 0, Math.PI * 2);
-  ctx.ellipse(8.4, 1.6, 2.0, 1.2, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-
-  if (shelfCat.blinkDur > 0) {
-    ctx.strokeStyle = pal.mouthLine;
-    ctx.lineWidth = 1.7;
-    ctx.beginPath();
-    ctx.moveTo(-7.4, 0);
-    ctx.lineTo(-4.2, 0);
-    ctx.moveTo(4.2, 0);
-    ctx.lineTo(7.4, 0);
-    ctx.stroke();
-  } else {
-    const rX = 2.05;
-    const rY = 2.3;
-    const fDir = isWalking ? shelfCat.dir : 0;
-    const pShiftY = isInspecting ? 0.55 : 0;
-    [-5.8, 5.8].forEach((ex) => {
-      const ey = -0.2;
-      if (pal.isBlack) {
-        ctx.fillStyle = "#FFFDF7";
-        ctx.beginPath();
-        ctx.ellipse(ex, ey, rX * 1.05, rY * 1.05, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#1D1F28";
-        ctx.beginPath();
-        ctx.ellipse(ex + fDir * 0.3, ey + pShiftY, rX * 0.65, rY * 0.68, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#FFFFFF";
-        ctx.beginPath();
-        ctx.arc(ex - rX * 0.34, ey - rY * 0.34, 0.65, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        ctx.fillStyle = pal.eye;
-        ctx.beginPath();
-        ctx.ellipse(ex, ey, rX, rY, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = pal.eyeShine || "#FFFFFF";
-        ctx.beginPath();
-        ctx.arc(ex - rX * 0.32, ey - rY * 0.34, 0.65, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    });
-  }
-
-  ctx.strokeStyle = pal.mouthLine;
-  ctx.lineWidth = 1.55;
-  ctx.beginPath();
-  ctx.moveTo(-2.85, 0.6);
-  ctx.quadraticCurveTo(-1.425, 2.7, 0, 1.0);
-  ctx.quadraticCurveTo(1.425, 2.7, 2.85, 0.6);
-  ctx.stroke();
-  ctx.restore();
-
-  // Tia lấp lánh nhỏ khi vừa nhảy lên kệ
-  if (shelfCat.sparkleT > 0) {
-    ctx.strokeStyle = "#FFE8A3";
-    ctx.globalAlpha = Math.min(1, shelfCat.sparkleT * 2.2) * alpha;
-    ctx.lineWidth = 1.4;
-    const sx = 18;
-    const sy = -ry * 2.05;
-    ctx.beginPath();
-    ctx.moveTo(sx, sy - 3.5);
-    ctx.lineTo(sx, sy + 3.5);
-    ctx.moveTo(sx - 3.5, sy);
-    ctx.lineTo(sx + 3.5, sy);
-    ctx.stroke();
-  }
-
-  ctx.restore();
-  return true;
-}
-
-function startShelfCatPatrol(bookcaseEl, tapClientX) {
-  if (state.catEnabled === false || !bookcaseEl) return;
-  const canvas = bookcaseEl.querySelector(".shelf-cat-canvas");
-  if (!canvas) return;
-
-  const rect = canvas.getBoundingClientRect();
-  const relX = typeof tapClientX === "number" && rect.width > 40
-    ? Math.max(28, Math.min(rect.width - 28, tapClientX - rect.left))
-    : Math.max(28, (rect.width || 240) * 0.5);
-
-  if (shelfCat.bookcaseEl === bookcaseEl && (shelfCat.phase === "patrol" || shelfCat.phase === "inspect")) {
-    // Chạm thêm lần nữa khi mèo đang tuần tra: nhảy bật vui vẻ, đổi hướng về phía ngón tay & gia hạn tuần tra
-    shelfCat.dir = relX >= shelfCat.x ? 1 : -1;
-    shelfCat.phase = "patrol";
-    shelfCat.patrolTime = 0;
-    shelfCat.hopVel = -115;
-    shelfCat.sparkleT = 0.4;
-    SFX.catTap(true);
-    return;
-  }
-
-  stopShelfCatPatrol();
-  shelfCat.bookcaseEl = bookcaseEl;
-  shelfCat.canvas = canvas;
-  shelfCat.ctx = canvas.getContext("2d");
-  shelfCat.w = 0;
-  syncShelfCatSize();
-
-  shelfCat.x = Math.max(26, Math.min((shelfCat.w || 240) - 26, relX));
-  shelfCat.dir = shelfCat.x > (shelfCat.w || 240) * 0.5 ? -1 : 1;
-  shelfCat.phase = "jumpIn";
-  shelfCat.timer = 0;
-  shelfCat.patrolTime = 0;
-  shelfCat.maxPatrolTime = 15;
-  shelfCat.inspectCooldown = 3.0 + Math.random() * 2.0;
-  shelfCat.hopY = 0;
-  shelfCat.hopVel = 0;
-  shelfCat.sparkleT = 0;
-  shelfCat.lastTs = performance.now();
-
-  SFX.catWake();
-
-  const step = (now) => {
-    const dt = Math.min(0.033, Math.max(0.004, (now - shelfCat.lastTs) / 1000));
-    shelfCat.lastTs = now;
-    const alive = drawShelfCatFrame(dt);
-    if (alive) {
-      shelfCat.rafId = requestAnimationFrame(step);
-    } else {
-      stopShelfCatPatrol();
-    }
-  };
-  shelfCat.rafId = requestAnimationFrame(step);
-}
-
 function renderBooks() {
-  stopShelfCatPatrol();
   const container = document.getElementById("booksContainer");
   const q = normVN(filters.bookSearch);
 
@@ -6412,6 +6061,7 @@ function renderBooks() {
         : "Tủ sách đang trống";
     container.innerHTML = `
       <div class="empty">
+        ${state.series.length ? '<canvas class="search-cat-canvas" data-search-cat="1" aria-hidden="true"></canvas>' : ""}
         <div class="empty-title">${emptyHeading}</div>
         <div class="empty-desc">${
           state.series.length
@@ -6422,6 +6072,7 @@ function renderBooks() {
       </div>`;
     const btn = document.getElementById("emptyAddBookBtn");
     if (btn) btn.addEventListener("click", () => openSeriesForm());
+    if (typeof mountSearchMagnifierCat === "function") mountSearchMagnifierCat(container);
     return;
   }
 
@@ -6478,8 +6129,7 @@ function renderBooks() {
             <span>${esc(groupTitle)}</span>
             <span class="mono">${items.length} bộ · ${grpVolTotal} tập</span>
           </div>
-          <div class="shelf-bookcase" data-shelf-bookcase="1">
-            <canvas class="shelf-cat-canvas" aria-hidden="true"></canvas>
+          <div class="shelf-bookcase">
             <div class="shelf-wrap">${rows
               .map((rowItems, rIdx) => {
                 const rowVolTotal = rowItems.reduce((a, s) => a + getAllSeriesVolumes(s).length, 0);
@@ -6573,13 +6223,8 @@ function renderBooks() {
       });
     });
 
-    // Chạm vào khung gỗ / nền tủ kệ (không phải gáy truyện) -> Mèo nhảy lên nóc kệ gỗ đi tuần tra!
-    container.querySelectorAll("[data-shelf-bookcase]").forEach((bc) => {
-      bc.addEventListener("click", (e) => {
-        if (e.target.closest("[data-shelf-id]")) return;
-        startShelfCatPatrol(bc, e.clientX);
-      });
-    });
+    // Mèo Trốn Tìm sau kệ gỗ (thò đầu & tai lên sau gáy truyện, chạm vào là thụt xuống đổi tầng!)
+    if (typeof mountShelfPeekCat === "function") mountShelfPeekCat(container);
     return;
   } else {
     container.innerHTML = `<div class="book-list">${list
@@ -9654,7 +9299,7 @@ function syncCabinetCatHit() {
   }
 }
 
-// Bụi sáng lấp lánh (dust motes) bay nhẹ trong 2 luồng đèn spotlight tủ kính
+// Bụi sáng lấp lánh (dust motes + bokeh + tia sao 8 cánh) bay nhẹ trong 2 luồng đèn spotlight tủ kính
 const cabDust = {
   canvas: null,
   ctx: null,
@@ -9674,20 +9319,21 @@ function initCabinetDust(canvasEl) {
   cabDust.motes = [];
   if (!canvasEl) return;
 
-  const count = 34;
+  const count = 48;
   for (let i = 0; i < count; i++) {
     cabDust.motes.push({
-      beam: i % 2, // 0 = luồng đèn trái, 1 = luồng đèn phải
-      t: Math.random(), // 0 (nóc đèn) -> 1 (đáy luồng sáng)
-      spread: (Math.random() * 2 - 1) * 0.92,
-      speed: 0.028 + Math.random() * 0.042,
+      beam: i % 2,
+      t: Math.random(),
+      spread: (Math.random() * 2 - 1) * 0.94,
+      speed: 0.022 + Math.random() * 0.038,
       swayPhase: Math.random() * Math.PI * 2,
-      swayFreq: 0.7 + Math.random() * 1.1,
-      swayAmp: 4 + Math.random() * 9,
+      swayFreq: 0.65 + Math.random() * 1.15,
+      swayAmp: 4 + Math.random() * 10,
       twinklePhase: Math.random() * Math.PI * 2,
-      twinkleFreq: 1.6 + Math.random() * 2.6,
-      r: 0.75 + Math.random() * 1.35,
-      isStar: i % 3 === 0,
+      twinkleFreq: 2.2 + Math.random() * 3.4,
+      r: 0.8 + Math.random() * 1.65,
+      isStar: i % 2 === 0,
+      warmTint: Math.random(),
     });
   }
   syncCabinetDustSize();
@@ -9715,15 +9361,14 @@ function updateAndDrawCabinetDust(dt) {
   if (typeof isRichFx === "function" && !isRichFx()) return;
   if (!syncCabinetDustSize()) return;
 
-  const speedMul = cabinetIsOpen ? 1.22 : 0.85;
-  const brightMul = cabinetIsOpen ? 1.18 : 0.82;
+  const speedMul = cabinetIsOpen ? 1.18 : 0.86;
+  const brightMul = cabinetIsOpen ? 1.25 : 0.92;
   cabDust.clock += dt * speedMul;
 
   ctx.setTransform(cabDust.dpr, 0, 0, cabDust.dpr, 0, 0);
   ctx.clearRect(0, 0, cabDust.w, cabDust.h);
 
   const isMid = document.documentElement.getAttribute("data-theme") === "midnight";
-  const rgb = isMid ? "175, 224, 255" : "255, 240, 198";
   const w = cabDust.w;
   const h = cabDust.h;
 
@@ -9732,46 +9377,58 @@ function updateAndDrawCabinetDust(dt) {
     m.t += m.speed * speedMul * dt;
     if (m.t > 1) {
       m.t -= 1;
-      m.spread = (Math.random() * 2 - 1) * 0.92;
+      m.spread = (Math.random() * 2 - 1) * 0.94;
     }
 
-    // Tâm 2 luồng đèn spotlight rọi từ nóc tủ xiên nhẹ sang 2 bên
     const topX = m.beam === 0 ? w * 0.34 : w * 0.66;
-    const botX = m.beam === 0 ? w * 0.25 : w * 0.75;
-    const coneHalfW = w * (0.06 + m.t * 0.24);
+    const botX = m.beam === 0 ? w * 0.24 : w * 0.76;
+    const coneHalfW = w * (0.06 + m.t * 0.25);
     const sway = Math.sin(cabDust.clock * m.swayFreq + m.swayPhase) * m.swayAmp;
     const px = topX + (botX - topX) * m.t + m.spread * coneHalfW + sway;
-    const py = 6 + m.t * (h * 0.78);
+    const py = 5 + m.t * (h * 0.8);
 
-    // Mờ dần ở sát nóc và ở cuối luồng đèn, rực nhất ở giữa luồng đèn
     const vFade = Math.sin(Math.min(1, m.t) * Math.PI);
-    const edgeFade = Math.max(0.15, 1 - Math.abs(m.spread) * 0.75);
-    const twinkle = 0.42 + 0.58 * (0.5 + 0.5 * Math.sin(cabDust.clock * m.twinkleFreq + m.twinklePhase));
-    const alpha = Math.min(0.95, vFade * edgeFade * twinkle * brightMul * 0.88);
+    const edgeFade = Math.max(0.18, 1 - Math.abs(m.spread) * 0.72);
+    const rawPulse = 0.5 + 0.5 * Math.sin(cabDust.clock * m.twinkleFreq + m.twinklePhase);
+    const twinkle = 0.32 + 0.68 * (rawPulse * rawPulse);
+    const alpha = Math.min(1, vFade * edgeFade * twinkle * brightMul * 0.98);
     if (alpha < 0.04) continue;
 
-    // Hào quang mờ xung quanh hạt bụi sáng
-    ctx.fillStyle = `rgba(${rgb}, ${(alpha * 0.28).toFixed(3)})`;
+    const rgb = isMid
+      ? (m.warmTint > 0.5 ? "165, 224, 255" : "215, 238, 255")
+      : (m.warmTint > 0.45 ? "255, 236, 172" : "255, 250, 225");
+
+    // 1. Vầng bokeh mềm nhiều lớp
+    const grad = ctx.createRadialGradient(px, py, 0, px, py, m.r * 3.4);
+    grad.addColorStop(0, `rgba(255, 255, 250, ${(alpha * 0.92).toFixed(3)})`);
+    grad.addColorStop(0.35, `rgba(${rgb}, ${(alpha * 0.42).toFixed(3)})`);
+    grad.addColorStop(1, `rgba(${rgb}, 0)`);
+    ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.arc(px, py, m.r * 2.4, 0, Math.PI * 2);
+    ctx.arc(px, py, m.r * 3.4, 0, Math.PI * 2);
     ctx.fill();
 
-    // Lõi hạt bụi sáng
-    ctx.fillStyle = `rgba(255, 253, 245, ${alpha.toFixed(3)})`;
-    ctx.beginPath();
-    ctx.arc(px, py, m.r, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Tia lấp lánh 4 cánh khi hạt đạt đỉnh sáng
-    if (m.isStar && twinkle > 0.78 && alpha > 0.32) {
-      const arm = m.r * (2.6 + (twinkle - 0.78) * 6.5);
-      ctx.strokeStyle = `rgba(${rgb}, ${(alpha * 0.85).toFixed(3)})`;
-      ctx.lineWidth = 0.85;
+    // 2. Tia sao lấp lánh sắc nét (4 cánh chính + 4 cánh chéo nhỏ khi đạt đỉnh sáng)
+    if (m.isStar && rawPulse > 0.62 && alpha > 0.25) {
+      const flare = (rawPulse - 0.62) / 0.38;
+      const arm = m.r * (3.2 + flare * 5.2);
+      const diag = arm * 0.45;
+      ctx.strokeStyle = `rgba(255, 253, 240, ${(alpha * 0.95).toFixed(3)})`;
+      ctx.lineWidth = 0.95;
       ctx.beginPath();
       ctx.moveTo(px - arm, py);
       ctx.lineTo(px + arm, py);
       ctx.moveTo(px, py - arm);
       ctx.lineTo(px, py + arm);
+      ctx.stroke();
+
+      ctx.strokeStyle = `rgba(${rgb}, ${(alpha * 0.6).toFixed(3)})`;
+      ctx.lineWidth = 0.65;
+      ctx.beginPath();
+      ctx.moveTo(px - diag, py - diag);
+      ctx.lineTo(px + diag, py + diag);
+      ctx.moveTo(px + diag, py - diag);
+      ctx.lineTo(px - diag, py + diag);
       ctx.stroke();
     }
   }
@@ -9964,7 +9621,7 @@ function updateAndDrawCabinetCat(dt) {
     cheek: "#FF9AA6",
     isBlack: false,
   };
-  const outlineCol = pal.isBlack ? "#6A7082" : pal.ink;
+  const outlineCol = (typeof isDarkTheme === "function" && isDarkTheme() && pal.inkDark) ? pal.inkDark : pal.ink;
   const groundY = cabCat.h - 4;
   const isRunning = cabCat.phase === "toCenter" || cabCat.phase === "toRightEdge" || cabCat.phase === "return";
   const isOpening = cabCat.phase === "openAct";
@@ -10027,7 +9684,7 @@ function updateAndDrawCabinetCat(dt) {
       if (mode === "outline") {
         ctx.fillStyle = outlineCol;
         ctx.strokeStyle = outlineCol;
-        ctx.lineWidth = 3.5;
+        ctx.lineWidth = 4.2;
         ctx.stroke();
         ctx.fill();
       } else {
@@ -10074,22 +9731,23 @@ function updateAndDrawCabinetCat(dt) {
       ctx.ellipse(0, 0, 2.6, 5.4, 0, 0, Math.PI * 2);
       apply();
       ctx.restore();
-      // 2 chân trụ/bước ghì nặng
-      const s1 = isPulling ? Math.sin(cabCat.gait) * 1.8 : 0;
-      const s2 = isPulling ? Math.sin(cabCat.gait + Math.PI) * 1.8 : 0;
-      ctx.beginPath();
-      ctx.ellipse(-7.5 + s1 * 0.5, -0.8, 2.4, 2.8, 0, 0, Math.PI * 2);
-      apply();
-      ctx.beginPath();
-      ctx.ellipse(5.5 + s2 * 0.5, -0.8, 2.4, 2.8, 0, 0, Math.PI * 2);
-      apply();
+      // Đủ 4 chân bước ghì nặng y hệt con mèo gốc
+      for (let k = 0; k < 4; k++) {
+        const frac = (k / 3) * 2 - 1;
+        const ph = cabCat.gait + k * 1.45;
+        const sx = isPulling ? Math.sin(ph) * 1.8 : 0;
+        ctx.beginPath();
+        ctx.ellipse(frac * (rx * 0.62) + sx, 0.35, 2.25, 2.75, 0, 0, Math.PI * 2);
+        apply();
+      }
     } else {
-      ctx.beginPath();
-      ctx.ellipse(-4.9, -0.8, 2.3, 2.75, 0, 0, Math.PI * 2);
-      apply();
-      ctx.beginPath();
-      ctx.ellipse(4.9, -0.8, 2.3, 2.75, 0, 0, Math.PI * 2);
-      apply();
+      // ĐỨNG ĐỦ 4 CHÂN Y HỆT CON MÈO GỐC Ở TỦ SÁCH!
+      for (let k = 0; k < 4; k++) {
+        const frac = (k / 3) * 2 - 1;
+        ctx.beginPath();
+        ctx.ellipse(frac * (rx * 0.62), 0.35, 2.25, 2.75, 0, 0, Math.PI * 2);
+        apply();
+      }
     }
 
     traceBody();
@@ -10411,12 +10069,14 @@ function renderMerch() {
   if (!list.length) {
     container.innerHTML = `
       <div class="empty">
+        ${state.giftGroups.length ? '<canvas class="search-cat-canvas" data-search-cat="1" aria-hidden="true"></canvas>' : ""}
         <div class="empty-title">${state.giftGroups.length ? "Không tìm thấy truyện/quà phù hợp" : "Chưa có manga hay sách có quà nào"}</div>
         <div class="empty-desc">Tạo từng đầu manga/sách có quà, rồi bấm vào để thêm tên quà, ảnh quà, số lượng và giá tiền.</div>
         ${state.giftGroups.length ? "" : `<button class="btn btn-primary" id="emptyAddGiftGroupBtn">+ Tạo truyện có quà đầu tiên</button>`}
       </div>`;
     const btn = document.getElementById("emptyAddGiftGroupBtn");
     if (btn) btn.addEventListener("click", () => openGiftGroupForm());
+    if (typeof mountSearchMagnifierCat === "function") mountSearchMagnifierCat(container);
     return;
   }
 
@@ -11395,6 +11055,7 @@ function renderNews() {
     btn.addEventListener("click", () => {
       const item = state.pinned.find((x) => x.id === btn.dataset.importWish);
       if (item) {
+        if (typeof triggerHunterPounce === "function") triggerHunterPounce();
         openQuickImportFromNews({
           ...item,
           price: item.estPrice || 0,
@@ -11894,6 +11555,7 @@ function renderSpending(animateSpending = false) {
     legacyVols || legacyGifts
       ? ` · Đã tách ${legacyVols} tập${legacyGifts ? ` & ${legacyGifts} quà` : ""} mua từ trước (${fmtMoney(legacyPaid)}).`
       : "";
+  if (typeof updateBudgetVaultCat === "function") updateBudgetVaultCat(thisMonthSpent / Math.max(1, limit));
   document.getElementById("budgetNote").textContent =
     (thisMonthSpent > limit
       ? `Đã vượt hạn mức tháng ${fmtMoney(thisMonthSpent - limit)}.`
@@ -14220,5 +13882,761 @@ async function initApp() {
 initApp();
 
   </script>
+
+  <script>
+/* ===== capoo-universe.js (Mèo Gác Két · Mèo Trốn Tìm · Mèo Thợ Săn · Mèo Soi Kính Lúp) ===== */
+"use strict";
+
+function getExactCapooPalette() {
+  const pal = (typeof CAT_COLORS !== "undefined" && typeof getCapooColorKey === "function" && CAT_COLORS[getCapooColorKey()]) || {
+    body: "#59CBF0",
+    belly: "#FFFFFF",
+    ink: "#363740",
+    inkDark: "#24262E",
+    eye: "#2C2D35",
+    eyeShine: "#FFFFFF",
+    mouthLine: "#2C2D35",
+    pink: "#FF7B89",
+    cheek: "#FF9AA6",
+    isBlack: false,
+  };
+  const outlineCol = (typeof isDarkTheme === "function" && isDarkTheme() && pal.inkDark) ? pal.inkDark : pal.ink;
+  return { pal, outlineCol };
+}
+
+// Vẽ con mèo Capoo chuẩn 1:1 theo capoo.js (tỷ lệ rx=16.6, ry=9.7, nét 4.2, đứng đủ 4 chân!)
+function drawExactCapooBase(ctx, opts) {
+  const {
+    x = 0,
+    y = 0,
+    rx = 16.6,
+    ry = 9.7,
+    earDroop = 0,
+    gait = 0,
+    moveMix = 0,
+    faceDir = 0,
+    tilt = 0,
+    scaleX = 1,
+    scaleY = 1,
+    showShadow = true,
+    extraPass = null,
+    faceDraw = null,
+  } = opts || {};
+
+  const { pal, outlineCol } = getExactCapooPalette();
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(tilt);
+  ctx.scale(scaleX, scaleY);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  if (showShadow) {
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.beginPath();
+    ctx.ellipse(0, 1.4, rx * 0.92, 2.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 4 chân ngắn tũn y hệt capoo.js
+  const paws = [];
+  for (let k = 0; k < 4; k++) {
+    const frac = (k / 3) * 2 - 1;
+    const baseX = frac * (rx * 0.62);
+    const phase = gait + k * 1.45;
+    const swingX = Math.sin(phase) * 2.5 * moveMix;
+    const liftY = Math.max(0, -Math.cos(phase)) * 1.9 * moveMix;
+    paws.push({
+      x: baseX + swingX,
+      y: 0.35 - liftY,
+      rw: 2.25,
+      rh: 2.75,
+      rot: Math.sin(phase) * 0.26 * moveMix,
+    });
+  }
+
+  const geom = { rx, ry, earDroop, legVis: 1, showArms: false, armWave: 0, paws };
+  paintCapooUnifiedSilhouette(ctx, geom, "outline", pal, outlineCol);
+  if (typeof extraPass === "function") extraPass("outline", pal, outlineCol, rx, ry);
+  paintCapooUnifiedSilhouette(ctx, geom, "fill", pal, outlineCol);
+  if (typeof extraPass === "function") extraPass("fill", pal, outlineCol, rx, ry);
+
+  // Vòng lông bụng khác màu y hệt capoo.js
+  const faceShift = faceDir * 3.4;
+  ctx.save();
+  traceCapooLoaf(ctx, rx, ry);
+  ctx.clip();
+  ctx.fillStyle = pal.belly;
+  ctx.beginPath();
+  ctx.ellipse(faceShift * 0.55, 1.5, rx * 0.46, ry * 0.68, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Khuôn mặt y hệt capoo.js
+  ctx.save();
+  ctx.translate(faceShift, -ry * 1.14);
+  if (typeof faceDraw === "function") {
+    faceDraw(ctx, pal, outlineCol);
+  } else {
+    drawExactCapooDefaultFace(ctx, pal, faceDir, false);
+  }
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function drawExactCapooDefaultFace(ctx, pal, faceDir = 0, blink = false) {
+  ctx.fillStyle = pal.cheek;
+  ctx.globalAlpha = 0.48;
+  ctx.beginPath();
+  ctx.ellipse(-8.4, 1.6, 2.0, 1.2, 0, 0, Math.PI * 2);
+  ctx.ellipse(8.4, 1.6, 2.0, 1.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  if (blink) {
+    ctx.strokeStyle = pal.mouthLine;
+    ctx.lineWidth = 1.7;
+    ctx.beginPath();
+    ctx.moveTo(-7.4, 0);
+    ctx.lineTo(-4.2, 0);
+    ctx.moveTo(4.2, 0);
+    ctx.lineTo(7.4, 0);
+    ctx.stroke();
+  } else {
+    const rX = 2.05;
+    const rY = 2.3;
+    [-5.8, 5.8].forEach((ex) => {
+      const ey = -0.2;
+      if (pal.isBlack) {
+        ctx.fillStyle = "#FFFDF7";
+        ctx.beginPath();
+        ctx.ellipse(ex, ey, rX * 1.05, rY * 1.05, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#1D1F28";
+        ctx.beginPath();
+        ctx.ellipse(ex + faceDir * 0.3, ey, rX * 0.65, rY * 0.68, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.arc(ex - rX * 0.34, ey - rY * 0.34, 0.65, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = pal.eye;
+        ctx.beginPath();
+        ctx.ellipse(ex, ey, rX, rY, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = pal.eyeShine || "#FFFFFF";
+        ctx.beginPath();
+        ctx.arc(ex - rX * 0.32, ey - rY * 0.34, 0.65, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+  }
+
+  ctx.strokeStyle = pal.mouthLine;
+  ctx.lineWidth = 1.55;
+  ctx.beginPath();
+  ctx.moveTo(-2.85, 0.6);
+  ctx.quadraticCurveTo(-1.425, 2.7, 0, 1.0);
+  ctx.quadraticCurveTo(1.425, 2.7, 2.85, 0.6);
+  ctx.stroke();
+}
+
+/* ============================================================
+   1. MÈO GÁC KÉT (TAB CHI TIÊU — PHẢN ỨNG THEO HẠN MỨC THÁNG)
+   ============================================================ */
+const budgetCat = {
+  ratio: 0,
+  clock: 0,
+  rafId: null,
+  lastTs: 0,
+};
+
+function updateBudgetVaultCat(ratio) {
+  budgetCat.ratio = Math.max(0, Number(ratio) || 0);
+  const wrap = document.getElementById("budgetCatWrap");
+  if (wrap) wrap.style.display = state.catEnabled === false ? "none" : "block";
+  ensureBudgetCatLoop();
+}
+
+function ensureBudgetCatLoop() {
+  if (budgetCat.rafId !== null) return;
+  const view = document.getElementById("view-spending");
+  if (!view || !view.classList.contains("active") || state.catEnabled === false || document.hidden) return;
+  budgetCat.lastTs = performance.now();
+
+  const tick = (now) => {
+    const spView = document.getElementById("view-spending");
+    const canvas = document.getElementById("budgetCatCanvas");
+    if (!spView || !spView.classList.contains("active") || !canvas || state.catEnabled === false || document.hidden) {
+      budgetCat.rafId = null;
+      return;
+    }
+    const dt = Math.min(0.033, Math.max(0.004, (now - budgetCat.lastTs) / 1000));
+    budgetCat.lastTs = now;
+    budgetCat.clock += dt;
+
+    const cw = Math.round(canvas.clientWidth || 0);
+    if (cw >= 40) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (canvas.width !== Math.round(cw * dpr) || canvas.height !== Math.round(40 * dpr)) {
+        canvas.width = Math.round(cw * dpr);
+        canvas.height = Math.round(40 * dpr);
+      }
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cw, 40);
+
+      const r = budgetCat.ratio;
+      const pctClamped = Math.min(1, r);
+      const barEdgeX = Math.max(26, Math.min(cw - 26, cw * pctClamped));
+      const groundY = 36.5;
+
+      if (r < 0.5) {
+        // DƯỚI 50%: Đứng 4 chân ôm đồng xu vàng cười tít mắt!
+        const cx = Math.max(28, Math.min(cw - 28, barEdgeX + 20));
+        const bob = Math.sin(budgetCat.clock * 3.2) * 0.6;
+        drawExactCapooBase(ctx, {
+          x: cx,
+          y: groundY - bob,
+          faceDir: 0,
+          faceDraw: (c, pal) => {
+            c.fillStyle = pal.cheek;
+            c.globalAlpha = 0.72;
+            c.beginPath();
+            c.ellipse(-8.4, 1.6, 2.2, 1.3, 0, 0, Math.PI * 2);
+            c.ellipse(8.4, 1.6, 2.2, 1.3, 0, 0, Math.PI * 2);
+            c.fill();
+            c.globalAlpha = 1;
+            // Mắt cười ^ ^
+            c.strokeStyle = pal.mouthLine;
+            c.lineWidth = 1.7;
+            c.beginPath();
+            c.arc(-5.6, 0.6, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
+            c.stroke();
+            c.beginPath();
+            c.arc(5.6, 0.6, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
+            c.stroke();
+            // Miệng w
+            c.lineWidth = 1.55;
+            c.beginPath();
+            c.moveTo(-2.8, 0.9);
+            c.quadraticCurveTo(-1.4, 2.8, 0, 1.2);
+            c.quadraticCurveTo(1.4, 2.8, 2.8, 0.9);
+            c.stroke();
+          },
+        });
+        // Đồng xu vàng lấp lánh bên cạnh
+        const coinY = groundY - 8 + Math.sin(budgetCat.clock * 4) * 1.4;
+        ctx.save();
+        ctx.translate(cx + 21, coinY);
+        ctx.fillStyle = "#F4C44E";
+        ctx.strokeStyle = "#8C5E14";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(0, 0, 6.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#8C5E14";
+        ctx.font = '700 8px "IBM Plex Mono", monospace';
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("₫", 0, 0.5);
+        ctx.restore();
+      } else if (r <= 1.0) {
+        // 50%–100%: Đổ mồ hôi hột, nghiêng người chống tay ĐẨY NGƯỢC đầu thanh tiến độ!
+        const shake = Math.sin(budgetCat.clock * 38) * 0.9;
+        const cx = Math.min(cw - 24, Math.max(28, barEdgeX + 14));
+        drawExactCapooBase(ctx, {
+          x: cx + shake,
+          y: groundY,
+          earDroop: 0.35,
+          gait: budgetCat.clock * 11,
+          moveMix: 0.5,
+          faceDir: -0.9,
+          tilt: -0.16,
+          extraPass: (mode, pal, outlineCol, rx, ry) => {
+            // 1 tay trái chống đẩy thanh tiến độ
+            ctx.save();
+            ctx.translate(-rx * 0.96, -ry * 0.85);
+            ctx.rotate(-1.25);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 2.4, 5.0, 0, 0, Math.PI * 2);
+            if (mode === "outline") {
+              ctx.fillStyle = outlineCol;
+              ctx.strokeStyle = outlineCol;
+              ctx.lineWidth = 4.2;
+              ctx.stroke();
+              ctx.fill();
+            } else {
+              ctx.fillStyle = pal.body;
+              ctx.fill();
+            }
+            ctx.restore();
+          },
+          faceDraw: (c, pal) => {
+            c.strokeStyle = pal.mouthLine;
+            c.lineWidth = 1.65;
+            // Mắt > < gồng sức
+            c.beginPath();
+            c.moveTo(-7.2, -1.8);
+            c.lineTo(-4.2, -0.2);
+            c.lineTo(-7.2, 1.4);
+            c.moveTo(7.2, -1.8);
+            c.lineTo(4.2, -0.2);
+            c.lineTo(7.2, 1.4);
+            c.stroke();
+            c.beginPath();
+            c.moveTo(-2.8, 2.0);
+            c.quadraticCurveTo(0, 0.5, 2.8, 2.0);
+            c.stroke();
+            // Giọt mồ hôi
+            const swY = -5.5 + ((budgetCat.clock * 9) % 4.5);
+            c.fillStyle = "#6ED0FF";
+            c.strokeStyle = "#266899";
+            c.lineWidth = 1.0;
+            c.beginPath();
+            c.moveTo(10.5, swY - 2.6);
+            c.quadraticCurveTo(12.6, swY + 1.0, 10.5, swY + 2.2);
+            c.quadraticCurveTo(8.4, swY + 1.0, 10.5, swY - 2.6);
+            c.fill();
+            c.stroke();
+          },
+        });
+      } else {
+        // VƯỢT 100%: Ngất xỉu mắt X X bên cạnh ví rỗng có con ruồi bay ra!
+        const cx = cw * 0.5;
+        drawExactCapooBase(ctx, {
+          x: cx - 14,
+          y: groundY + 1,
+          earDroop: 0.72,
+          scaleX: 1.08,
+          scaleY: 0.84,
+          faceDraw: (c, pal) => {
+            c.strokeStyle = pal.mouthLine;
+            c.lineWidth = 1.7;
+            // Mắt X X
+            [[-5.6, -0.2], [5.6, -0.2]].forEach(([ex, ey]) => {
+              c.beginPath();
+              c.moveTo(ex - 2.0, ey - 2.0);
+              c.lineTo(ex + 2.0, ey + 2.0);
+              c.moveTo(ex + 2.0, ey - 2.0);
+              c.lineTo(ex - 2.0, ey + 2.0);
+              c.stroke();
+            });
+            // Miệng ngoằn ngoèo xỉu
+            c.lineWidth = 1.45;
+            c.beginPath();
+            c.moveTo(-3.2, 2.2);
+            c.quadraticCurveTo(-1.5, 0.8, 0, 2.0);
+            c.quadraticCurveTo(1.5, 3.2, 3.2, 1.8);
+            c.stroke();
+          },
+        });
+        // Ví rỗng + con ruồi bay vòng vòng
+        const wx = cx + 22;
+        const wy = groundY - 5;
+        ctx.fillStyle = "#8B5E3C";
+        ctx.strokeStyle = "#362315";
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(wx - 7, wy - 5, 14, 10, 2) : ctx.rect(wx - 7, wy - 5, 14, 10);
+        ctx.fill();
+        ctx.stroke();
+        const fx = wx + Math.cos(budgetCat.clock * 4.5) * 9;
+        const fy = wy - 12 + Math.sin(budgetCat.clock * 9) * 3.5;
+        ctx.fillStyle = "#2C2D35";
+        ctx.beginPath();
+        ctx.arc(fx, fy, 1.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    budgetCat.rafId = requestAnimationFrame(tick);
+  };
+  budgetCat.rafId = requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   2. MÈO TRỐN TÌM SAU KỆ GỖ (PEEK-A-BOO)
+   ============================================================ */
+const peekCat = {
+  rows: [],
+  rowIdx: 0,
+  btnEl: null,
+  canvas: null,
+  phase: "up", // "up" | "startle" | "hide"
+  timer: 0,
+  clock: 0,
+  rafId: null,
+  lastTs: 0,
+};
+
+function stopShelfPeekCat() {
+  if (peekCat.rafId !== null) {
+    cancelAnimationFrame(peekCat.rafId);
+    peekCat.rafId = null;
+  }
+  if (peekCat.btnEl && peekCat.btnEl.parentNode) {
+    peekCat.btnEl.parentNode.removeChild(peekCat.btnEl);
+  }
+  peekCat.btnEl = null;
+  peekCat.canvas = null;
+  peekCat.rows = [];
+}
+
+function placePeekCatInRow(rowIdx) {
+  if (!peekCat.rows.length) return;
+  const row = peekCat.rows[rowIdx % peekCat.rows.length];
+  if (!row || !row.isConnected) return;
+  if (peekCat.btnEl && peekCat.btnEl.parentNode) {
+    peekCat.btnEl.parentNode.removeChild(peekCat.btnEl);
+  }
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "peek-cat-btn";
+  btn.setAttribute("aria-label", "Mèo trốn tìm");
+  const cvs = document.createElement("canvas");
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cvs.width = Math.round(54 * dpr);
+  cvs.height = Math.round(36 * dpr);
+  btn.appendChild(cvs);
+
+  const maxLeft = Math.max(20, (row.clientWidth || 260) - 74);
+  const leftPx = Math.round(18 + Math.random() * (maxLeft - 18));
+  btn.style.left = leftPx + "px";
+
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (peekCat.phase !== "up") return;
+    peekCat.phase = "startle";
+    peekCat.timer = 0;
+    SFX.catTap(true);
+  });
+
+  row.appendChild(btn);
+  peekCat.btnEl = btn;
+  peekCat.canvas = cvs;
+  peekCat.rowIdx = rowIdx % peekCat.rows.length;
+}
+
+function mountShelfPeekCat(container) {
+  stopShelfPeekCat();
+  if (state.catEnabled === false || !container) return;
+  const rows = [...container.querySelectorAll(".shelf-row")];
+  if (!rows.length) return;
+  peekCat.rows = rows;
+  peekCat.phase = "up";
+  peekCat.timer = 0;
+  peekCat.clock = 0;
+  placePeekCatInRow(Math.floor(Math.random() * rows.length));
+  peekCat.lastTs = performance.now();
+
+  const tick = (now) => {
+    if (!peekCat.btnEl || !peekCat.btnEl.isConnected || state.catEnabled === false || state.bookView !== "shelf") {
+      peekCat.rafId = null;
+      return;
+    }
+    const dt = Math.min(0.033, Math.max(0.004, (now - peekCat.lastTs) / 1000));
+    peekCat.lastTs = now;
+    peekCat.clock += dt;
+
+    let dropY = 0;
+    let startled = false;
+    if (peekCat.phase === "up") {
+      peekCat.timer += dt;
+      const enterP = Math.min(1, peekCat.timer / 0.28);
+      dropY = (1 - enterP) * 26;
+    } else if (peekCat.phase === "startle") {
+      peekCat.timer += dt;
+      startled = true;
+      if (peekCat.timer < 0.2) {
+        dropY = -4 * Math.sin((peekCat.timer / 0.2) * Math.PI);
+      } else {
+        const p = Math.min(1, (peekCat.timer - 0.2) / 0.22);
+        dropY = p * 32;
+        if (p >= 1) {
+          peekCat.phase = "hide";
+          peekCat.timer = 0;
+        }
+      }
+    } else if (peekCat.phase === "hide") {
+      peekCat.timer += dt;
+      dropY = 36;
+      if (peekCat.timer >= 1.5) {
+        const nextRow = peekCat.rows.length > 1
+          ? (peekCat.rowIdx + 1 + Math.floor(Math.random() * (peekCat.rows.length - 1))) % peekCat.rows.length
+          : 0;
+        placePeekCatInRow(nextRow);
+        peekCat.phase = "up";
+        peekCat.timer = 0;
+      }
+    }
+
+    const cvs = peekCat.canvas;
+    if (cvs) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const ctx = cvs.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, 54, 36);
+
+      if (peekCat.phase !== "hide") {
+        const look = Math.sin(peekCat.clock * 1.4) * 0.55;
+        drawExactCapooBase(ctx, {
+          x: 27,
+          y: 35 + dropY,
+          faceDir: startled ? 0 : look,
+          showShadow: false,
+          faceDraw: startled
+            ? (c, pal) => {
+                // Giật mình mắt tròn xoe + dấu !
+                drawExactCapooDefaultFace(c, pal, 0, false);
+                c.fillStyle = "#FF5A67";
+                c.font = '700 10px "Be Vietnam Pro", sans-serif';
+                c.textAlign = "center";
+                c.fillText("!", 0, -14);
+              }
+            : null,
+        });
+      }
+    }
+
+    peekCat.rafId = requestAnimationFrame(tick);
+  };
+  peekCat.rafId = requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   3. MÈO THỢ SĂN (TAB SĂN KÈO / WISHLIST)
+   ============================================================ */
+const hunterCat = {
+  x: 64,
+  dir: 1,
+  phase: "scan", // "scan" | "pounce" | "dash"
+  timer: 0,
+  clock: 0,
+  gait: 0,
+  rafId: null,
+  lastTs: 0,
+};
+
+function triggerHunterPounce() {
+  hunterCat.phase = "pounce";
+  hunterCat.timer = 0;
+  SFX.catWake();
+  ensureHunterCatLoop();
+}
+
+function ensureHunterCatLoop() {
+  const stage = document.getElementById("hunterCatStage");
+  if (stage) stage.style.paddingTop = state.catEnabled === false ? "0" : "34px";
+  if (hunterCat.rafId !== null) return;
+  const view = document.getElementById("view-news");
+  if (!view || !view.classList.contains("active") || state.catEnabled === false || document.hidden) return;
+  hunterCat.lastTs = performance.now();
+
+  const tick = (now) => {
+    const nView = document.getElementById("view-news");
+    const canvas = document.getElementById("hunterCatCanvas");
+    if (!nView || !nView.classList.contains("active") || !canvas || state.catEnabled === false || document.hidden) {
+      hunterCat.rafId = null;
+      return;
+    }
+    const dt = Math.min(0.033, Math.max(0.004, (now - hunterCat.lastTs) / 1000));
+    hunterCat.lastTs = now;
+    hunterCat.clock += dt;
+
+    const cw = Math.round(canvas.clientWidth || 0);
+    if (cw >= 40) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (canvas.width !== Math.round(cw * dpr) || canvas.height !== Math.round(40 * dpr)) {
+        canvas.width = Math.round(cw * dpr);
+        canvas.height = Math.round(40 * dpr);
+      }
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cw, 40);
+
+      let hopY = 0;
+      let moveMix = 0;
+      let scanDir = Math.sin(hunterCat.clock * 1.45);
+      if (hunterCat.phase === "scan") {
+        hunterCat.x = Math.max(36, Math.min(cw - 120, cw * 0.28));
+      } else if (hunterCat.phase === "pounce") {
+        hunterCat.timer += dt;
+        const p = Math.min(1, hunterCat.timer / 0.35);
+        hopY = -Math.sin(p * Math.PI) * 11;
+        if (p >= 1) {
+          hunterCat.phase = "dash";
+          hunterCat.timer = 0;
+        }
+      } else if (hunterCat.phase === "dash") {
+        hunterCat.timer += dt;
+        moveMix = 1;
+        hunterCat.gait += dt * 18;
+        hunterCat.x -= 160 * dt;
+        scanDir = -1;
+        if (hunterCat.x < -28) {
+          hunterCat.x = cw * 0.28;
+          hunterCat.phase = "scan";
+          hunterCat.timer = 0;
+        }
+      }
+
+      drawExactCapooBase(ctx, {
+        x: hunterCat.x,
+        y: 36.5 + hopY,
+        gait: hunterCat.gait,
+        moveMix,
+        faceDir: scanDir * 0.85,
+        tilt: moveMix ? -0.08 : 0,
+        faceDraw: hunterCat.phase === "scan"
+          ? (c, pal) => {
+              // Ống nhòm săn kèo (OO) trước mắt!
+              drawExactCapooDefaultFace(c, pal, scanDir * 0.6, false);
+              c.fillStyle = "#3A3F4B";
+              c.strokeStyle = "#1E2028";
+              c.lineWidth = 1.4;
+              c.beginPath();
+              c.arc(-4.6, -0.2, 3.6, 0, Math.PI * 2);
+              c.arc(4.6, -0.2, 3.6, 0, Math.PI * 2);
+              c.fill();
+              c.stroke();
+              c.fillStyle = "#7AD4FF";
+              c.beginPath();
+              c.arc(-4.6, -0.2, 2.0, 0, Math.PI * 2);
+              c.arc(4.6, -0.2, 2.0, 0, Math.PI * 2);
+              c.fill();
+              c.fillStyle = "#FFFFFF";
+              c.beginPath();
+              c.arc(-5.3, -0.9, 0.7, 0, Math.PI * 2);
+              c.arc(3.9, -0.9, 0.7, 0, Math.PI * 2);
+              c.fill();
+            }
+          : null,
+      });
+    }
+
+    hunterCat.rafId = requestAnimationFrame(tick);
+  };
+  hunterCat.rafId = requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   4. MÈO SOI KÍNH LÚP KHI TÌM KHÔNG THẤY SÁCH / QUÀ
+   ============================================================ */
+let searchCatRafId = null;
+
+function mountSearchMagnifierCat(container) {
+  if (searchCatRafId !== null) {
+    cancelAnimationFrame(searchCatRafId);
+    searchCatRafId = null;
+  }
+  if (state.catEnabled === false || !container) return;
+  const canvas = container.querySelector("[data-search-cat]");
+  if (!canvas) return;
+
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.round(220 * dpr);
+  canvas.height = Math.round(54 * dpr);
+  const ctx = canvas.getContext("2d");
+
+  let x = 110;
+  let dir = 1;
+  let gait = 0;
+  let clock = 0;
+  let pauseT = 0;
+  let lastTs = performance.now();
+
+  const tick = (now) => {
+    if (!canvas.isConnected || state.catEnabled === false || document.hidden) {
+      searchCatRafId = null;
+      return;
+    }
+    const dt = Math.min(0.033, Math.max(0.004, (now - lastTs) / 1000));
+    lastTs = now;
+    clock += dt;
+
+    let moveMix = 0;
+    if (pauseT > 0) {
+      pauseT -= dt;
+    } else {
+      moveMix = 1;
+      gait += dt * 13;
+      x += dir * 48 * dt;
+      if (x >= 175) {
+        x = 175;
+        dir = -1;
+        pauseT = 1.2;
+      } else if (x <= 45) {
+        x = 45;
+        dir = 1;
+        pauseT = 1.2;
+      }
+    }
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, 220, 54);
+
+    const bounce = moveMix ? Math.abs(Math.sin(gait)) * 1.8 : 0;
+    drawExactCapooBase(ctx, {
+      x,
+      y: 48 - bounce,
+      gait,
+      moveMix,
+      faceDir: pauseT > 0 ? 0 : dir * 0.85,
+      tilt: moveMix ? dir * 0.05 : 0,
+    });
+
+    // Kính lúp đưa ra phía trước mặt mèo
+    const gx = x + (pauseT > 0 ? 18 : dir * 21);
+    const gy = 34 + Math.sin(clock * 4) * 1.2;
+    ctx.save();
+    ctx.translate(gx, gy);
+    ctx.strokeStyle = "#5A4636";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(dir * 3, 4);
+    ctx.lineTo(dir * 7, 10);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(180, 232, 255, 0.45)";
+    ctx.strokeStyle = "#3A3F4B";
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.arc(0, 0, 6.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    // Dấu ? ngố tàu khi dừng lại ngẩng đầu tìm
+    if (pauseT > 0) {
+      ctx.save();
+      ctx.translate(x, 15 + Math.sin(clock * 8) * 1.4);
+      ctx.fillStyle = "#FF5A67";
+      ctx.font = '700 13px "Be Vietnam Pro", sans-serif';
+      ctx.textAlign = "center";
+      ctx.fillText("?", 0, 0);
+      ctx.restore();
+    }
+
+    searchCatRafId = requestAnimationFrame(tick);
+  };
+  searchCatRafId = requestAnimationFrame(tick);
+}
+
+// Tự đánh thức Mèo Gác Két / Mèo Thợ Săn khi chuyển tab
+document.addEventListener("click", (e) => {
+  const tabBtn = e.target.closest(".tab-btn[data-tab]");
+  if (!tabBtn) return;
+  const tab = tabBtn.dataset.tab;
+  setTimeout(() => {
+    if (tab === "spending") ensureBudgetCatLoop();
+    else if (tab === "news") ensureHunterCatLoop();
+  }, 40);
+});
+  </script>
+
 </body>
 </html>
