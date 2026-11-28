@@ -9097,8 +9097,8 @@ function layoutCabinetItems(stageEl, specs) {
 }
 
 // Mèo Capoo quản gia đi trên thanh gỗ đáy tủ kính
-// - Mở tủ: chạy ra giữa, quay lưng vẫy đuôi đẩy 2 cánh cửa mở rồi quay về góc phải
-// - Đóng tủ: từ mép phải dùng 1 tay nắm cánh tủ kính kéo lê dần về giữa (biểu cảm nặng nề), đóng khít rồi quay về mép phải
+// - Mở tủ: chạy ra giữa, quay lưng vẫy đuôi đẩy 2 cánh cửa mở rồi quay về chỗ ngồi
+// - Đóng tủ: chạy sang mép phải nắm lấy cánh cửa kính, rồi dùng 1 tay kéo lê dần về giữa (cánh cửa bám khít đúng tay mèo theo công thức arccos!)
 const cabCat = {
   canvas: null,
   ctx: null,
@@ -9111,7 +9111,7 @@ const cabCat = {
   dpr: 1,
   x: 0,
   dir: -1,
-  phase: "sit", // "sit" | "toCenter" | "openAct" | "pullClose" | "closeRest" | "return"
+  phase: "sit", // "sit" | "toCenter" | "openAct" | "toRightEdge" | "grabPause" | "pullClose" | "closeRest" | "return"
   timer: 0,
   gait: 0,
   clock: 0,
@@ -9135,19 +9135,27 @@ function clearDoorPullInline() {
   }
 }
 
-function setDoorPullProgress(p) {
-  const clamped = Math.max(0, Math.min(1, p));
-  const ang = 104 * (1 - clamped);
-  const op = 0.35 + 0.65 * clamped;
+function setDoorAngleDeg(angDeg) {
+  const ang = Math.max(0, Math.min(104, angDeg));
+  const op = 0.35 + 0.65 * (1 - ang / 104);
   if (cabCat.frameEl) cabCat.frameEl.classList.add("is-pulling-close");
   if (cabCat.doorL) {
-    cabCat.doorL.style.transform = `rotateY(${(-ang).toFixed(1)}deg)`;
+    cabCat.doorL.style.transform = `rotateY(${(-ang).toFixed(2)}deg)`;
     cabCat.doorL.style.opacity = op.toFixed(2);
   }
   if (cabCat.doorR) {
-    cabCat.doorR.style.transform = `rotateY(${ang.toFixed(1)}deg)`;
+    cabCat.doorR.style.transform = `rotateY(${ang.toFixed(2)}deg)`;
     cabCat.doorR.style.opacity = op.toFixed(2);
   }
+}
+
+// Khóa mép cánh cửa phải bám CHÍNH XÁC từng pixel theo tọa độ bàn tay mèo (handX)
+function setDoorAngleFromHand(handX) {
+  const halfW = Math.max(1, cabCat.w * 0.5);
+  // Mép cánh cửa phải ở tọa độ: W - halfW * cos(theta) = handX => cos(theta) = (W - handX) / halfW
+  const cosVal = Math.max(0, Math.min(1, (cabCat.w - handX) / halfW));
+  const angDeg = (Math.acos(cosVal) * 180) / Math.PI;
+  setDoorAngleDeg(angDeg);
 }
 
 function fireCabCatCallbackOnce() {
@@ -9181,9 +9189,9 @@ function syncCabinetCatSize() {
   cabCat.canvas.width = Math.round(cw * dpr);
   cabCat.canvas.height = Math.round(50 * dpr);
   if (wasHome) {
-    cabCat.x = cw - 28;
+    cabCat.x = cw - 44;
   } else {
-    cabCat.x = Math.max(24, Math.min(cw - 24, (cabCat.x / prevW) * cw));
+    cabCat.x = Math.max(20, Math.min(cw - 16, (cabCat.x / prevW) * cw));
   }
   cabCat._lastHitX = -1;
   syncCabinetCatHit();
@@ -9232,7 +9240,7 @@ function triggerCabinetCatAction(actionType, onAct) {
     if (typeof onAct === "function") onAct();
     return;
   }
-  if (cabCat.phase === "toCenter" || cabCat.phase === "openAct" || cabCat.phase === "pullClose") {
+  if (cabCat.phase !== "sit" && cabCat.phase !== "return") {
     return;
   }
   cabCat.timer = 0;
@@ -9240,28 +9248,24 @@ function triggerCabinetCatAction(actionType, onAct) {
   cabCat.onActionCb = onAct;
 
   if (actionType === "close") {
-    // Đóng tủ: đứng từ mép phải dùng 1 tay nắm cánh tủ kéo dần về giữa!
-    cabCat.x = cabCat.w - 28;
-    cabCat.dir = -1;
-    cabCat.phase = "pullClose";
+    // Đóng tủ: chạy sang sát mép phải lấy cánh cửa trước rồi mới kéo về giữa!
+    cabCat.phase = "toRightEdge";
   } else {
-    // Mở tủ: chạy từ mép phải ra giữa rồi quay lưng đẩy mở
+    // Mở tủ: chạy ra giữa rồi quay lưng đẩy mở
     cabCat.phase = "toCenter";
   }
 
   SFX.catTap(false);
-  // Đảm bảo vòng lặp animation luôn chạy ngay lập tức
   resumeCabinetOrbitIfVisible();
-  // Bảo hiểm chống kẹt: tối đa 2s chắc chắn mở/đóng tủ dù trình duyệt tiết kiệm pin
   if (cabCat._safetyTimer) clearTimeout(cabCat._safetyTimer);
   cabCat._safetyTimer = setTimeout(() => {
     if (!cabCat.acted) {
       fireCabCatCallbackOnce();
       cabCat.phase = "sit";
-      cabCat.x = cabCat.w - 28;
+      cabCat.x = cabCat.w - 44;
       syncCabinetCatHit();
     }
-  }, 2000);
+  }, 2800);
 }
 
 function updateAndDrawCabinetCat(dt) {
@@ -9283,11 +9287,13 @@ function updateAndDrawCabinetCat(dt) {
   }
   if (cabCat.blinkDur > 0) cabCat.blinkDur -= dt;
 
-  const homeX = cabCat.w - 28;
+  const homeX = cabCat.w - 44;
+  const pawReachX = 18; // Khoảng cách từ tâm mèo đến đầu bàn tay phải khi nắm mép cửa
+  const grabX = cabCat.w - pawReachX; // Đứng sát mép phải sao cho tay vừa chạm đúng mép cửa ở W
+  const pullEndX = cabCat.w * 0.5 - pawReachX; // Kéo đến khi bàn tay phải (x + pawReachX) chạm đúng tâm W/2
   const midX = cabCat.w * 0.5;
-  const runSpeed = 195;
-  const pullSpeed = 115; // Kéo tủ nặng nên đi chậm hơn, gồng sức rõ ràng
-  let pullP = 0;
+  const runSpeed = 190;
+  const pullSpeed = 112;
 
   if (cabCat.phase === "toCenter") {
     const dx = midX - cabCat.x;
@@ -9310,27 +9316,46 @@ function updateAndDrawCabinetCat(dt) {
       cabCat.phase = "return";
       cabCat.timer = 0;
     }
+  } else if (cabCat.phase === "toRightEdge") {
+    // BƯỚC 1: Đi sang bên phải để lấy cánh cửa kính
+    const dx = grabX - cabCat.x;
+    cabCat.dir = dx >= 0 ? 1 : -1;
+    const step = runSpeed * dt;
+    cabCat.gait += dt * 18;
+    if (Math.abs(dx) <= step) {
+      cabCat.x = grabX;
+      cabCat.dir = 1;
+      cabCat.phase = "grabPause";
+      cabCat.timer = 0;
+    } else {
+      cabCat.x += cabCat.dir * step;
+    }
+  } else if (cabCat.phase === "grabPause") {
+    // BƯỚC 2: Vươn tay nắm lấy cánh cửa đang mở (cánh cửa từ 104° khép nhẹ về 90° chạm đúng tay)
+    cabCat.timer += dt;
+    const p = Math.min(1, cabCat.timer / 0.16);
+    setDoorAngleDeg(104 - 14 * p);
+    if (cabCat.timer >= 0.16) {
+      cabCat.phase = "pullClose";
+      cabCat.timer = 0;
+    }
   } else if (cabCat.phase === "pullClose") {
-    // KÉO CÁNH TỦ TỪ MÉP PHẢI VỀ GIỮA BẰNG 1 TAY
+    // BƯỚC 3: Kéo cánh tủ từ mép phải về giữa bằng 1 tay — cánh cửa bám chặt đúng tọa độ bàn tay!
     cabCat.timer += dt;
     cabCat.dir = -1;
-    const totalDist = Math.max(10, homeX - midX);
-    // Nhịp kéo giật nhẹ như đang kéo cánh kính nặng
     const tugFactor = 0.72 + Math.abs(Math.sin(cabCat.timer * 7.5)) * 0.56;
     const step = pullSpeed * tugFactor * dt;
     cabCat.gait += dt * 12;
 
-    if (cabCat.x - step <= midX) {
-      cabCat.x = midX;
-      pullP = 1;
-      setDoorPullProgress(1);
+    if (cabCat.x - step <= pullEndX) {
+      cabCat.x = pullEndX;
+      setDoorAngleDeg(0);
       fireCabCatCallbackOnce();
       cabCat.phase = "closeRest";
       cabCat.timer = 0;
     } else {
       cabCat.x -= step;
-      pullP = Math.max(0, Math.min(1, (homeX - cabCat.x) / totalDist));
-      setDoorPullProgress(pullP);
+      setDoorAngleFromHand(cabCat.x + pawReachX);
     }
   } else if (cabCat.phase === "closeRest") {
     cabCat.timer += dt;
@@ -9371,20 +9396,20 @@ function updateAndDrawCabinetCat(dt) {
   };
   const outlineCol = pal.isBlack ? "#6A7082" : pal.ink;
   const groundY = cabCat.h - 4;
-  const isRunning = cabCat.phase === "toCenter" || cabCat.phase === "return";
+  const isRunning = cabCat.phase === "toCenter" || cabCat.phase === "toRightEdge" || cabCat.phase === "return";
   const isOpening = cabCat.phase === "openAct";
+  const isGrabbing = cabCat.phase === "grabPause";
   const isPulling = cabCat.phase === "pullClose";
 
-  const pullShake = isPulling ? Math.sin(cabCat.timer * 44) * 1.0 : 0;
+  const pullShake = isPulling ? Math.sin(cabCat.timer * 44) * 0.85 : 0;
   const bounce = isRunning
     ? Math.abs(Math.sin(cabCat.gait)) * 2.2
     : isOpening
     ? Math.sin(Math.min(1, cabCat.timer / 0.35) * Math.PI) * 2.2
     : isPulling
-    ? Math.abs(Math.sin(cabCat.gait)) * 1.2
+    ? Math.abs(Math.sin(cabCat.gait)) * 1.1
     : Math.sin(cabCat.clock * 2.8) * 0.4;
-  // Khi kéo cửa sang trái: ngả người hẳn về bên trái (-0.2) để ghì sức kéo!
-  const tilt = isRunning ? cabCat.dir * 0.07 : isPulling ? -0.2 : 0;
+  const tilt = isRunning ? cabCat.dir * 0.07 : isPulling ? -0.18 : isGrabbing ? 0.1 : 0;
 
   ctx.save();
   ctx.translate(cabCat.x + pullShake, groundY - bounce);
@@ -9462,19 +9487,18 @@ function updateAndDrawCabinetCat(dt) {
         apply();
         ctx.restore();
       });
-    } else if (isPulling) {
-      // 1 TAY (TAY PHẢI) VƯƠN DÀI RA SAU NẮM MÉP CÁNH TỦ KÉO VỀ GIỮA!
-      const tug = Math.sin(cabCat.timer * 15) * 1.3;
+    } else if (isGrabbing || isPulling) {
+      // 1 TAY PHẢI VƯƠN RA ĐÚNG pawReachX (=18px) NẮM CHẶT MÉP CÁNH CỬA KÍNH!
       ctx.save();
-      ctx.translate(rx * 1.02 + tug, -ry * 1.15);
-      ctx.rotate(1.15);
+      ctx.translate(16.5, -ry * 1.12);
+      ctx.rotate(1.22);
       ctx.beginPath();
       ctx.ellipse(0, 0, 2.6, 5.4, 0, 0, Math.PI * 2);
       apply();
       ctx.restore();
-      // Chân bước ghì nặng
-      const s1 = Math.sin(cabCat.gait) * 1.8;
-      const s2 = Math.sin(cabCat.gait + Math.PI) * 1.8;
+      // 2 chân trụ/bước ghì nặng
+      const s1 = isPulling ? Math.sin(cabCat.gait) * 1.8 : 0;
+      const s2 = isPulling ? Math.sin(cabCat.gait + Math.PI) * 1.8 : 0;
       ctx.beginPath();
       ctx.ellipse(-7.5 + s1 * 0.5, -1.0, 2.5, 2.9, 0, 0, Math.PI * 2);
       apply();
@@ -9498,7 +9522,6 @@ function updateAndDrawCabinetCat(dt) {
   paintPass("fill");
 
   if (isOpening) {
-    // QUAY LƯNG MỞ TỦ: vẫy đuôi phía sau
     const wag = Math.sin(cabCat.timer * 24) * 0.38;
     ctx.save();
     ctx.translate(0, -3.2);
@@ -9539,8 +9562,8 @@ function updateAndDrawCabinetCat(dt) {
     ctx.fill();
     ctx.restore();
 
-    // Khuôn mặt (khi kéo về bên trái -> mặt hướng sang trái)
-    const lookX = isRunning ? cabCat.dir * 3.4 : isPulling ? -3.0 : 0;
+    // Khuôn mặt
+    const lookX = isRunning ? cabCat.dir * 3.4 : isGrabbing ? 3.0 : isPulling ? -3.0 : 0;
     ctx.save();
     ctx.translate(lookX, -ry * 1.02);
 
@@ -9557,7 +9580,7 @@ function updateAndDrawCabinetCat(dt) {
     ctx.lineWidth = 1.65;
 
     if (isPulling) {
-      // BIỂU CẢM GỒNG KÉO NẶNG RÕ NÉT: mắt nhắm nghiền > < + miệng mím gồng + giọt mồ hôi rơi!
+      // BIỂU CẢM GỒNG KÉO NẶNG RÕ NÉT
       ctx.beginPath();
       ctx.moveTo(-7.6, -2.3);
       ctx.lineTo(-4.2, -0.5);
@@ -9598,7 +9621,7 @@ function updateAndDrawCabinetCat(dt) {
       ctx.quadraticCurveTo(1.35, 3.3, 2.7, 1.8);
       ctx.stroke();
     } else {
-      // MẮT LẤP LÁNH TO RÕ NÉT GIỐNG MÈO TỦ SÁCH
+      // MẮT LẤP LÁNH TO RÕ NÉT
       const rX = 2.25;
       const rY = 2.45;
       const shineCol = pal.eyeShine || "#FFFFFF";
