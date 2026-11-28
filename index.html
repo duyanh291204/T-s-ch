@@ -9096,7 +9096,9 @@ function layoutCabinetItems(stageEl, specs) {
   }
 }
 
-// Mèo Capoo quản gia đi trên thanh gỗ đáy tủ kính (to rõ nét · quay lưng mở tủ · 2 tay kéo dần 2 cánh tủ vào giữa đóng nặng nề)
+// Mèo Capoo quản gia đi trên thanh gỗ đáy tủ kính
+// - Mở tủ: chạy ra giữa, quay lưng vẫy đuôi đẩy 2 cánh cửa mở rồi quay về góc phải
+// - Đóng tủ: từ mép phải dùng 1 tay nắm cánh tủ kính kéo lê dần về giữa (biểu cảm nặng nề), đóng khít rồi quay về mép phải
 const cabCat = {
   canvas: null,
   ctx: null,
@@ -9109,8 +9111,7 @@ const cabCat = {
   dpr: 1,
   x: 0,
   dir: -1,
-  phase: "sit", // "sit" | "toCenter" | "act" | "return"
-  action: "open", // "open" | "close"
+  phase: "sit", // "sit" | "toCenter" | "openAct" | "pullClose" | "closeRest" | "return"
   timer: 0,
   gait: 0,
   clock: 0,
@@ -9119,6 +9120,7 @@ const cabCat = {
   onActionCb: null,
   acted: false,
   _lastHitX: -1,
+  _safetyTimer: null,
 };
 
 function clearDoorPullInline() {
@@ -9134,7 +9136,6 @@ function clearDoorPullInline() {
 }
 
 function setDoorPullProgress(p) {
-  // p: 0 (đang mở toang -104deg/104deg) -> 1 (đóng khít 0deg)
   const clamped = Math.max(0, Math.min(1, p));
   const ang = 104 * (1 - clamped);
   const op = 0.35 + 0.65 * clamped;
@@ -9149,11 +9150,26 @@ function setDoorPullProgress(p) {
   }
 }
 
+function fireCabCatCallbackOnce() {
+  if (cabCat._safetyTimer) {
+    clearTimeout(cabCat._safetyTimer);
+    cabCat._safetyTimer = null;
+  }
+  if (cabCat.acted) return;
+  cabCat.acted = true;
+  clearDoorPullInline();
+  if (typeof cabCat.onActionCb === "function") {
+    const cb = cabCat.onActionCb;
+    cabCat.onActionCb = null;
+    cb();
+  }
+}
+
 function syncCabinetCatSize() {
   if (!cabCat.canvas) return false;
   const cw = Math.round(cabCat.canvas.clientWidth || 0);
   if (cw < 40) return false;
-  const dpr = Math.min(window.devicePixelRatio || 1, 3); // Canvas nhỏ nên dùng dpr 3 cho nét căng trên iPhone Retina
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
   if (cw === cabCat.w && cabCat.dpr === dpr && cabCat.canvas.width === Math.round(cw * dpr)) {
     return true;
   }
@@ -9184,6 +9200,10 @@ function syncCabinetCatHit() {
 }
 
 function initCabinetCat(canvasEl, hitEl, frameEl) {
+  if (cabCat._safetyTimer) {
+    clearTimeout(cabCat._safetyTimer);
+    cabCat._safetyTimer = null;
+  }
   cabCat.canvas = canvasEl || null;
   cabCat.ctx = canvasEl ? canvasEl.getContext("2d") : null;
   cabCat.hitEl = hitEl || null;
@@ -9212,13 +9232,36 @@ function triggerCabinetCatAction(actionType, onAct) {
     if (typeof onAct === "function") onAct();
     return;
   }
-  if (cabCat.phase === "toCenter" || cabCat.phase === "act") return;
-  cabCat.action = actionType === "close" ? "close" : "open";
-  cabCat.phase = "toCenter";
+  if (cabCat.phase === "toCenter" || cabCat.phase === "openAct" || cabCat.phase === "pullClose") {
+    return;
+  }
   cabCat.timer = 0;
   cabCat.acted = false;
   cabCat.onActionCb = onAct;
+
+  if (actionType === "close") {
+    // Đóng tủ: đứng từ mép phải dùng 1 tay nắm cánh tủ kéo dần về giữa!
+    cabCat.x = cabCat.w - 28;
+    cabCat.dir = -1;
+    cabCat.phase = "pullClose";
+  } else {
+    // Mở tủ: chạy từ mép phải ra giữa rồi quay lưng đẩy mở
+    cabCat.phase = "toCenter";
+  }
+
   SFX.catTap(false);
+  // Đảm bảo vòng lặp animation luôn chạy ngay lập tức
+  resumeCabinetOrbitIfVisible();
+  // Bảo hiểm chống kẹt: tối đa 2s chắc chắn mở/đóng tủ dù trình duyệt tiết kiệm pin
+  if (cabCat._safetyTimer) clearTimeout(cabCat._safetyTimer);
+  cabCat._safetyTimer = setTimeout(() => {
+    if (!cabCat.acted) {
+      fireCabCatCallbackOnce();
+      cabCat.phase = "sit";
+      cabCat.x = cabCat.w - 28;
+      syncCabinetCatHit();
+    }
+  }, 2000);
 }
 
 function updateAndDrawCabinetCat(dt) {
@@ -9242,62 +9285,63 @@ function updateAndDrawCabinetCat(dt) {
 
   const homeX = cabCat.w - 28;
   const midX = cabCat.w * 0.5;
-  const speed = 185;
-  let closePullP = 0; // Tiến độ kéo 2 cánh cửa vào giữa (0 -> 1)
+  const runSpeed = 195;
+  const pullSpeed = 115; // Kéo tủ nặng nên đi chậm hơn, gồng sức rõ ràng
+  let pullP = 0;
 
   if (cabCat.phase === "toCenter") {
     const dx = midX - cabCat.x;
     cabCat.dir = dx >= 0 ? 1 : -1;
-    const step = speed * dt;
+    const step = runSpeed * dt;
     cabCat.gait += dt * 18;
     if (Math.abs(dx) <= step) {
       cabCat.x = midX;
-      cabCat.phase = "act";
+      cabCat.phase = "openAct";
       cabCat.timer = 0;
     } else {
       cabCat.x += cabCat.dir * step;
     }
-  } else if (cabCat.phase === "act") {
+  } else if (cabCat.phase === "openAct") {
     cabCat.timer += dt;
-    if (cabCat.action === "open") {
-      if (!cabCat.acted && cabCat.timer >= 0.16) {
-        cabCat.acted = true;
-        if (typeof cabCat.onActionCb === "function") {
-          const cb = cabCat.onActionCb;
-          cabCat.onActionCb = null;
-          cb();
-        }
-      }
-      if (cabCat.timer >= 0.48) {
-        cabCat.phase = "return";
-        cabCat.timer = 0;
-      }
-    } else {
-      // ĐÓNG TỦ: Kéo dần 2 cánh cửa vào giữa trong 0.95s có nhịp giật nặng
-      const pullDur = 0.95;
-      const rawP = Math.min(1, cabCat.timer / pullDur);
-      // Nhịp kéo nặng: kéo từng nấc nhẹ rồi khép hẳn
-      closePullP = Math.min(1, rawP - Math.sin(rawP * Math.PI * 3) * 0.035 * (1 - rawP));
-      setDoorPullProgress(closePullP);
+    if (!cabCat.acted && cabCat.timer >= 0.16) {
+      fireCabCatCallbackOnce();
+    }
+    if (cabCat.timer >= 0.46) {
+      cabCat.phase = "return";
+      cabCat.timer = 0;
+    }
+  } else if (cabCat.phase === "pullClose") {
+    // KÉO CÁNH TỦ TỪ MÉP PHẢI VỀ GIỮA BẰNG 1 TAY
+    cabCat.timer += dt;
+    cabCat.dir = -1;
+    const totalDist = Math.max(10, homeX - midX);
+    // Nhịp kéo giật nhẹ như đang kéo cánh kính nặng
+    const tugFactor = 0.72 + Math.abs(Math.sin(cabCat.timer * 7.5)) * 0.56;
+    const step = pullSpeed * tugFactor * dt;
+    cabCat.gait += dt * 12;
 
-      if (!cabCat.acted && cabCat.timer >= pullDur) {
-        cabCat.acted = true;
-        clearDoorPullInline();
-        if (typeof cabCat.onActionCb === "function") {
-          const cb = cabCat.onActionCb;
-          cabCat.onActionCb = null;
-          cb();
-        }
-      }
-      if (cabCat.timer >= pullDur + 0.16) {
-        cabCat.phase = "return";
-        cabCat.timer = 0;
-      }
+    if (cabCat.x - step <= midX) {
+      cabCat.x = midX;
+      pullP = 1;
+      setDoorPullProgress(1);
+      fireCabCatCallbackOnce();
+      cabCat.phase = "closeRest";
+      cabCat.timer = 0;
+    } else {
+      cabCat.x -= step;
+      pullP = Math.max(0, Math.min(1, (homeX - cabCat.x) / totalDist));
+      setDoorPullProgress(pullP);
+    }
+  } else if (cabCat.phase === "closeRest") {
+    cabCat.timer += dt;
+    if (cabCat.timer >= 0.22) {
+      cabCat.phase = "return";
+      cabCat.timer = 0;
     }
   } else if (cabCat.phase === "return") {
     const dx = homeX - cabCat.x;
     cabCat.dir = dx >= 0 ? 1 : -1;
-    const step = (speed * 0.94) * dt;
+    const step = runSpeed * 0.94 * dt;
     cabCat.gait += dt * 16;
     if (Math.abs(dx) <= step) {
       cabCat.x = homeX;
@@ -9327,19 +9371,20 @@ function updateAndDrawCabinetCat(dt) {
   };
   const outlineCol = pal.isBlack ? "#6A7082" : pal.ink;
   const groundY = cabCat.h - 4;
-  const isMoving = cabCat.phase === "toCenter" || cabCat.phase === "return";
-  const isOpening = cabCat.phase === "act" && cabCat.action === "open";
-  const isClosing = cabCat.phase === "act" && cabCat.action === "close";
+  const isRunning = cabCat.phase === "toCenter" || cabCat.phase === "return";
+  const isOpening = cabCat.phase === "openAct";
+  const isPulling = cabCat.phase === "pullClose";
 
-  const pullShake = isClosing && !cabCat.acted ? Math.sin(cabCat.timer * 48) * 1.15 : 0;
-  const bounce = isMoving
+  const pullShake = isPulling ? Math.sin(cabCat.timer * 44) * 1.0 : 0;
+  const bounce = isRunning
     ? Math.abs(Math.sin(cabCat.gait)) * 2.2
     : isOpening
     ? Math.sin(Math.min(1, cabCat.timer / 0.35) * Math.PI) * 2.2
-    : isClosing
-    ? 0.2
+    : isPulling
+    ? Math.abs(Math.sin(cabCat.gait)) * 1.2
     : Math.sin(cabCat.clock * 2.8) * 0.4;
-  const tilt = isMoving ? cabCat.dir * 0.07 : 0;
+  // Khi kéo cửa sang trái: ngả người hẳn về bên trái (-0.2) để ghì sức kéo!
+  const tilt = isRunning ? cabCat.dir * 0.07 : isPulling ? -0.2 : 0;
 
   ctx.save();
   ctx.translate(cabCat.x + pullShake, groundY - bounce);
@@ -9350,12 +9395,11 @@ function updateAndDrawCabinetCat(dt) {
   // Bóng mờ dưới chân trên thanh gỗ
   ctx.fillStyle = "rgba(0,0,0,0.34)";
   ctx.beginPath();
-  ctx.ellipse(0, 1.5 + bounce * 0.35, isMoving ? 15.5 : 16.5, 2.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 1.5 + bounce * 0.35, isRunning || isPulling ? 15.5 : 16.5, 2.5, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Kích thước to hơn xíu & rõ nét, giữ đúng tỷ lệ bánh bao cute
-  const rx = isMoving ? 17.2 : isClosing ? 17.2 + Math.sin(closePullP * Math.PI) * 0.8 : 16.4;
-  const ry = isOpening ? 11.8 : isClosing ? 10.6 : 11.2;
+  const rx = isRunning || isPulling ? 17.2 : 16.4;
+  const ry = isOpening ? 11.8 : isPulling ? 10.6 : 11.2;
 
   const traceBody = () => {
     ctx.beginPath();
@@ -9394,7 +9438,7 @@ function updateAndDrawCabinetCat(dt) {
     traceEar(1);
     apply();
 
-    if (isMoving) {
+    if (isRunning) {
       const s1 = Math.sin(cabCat.gait) * 2.2;
       const s2 = Math.sin(cabCat.gait + Math.PI) * 2.2;
       [
@@ -9418,25 +9462,24 @@ function updateAndDrawCabinetCat(dt) {
         apply();
         ctx.restore();
       });
-    } else if (isClosing) {
-      // 2 TAY KÉO DẦN 2 CÁNH TỦ VÀO GIỮA: dang rộng (24px) -> kéo sát vào ngực (7px)
-      const armSpread = 23.5 - closePullP * 15.5;
-      const armY = -ry * 1.15 - (1 - closePullP) * 2.5;
-      [-1, 1].forEach((side) => {
-        ctx.save();
-        ctx.translate(side * armSpread, armY);
-        ctx.rotate(side * (1.18 - closePullP * 0.65));
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 2.6, 5.2, 0, 0, Math.PI * 2);
-        apply();
-        ctx.restore();
-      });
-      // 2 chân trụ rộng giữ thăng bằng khi gồng kéo
+    } else if (isPulling) {
+      // 1 TAY (TAY PHẢI) VƯƠN DÀI RA SAU NẮM MÉP CÁNH TỦ KÉO VỀ GIỮA!
+      const tug = Math.sin(cabCat.timer * 15) * 1.3;
+      ctx.save();
+      ctx.translate(rx * 1.02 + tug, -ry * 1.15);
+      ctx.rotate(1.15);
       ctx.beginPath();
-      ctx.ellipse(-6.8, -1.0, 2.5, 2.9, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, 2.6, 5.4, 0, 0, Math.PI * 2);
+      apply();
+      ctx.restore();
+      // Chân bước ghì nặng
+      const s1 = Math.sin(cabCat.gait) * 1.8;
+      const s2 = Math.sin(cabCat.gait + Math.PI) * 1.8;
+      ctx.beginPath();
+      ctx.ellipse(-7.5 + s1 * 0.5, -1.0, 2.5, 2.9, 0, 0, Math.PI * 2);
       apply();
       ctx.beginPath();
-      ctx.ellipse(6.8, -1.0, 2.5, 2.9, 0, 0, Math.PI * 2);
+      ctx.ellipse(5.5 + s2 * 0.5, -1.0, 2.5, 2.9, 0, 0, Math.PI * 2);
       apply();
     } else {
       ctx.beginPath();
@@ -9496,17 +9539,16 @@ function updateAndDrawCabinetCat(dt) {
     ctx.fill();
     ctx.restore();
 
-    // Khuôn mặt
-    const lookX = isMoving ? cabCat.dir * 3.4 : 0;
+    // Khuôn mặt (khi kéo về bên trái -> mặt hướng sang trái)
+    const lookX = isRunning ? cabCat.dir * 3.4 : isPulling ? -3.0 : 0;
     ctx.save();
     ctx.translate(lookX, -ry * 1.02);
 
-    // Má hồng đậm hơn khi gồng kéo nặng
     ctx.fillStyle = pal.cheek;
-    ctx.globalAlpha = isClosing ? 0.95 : 0.8;
+    ctx.globalAlpha = isPulling ? 0.95 : 0.8;
     ctx.beginPath();
-    ctx.ellipse(-7.5, 2.0, isClosing ? 2.5 : 2.2, 1.3, 0, 0, Math.PI * 2);
-    ctx.ellipse(7.5, 2.0, isClosing ? 2.5 : 2.2, 1.3, 0, 0, Math.PI * 2);
+    ctx.ellipse(-7.5, 2.0, isPulling ? 2.5 : 2.2, 1.3, 0, 0, Math.PI * 2);
+    ctx.ellipse(7.5, 2.0, isPulling ? 2.5 : 2.2, 1.3, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
 
@@ -9514,8 +9556,8 @@ function updateAndDrawCabinetCat(dt) {
     ctx.fillStyle = pal.eye;
     ctx.lineWidth = 1.65;
 
-    if (isClosing) {
-      // BIỂU CẢM GỒNG KÉO NẶNG RÕ NÉT: mắt nhắm nghiền > < + miệng mím gồng + 2 giọt mồ hôi rơi!
+    if (isPulling) {
+      // BIỂU CẢM GỒNG KÉO NẶNG RÕ NÉT: mắt nhắm nghiền > < + miệng mím gồng + giọt mồ hôi rơi!
       ctx.beginPath();
       ctx.moveTo(-7.6, -2.3);
       ctx.lineTo(-4.2, -0.5);
@@ -9525,7 +9567,6 @@ function updateAndDrawCabinetCat(dt) {
       ctx.lineTo(7.6, 1.3);
       ctx.stroke();
 
-      // Miệng gồng (~) rõ nét
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(-3.2, 2.5);
@@ -9533,15 +9574,14 @@ function updateAndDrawCabinetCat(dt) {
       ctx.quadraticCurveTo(1.5, 3.6, 3.2, 2.1);
       ctx.stroke();
 
-      // Giọt mồ hôi xanh rõ nét bên trán
       const swY = -6.2 + ((cabCat.timer * 9) % 4.5);
       ctx.fillStyle = "#6ED0FF";
       ctx.strokeStyle = "#266899";
       ctx.lineWidth = 1.0;
       ctx.beginPath();
-      ctx.moveTo(11.8, swY - 3.0);
-      ctx.quadraticCurveTo(14.2, swY + 1.2, 11.8, swY + 2.4);
-      ctx.quadraticCurveTo(9.4, swY + 1.2, 11.8, swY - 3.0);
+      ctx.moveTo(-11.2, swY - 3.0);
+      ctx.quadraticCurveTo(-13.6, swY + 1.2, -11.2, swY + 2.4);
+      ctx.quadraticCurveTo(-8.8, swY + 1.2, -11.2, swY - 3.0);
       ctx.fill();
       ctx.stroke();
     } else if (cabCat.blinkDur > 0) {
@@ -9877,11 +9917,17 @@ function renderMerch() {
     };
 
     if (catHitEl) {
-      catHitEl.addEventListener("pointerdown", (e) => e.stopPropagation());
-      catHitEl.addEventListener("click", (e) => {
+      let lastCatTapTs = 0;
+      const onCatTap = (e) => {
         e.stopPropagation();
+        const now = performance.now();
+        if (now - lastCatTapTs < 260) return;
+        lastCatTapTs = now;
         setCabinetOpen(!cabinetIsOpen);
-      });
+      };
+      catHitEl.addEventListener("pointerdown", (e) => e.stopPropagation());
+      catHitEl.addEventListener("pointerup", onCatTap);
+      catHitEl.addEventListener("click", onCatTap);
     }
 
     // Kéo tay xoay khối cầu 3D (có quán tính) + phân biệt rõ kéo vs chạm mở tủ / chạm món quà
