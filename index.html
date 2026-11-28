@@ -7718,7 +7718,6 @@ function openSectionDetail(seriesId, sectionId) {
   const totalPaid = vols.reduce((a, v) => a + (Number(v.paidPrice) || 0), 0);
   const diff = totalCover - totalPaid;
   const missing = isSpecialSection(sec) ? [] : findMissingVolumes(vols);
-  const lentCount = vols.filter((v) => (v.lentTo || "").trim()).length;
   const viewMode = state.volView || "cards";
   const secImg = resolveImg(sec.image);
   const maxNum = vols.reduce((m, x) => Math.max(m, Math.floor(Number(x.number) || 0)), 0);
@@ -7748,13 +7747,11 @@ function openSectionDetail(seriesId, sectionId) {
     volsHtml = `<div class="vol-compact-grid">${vols
       .map((v) => {
         const numStr = String(v.number).padStart(2, "0");
-        const isLent = Boolean((v.lentTo || "").trim());
-        const isSeal = v.readState === "Nguyên seal";
         const kPrice = v.paidPrice >= 1000 ? `${Math.round(v.paidPrice / 1000)}k` : `${v.paidPrice}đ`;
         return `
-          <button type="button" class="vol-compact-cell ${isLent ? "is-lent" : isSeal ? "is-seal" : ""}" data-vol-id="${v.id}" title="${esc(v.title || `Tập ${v.number}`)}">
+          <button type="button" class="vol-compact-cell" data-vol-id="${v.id}" title="${esc(v.title || `Tập ${v.number}`)}">
             <span class="vol-compact-num mono">${esc(numStr)}</span>
-            <span class="vol-compact-price mono">${isLent ? "Mượn" : isSeal ? "Seal" : kPrice}</span>
+            <span class="vol-compact-price mono">${kPrice}</span>
           </button>`;
       })
       .join("")}</div>`;
@@ -7763,19 +7760,9 @@ function openSectionDetail(seriesId, sectionId) {
       .map((v, idx) => {
         const numStr = String(v.number).padStart(2, "0");
         const volImg = resolveImg(v.image);
-        const isLent = Boolean((v.lentTo || "").trim());
-        const flagHtml = isLent
-          ? `<span class="vol-flag lent">Mượn: ${esc(v.lentTo)}</span>`
-          : v.readState === "Nguyên seal"
-          ? `<span class="vol-flag seal">Nguyên seal</span>`
-          : v.readState === "Đã đọc"
-          ? `<span class="vol-flag">Đã đọc</span>`
-          : "";
         const mediaHtml = volImg
-          ? `<img src="${esc(volImg)}" alt="Tập ${esc(v.number)}" loading="lazy" />
-             ${flagHtml}`
-          : `${flagHtml}
-             <span class="vol-card-num-big mono">${esc(numStr)}</span>
+          ? `<img src="${esc(volImg)}" alt="Tập ${esc(v.number)}" loading="lazy" />`
+          : `<span class="vol-card-num-big mono">${esc(numStr)}</span>
              <span class="small-muted" style="font-size:10px; margin-top:2px;">Tập ${esc(v.number)}</span>`;
         return `
           <button type="button" class="vol-card fx-card-in" style="--stagger:${idx}" data-vol-id="${v.id}">
@@ -7811,7 +7798,7 @@ function openSectionDetail(seriesId, sectionId) {
         <div class="mono small-muted" style="margin-top:3px;">
           ${vols.length} tập · Thực chi ${fmtMoney(totalPaid)} · Giá bìa ${fmtMoney(totalCover)}
           ${diff > 0 ? ` (tiết kiệm ${fmtMoney(diff)})` : ""}
-          ${lentCount ? ` · Đang cho mượn ${lentCount}` : ""}
+
         </div>
         ${sec.note ? `<div class="small-muted" style="margin-top:3px;">${esc(sec.note)}</div>` : ""}
       </div>
@@ -7932,12 +7919,8 @@ function openVolumeForm(seriesId, sectionId, volId = null, prefillVolNum = null)
           <input name="number" type="number" step="0.5" required value="${esc(defaultNum)}" />
         </div>
         <div class="field">
-          <label>Tình trạng</label>
-          <select name="readState">
-            ${["Chưa đọc", "Đang đọc", "Đã đọc", "Nguyên seal"]
-              .map((rs) => `<option value="${rs}" ${(v?.readState || "Chưa đọc") === rs ? "selected" : ""}>${rs}</option>`)
-              .join("")}
-          </select>
+          <label>Ngày mua</label>
+          <input name="date" id="volDateInput" type="date" value="${esc(v?.date || todayISO())}" />
         </div>
       </div>
       <div class="field">
@@ -7982,16 +7965,7 @@ function openVolumeForm(seriesId, sectionId, volId = null, prefillVolNum = null)
         </div>
       </div>
 
-      <div class="form-row-2">
-        <div class="field">
-          <label>Ngày mua</label>
-          <input name="date" id="volDateInput" type="date" value="${esc(v?.date || todayISO())}" />
-        </div>
-        <div class="field">
-          <label>Đang cho mượn (để trống nếu ở nhà)</label>
-          <input name="lentTo" value="${esc(v?.lentTo || "")}" placeholder="VD: Minh, Huy..." />
-        </div>
-      </div>
+
       <label class="check-inline">
         <input type="checkbox" name="isLegacy" id="volLegacyChk" ${v?.isLegacy ? "checked" : ""} />
         <span>Mua từ trước (không tính vào hạn mức tháng này)</span>
@@ -8171,8 +8145,8 @@ function openVolumeForm(seriesId, sectionId, volId = null, prefillVolNum = null)
         date: fd.get("date") || todayISO(),
         isLegacy: Boolean(volLegacyChk && volLegacyChk.checked),
         image: currentImg,
-        readState: fd.get("readState") || "Chưa đọc",
-        lentTo: (fd.get("lentTo") || "").trim(),
+        readState: "",
+        lentTo: "", 
         note: fd.get("note").trim(),
         groupId: v?.groupId || "",
         groupLabel: v?.groupLabel || "",
@@ -10800,6 +10774,23 @@ function updateAndDrawCabinetCat(dt) {
   ctx.setTransform(cabCat.dpr, 0, 0, cabCat.dpr, 0, 0);
   ctx.clearRect(0, 0, cabCat.w, cabCat.h);
 
+  // Sau 23h: Bé mèo quản gia nằm ngủ dẹt đội mũ ngủ y hệt tab Tủ sách (chạm vào vẫn dậy mở/đóng tủ bình thường!)
+  if (
+    cabCat.phase === "sit" &&
+    typeof isLateNightHour === "function" &&
+    isLateNightHour() &&
+    typeof drawExactSleepingCapoo === "function"
+  ) {
+    drawExactSleepingCapoo(ctx, {
+      x: cabCat.x,
+      y: cabCat.h - 4,
+      clock: cabCat.clock,
+      showShadow: true,
+      zColor: "255, 245, 220",
+    });
+    return;
+  }
+
   const pal = (typeof CAT_COLORS !== "undefined" && typeof getCapooColorKey === "function" && CAT_COLORS[getCapooColorKey()]) || {
     body: "#59CBF0",
     belly: "#FFFFFF",
@@ -11035,32 +11026,6 @@ function updateAndDrawCabinetCat(dt) {
       ctx.quadraticCurveTo(-8.8, swY + 1.2, -11.2, swY - 3.0);
       ctx.fill();
       ctx.stroke();
-    } else if (cabCat.phase === "sit" && typeof isLateNightHour === "function" && isLateNightHour()) {
-      // Sau 23h: Bé mèo quản gia ngủ gật trên thanh gỗ tủ kính (mắt nhắm + Zzz)
-      ctx.strokeStyle = pal.mouthLine;
-      ctx.lineWidth = 1.7;
-      ctx.beginPath();
-      ctx.moveTo(-7.4, 0.4);
-      ctx.quadraticCurveTo(-5.8, 1.5, -4.2, 0.4);
-      ctx.moveTo(4.2, 0.4);
-      ctx.quadraticCurveTo(5.8, 1.5, 7.4, 0.4);
-      ctx.stroke();
-      // Bong bóng mũi nhỏ phồng xẹp
-      const bR = 1.5 + Math.sin(cabCat.clock * 2.4) * 0.55;
-      ctx.fillStyle = "rgba(220, 244, 255, 0.85)";
-      ctx.strokeStyle = "rgba(110, 160, 200, 0.85)";
-      ctx.lineWidth = 0.9;
-      ctx.beginPath();
-      ctx.arc(3.2, 2.2, bR, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      // Chữ Z bay lên nhẹ
-      const zP = (cabCat.clock * 0.65) % 1;
-      ctx.save();
-      ctx.fillStyle = "rgba(255, 245, 220, " + ((1 - zP) * 0.85).toFixed(2) + ")";
-      ctx.font = "700 8px sans-serif";
-      ctx.fillText("z", 10 + zP * 5, -9 - zP * 8);
-      ctx.restore();
     } else if (cabCat.blinkDur > 0) {
       ctx.strokeStyle = pal.mouthLine;
       ctx.lineWidth = 1.7;
@@ -15263,6 +15228,161 @@ function drawExactCapooDefaultFace(ctx, pal, faceDir = 0, blink = false) {
   ctx.stroke();
 }
 
+// Vẽ bé mèo Capoo ngủ Y HỆT 100% con ở Tủ sách (nằm dẹt giấu chân, tai cụp, mũ ngủ xanh cục bông trắng, mắt nhắm, miệng w, bong bóng mũi phồng xẹp + chữ z bay)
+function drawExactSleepingCapoo(ctx, opts) {
+  const {
+    x = 0,
+    y = 0,
+    clock = 0,
+    showShadow = false,
+    zColor = null,
+  } = opts || {};
+
+  const { pal, outlineCol } = getExactCapooPalette();
+  const rx = 16.6;
+  const ry = 9.7;
+  const earDroop = 0.45;
+  const breath = Math.sin(clock * 2.4) * 0.06;
+  const scaleY = 1 + breath - 0.26;
+  const scaleX = 1 - breath * 0.4 + 0.2;
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  if (showShadow) {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+    ctx.beginPath();
+    ctx.ellipse(0, 1.4, 19.2, 2.4, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.save();
+  ctx.scale(scaleX, scaleY);
+
+  const traceBody = () => {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(rx * 0.9, 0, rx * 1.12, -ry * 0.24, rx * 1.02, -ry * 0.96);
+    ctx.bezierCurveTo(rx * 0.92, -ry * 1.66, rx * 0.55, -ry * 1.92, 0, -ry * 1.92);
+    ctx.bezierCurveTo(-rx * 0.55, -ry * 1.92, -rx * 0.92, -ry * 1.66, -rx * 1.02, -ry * 0.96);
+    ctx.bezierCurveTo(-rx * 1.12, -ry * 0.24, -rx * 0.9, 0, 0, 0);
+    ctx.closePath();
+  };
+
+  const traceEar = (side) => {
+    const bx1 = side * rx * 0.2;
+    const bx2 = side * rx * 0.86;
+    const by1 = -ry * 1.64;
+    const by2 = -ry * 1.16;
+    const tx = side * rx * (0.64 + earDroop * 0.12);
+    const ty = -ry * 2.38 + earDroop * 4.0;
+    ctx.beginPath();
+    ctx.moveTo(bx1, by1);
+    ctx.quadraticCurveTo(side * rx * 0.42, ty - 0.5, tx, ty);
+    ctx.quadraticCurveTo(side * rx * 0.92, ty + 1.3, bx2, by2);
+    ctx.closePath();
+  };
+
+  // PASS 1: Viền ngoài đồng nhất (không vẽ chân vì mèo nằm dẹt giấu chân y hệt tab Tủ sách)
+  ctx.fillStyle = outlineCol;
+  ctx.strokeStyle = outlineCol;
+  ctx.lineWidth = 4.2;
+  traceEar(-1); ctx.stroke(); ctx.fill();
+  traceEar(1); ctx.stroke(); ctx.fill();
+  traceBody(); ctx.stroke(); ctx.fill();
+
+  // PASS 2: Màu thân + tai
+  ctx.fillStyle = pal.body;
+  traceEar(-1); ctx.fill();
+  traceEar(1); ctx.fill();
+  traceBody(); ctx.fill();
+
+  // PASS 3: Bụng trắng
+  ctx.save();
+  traceBody();
+  ctx.clip();
+  ctx.fillStyle = pal.belly;
+  ctx.beginPath();
+  ctx.ellipse(0, 1.5, rx * 0.46, ry * 0.68, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Mũ ngủ xanh kèm cục bông trắng y hệt tab Tủ sách
+  ctx.save();
+  ctx.translate(-1.5, -ry * 1.85);
+  ctx.rotate(-0.18);
+  ctx.fillStyle = "#5A7FD6";
+  ctx.strokeStyle = outlineCol;
+  ctx.lineWidth = 1.45;
+  ctx.beginPath();
+  ctx.moveTo(-5.5, 1.2);
+  ctx.quadraticCurveTo(-1.0, -7.2, 7.2, -3.5);
+  ctx.quadraticCurveTo(3.2, -0.4, 4.8, 1.4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#FFFFFF";
+  ctx.beginPath();
+  ctx.arc(7.6, -3.4, 2.0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+
+  // PASS 4: Khuôn mặt ngủ y hệt tab Tủ sách (mắt nhắm cong, miệng w, bong bóng mũi phồng xẹp)
+  ctx.save();
+  ctx.translate(0, -ry * 1.14 + 1.8);
+  ctx.strokeStyle = pal.mouthLine;
+  ctx.lineWidth = 1.65;
+  ctx.beginPath();
+  ctx.arc(-5.4, 0.5, 2.1, 0.15 * Math.PI, 0.85 * Math.PI);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(5.4, 0.5, 2.1, 0.15 * Math.PI, 0.85 * Math.PI);
+  ctx.stroke();
+
+  // Miệng w nhỏ
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-2.1, 1.0);
+  ctx.quadraticCurveTo(-1.05, 3.0, 0, 1.4);
+  ctx.quadraticCurveTo(1.05, 3.0, 2.1, 1.0);
+  ctx.stroke();
+
+  // Bong bóng mũi phồng xẹp
+  const bubR = 1.8 + (Math.sin(clock * 2.4) * 0.5 + 0.5) * 2.0;
+  ctx.fillStyle = "rgba(180, 232, 255, 0.55)";
+  ctx.strokeStyle = pal.mouthLine;
+  ctx.lineWidth = 1.0;
+  ctx.beginPath();
+  ctx.arc(3.8, 1.2, bubR, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+  ctx.beginPath();
+  ctx.arc(3.8 - bubR * 0.3, 1.2 - bubR * 0.3, bubR * 0.28, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.restore(); // end scale
+
+  // Chữ z bay lên nhẹ nhàng giống hệt tab Tủ sách
+  const zBaseCol = zColor || (typeof isDarkTheme === "function" && isDarkTheme() ? "232, 224, 210" : "90, 72, 54");
+  for (let i = 0; i < 2; i++) {
+    const p = ((clock * 0.42) + i * 0.5) % 1;
+    const alpha = Math.sin(p * Math.PI) * 0.85;
+    if (alpha <= 0.04) continue;
+    ctx.save();
+    ctx.fillStyle = `rgba(${zBaseCol}, ${alpha.toFixed(2)})`;
+    ctx.font = `700 ${(7 + p * 3).toFixed(1)}px sans-serif`;
+    ctx.fillText(i === 0 ? "z" : "Z", 12 + p * 8 + Math.sin(p * 5) * 1.5, -16 - p * 14);
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
 /* ============================================================
    1. MÈO GÁC KÉT (TAB CHI TIÊU — PHẢN ỨNG THEO HẠN MỨC THÁNG)
    ============================================================ */
@@ -15315,37 +15435,16 @@ function ensureBudgetCatLoop() {
       const groundY = 45.2; // Đáy 4 chân chạm khít mép trên thanh hạn mức, không bị bay!
       const isNightSleep = typeof isLateNightHour === "function" && isLateNightHour();
 
-      const drawNightSleepFace = (c, pal) => {
-        c.strokeStyle = pal.mouthLine;
-        c.lineWidth = 1.7;
-        c.beginPath();
-        c.moveTo(-7.4, 0.4);
-        c.quadraticCurveTo(-5.8, 1.5, -4.2, 0.4);
-        c.moveTo(4.2, 0.4);
-        c.quadraticCurveTo(5.8, 1.5, 7.4, 0.4);
-        c.stroke();
-        const bR = 1.45 + Math.sin(budgetCat.clock * 2.3) * 0.5;
-        c.fillStyle = "rgba(220, 244, 255, 0.85)";
-        c.strokeStyle = "rgba(110, 160, 200, 0.85)";
-        c.lineWidth = 0.9;
-        c.beginPath();
-        c.arc(3.2, 2.2, bR, 0, Math.PI * 2);
-        c.fill();
-        c.stroke();
-      };
-
-      const drawFloatingZzz = (xPos, yPos) => {
-        const zP = (budgetCat.clock * 0.6) % 1;
-        ctx.save();
-        ctx.fillStyle = isDarkTheme()
-          ? `rgba(240, 232, 214, ${((1 - zP) * 0.85).toFixed(2)})`
-          : `rgba(80, 58, 38, ${((1 - zP) * 0.8).toFixed(2)})`;
-        ctx.font = "700 9px sans-serif";
-        ctx.fillText("z", xPos + zP * 5, yPos - zP * 9);
-        ctx.restore();
-      };
-
-      if (r < 0.5) {
+      if (isNightSleep) {
+        // Sau 23h: Bé mèo nằm ngủ dẹt đội mũ ngủ y hệt tab Tủ sách ngay trên thanh hạn mức!
+        const cx = r >= 1.0 ? Math.max(30, cw - 28) : Math.max(24, Math.min(cw - 24, rawEdgeX));
+        drawExactSleepingCapoo(ctx, {
+          x: cx,
+          y: 47.4, // Bụng áp sát khít mép trên thanh hạn mức (ch = 48)
+          clock: budgetCat.clock,
+          showShadow: false,
+        });
+      } else       if (r < 0.5) {
         // DƯỚI 50%: Đứng yên chắc 4 chân trên vạch hạn mức, đội đồng xu vàng (không bay!)
         const cx = Math.max(22, Math.min(cw - 22, rawEdgeX));
         const catY = groundY;
@@ -16051,18 +16150,54 @@ document.addEventListener("click", (e) => {
 /* ============================================================
    1. KỶ NIỆM TỦ SÁCH (MEMORY REEL STORY — KIỂU SPOTIFY WRAPPED / PHOTOS MEMORIES)
    ============================================================ */
-function openTimelapseModal() {
+function getRecapSeasonInfo() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  const d = now.getDate();
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const isEndOfMonth = d >= daysInMonth - 4;
+  const isEndOfYear = m === 12 && d >= 15;
+  return {
+    year: y,
+    month: m,
+    ymKey: `${y}-${String(m).padStart(2, "0")}`,
+    yearKey: String(y),
+    isEndOfMonth,
+    isEndOfYear,
+  };
+}
+
+function updateTimelapseBtnLabel() {
+  const btn = document.getElementById("openTimelapseBtn");
+  if (!btn) return;
+  const info = getRecapSeasonInfo();
+  if (info.isEndOfYear) {
+    btn.textContent = `✦ Tổng kết năm ${info.year}`;
+  } else if (info.isEndOfMonth) {
+    btn.textContent = `✦ Tổng kết T${info.month}`;
+  } else {
+    btn.textContent = "✦ Kỷ niệm tủ";
+  }
+}
+
+function openTimelapseModal(initialMode = null) {
   if (!state.series.length) {
     showToast("Tủ sách chưa có bộ nào để xem kỷ niệm!");
     return;
   }
 
-  // Thu thập dữ liệu kỷ niệm thật từ tủ của bạn
+  const season = getRecapSeasonInfo();
+  let activeMode = initialMode || (season.isEndOfYear ? "year" : season.isEndOfMonth ? "month" : "all");
+
+  // Thu thập toàn bộ dữ liệu tập & quà (phân biệt rõ hàng mới mua vs isLegacy mua từ trước)
   const allVols = [];
   const pubVols = {};
+  const monthKeysSet = new Set([season.ymKey]);
+  const yearKeysSet = new Set([season.yearKey]);
   let topSeries = null;
   let topSeriesCount = -1;
-  let totalSpent = 0;
+  let totalSpentAll = 0;
 
   state.series.forEach((s) => {
     const vols = getAllSeriesVolumes(s);
@@ -16073,122 +16208,394 @@ function openTimelapseModal() {
     const pub = s.publisher || "Khác";
     pubVols[pub] = (pubVols[pub] || 0) + vols.length;
     vols.forEach((v) => {
-      totalSpent += Number(v.paidPrice) || 0;
+      totalSpentAll += Number(v.paidPrice) || 0;
+      const dStr = v.date && /^\d{4}-\d{2}-\d{2}/.test(v.date) ? v.date.slice(0, 10) : (s.createdAt || todayISO());
+      if (!v.isLegacy && /^\d{4}-\d{2}/.test(dStr)) {
+        monthKeysSet.add(dStr.slice(0, 7));
+        yearKeysSet.add(dStr.slice(0, 4));
+      }
       allVols.push({
         series: s,
         vol: v,
-        date: (v.date && /^\d{4}-\d{2}-\d{2}/.test(v.date)) ? v.date.slice(0, 10) : (s.createdAt || todayISO()),
+        date: dStr,
+        isLegacy: Boolean(v.isLegacy),
       });
     });
   });
 
-  allVols.sort((a, b) => a.date.localeCompare(b.date));
-  const firstEntry = allVols[0] || { series: state.series[state.series.length - 1], vol: null, date: todayISO() };
-  const latestEntry = allVols[allVols.length - 1] || { series: state.series[0], vol: null, date: todayISO() };
-  const phys = typeof computePhysicalStats === "function" ? computePhysicalStats() : { totalVols: allVols.length, lengthText: "0 m", weightText: "0 kg", fullSeriesCount: 0, totalGiftQty: 0 };
+  const allGifts = [];
+  (state.giftGroups || []).forEach((g) => {
+    (g.gifts || []).forEach((it) => {
+      const dStr = it.date && /^\d{4}-\d{2}-\d{2}/.test(it.date) ? it.date.slice(0, 10) : (g.createdAt || todayISO());
+      if (!it.isLegacy && /^\d{4}-\d{2}/.test(dStr)) {
+        monthKeysSet.add(dStr.slice(0, 7));
+        yearKeysSet.add(dStr.slice(0, 4));
+      }
+      allGifts.push({ group: g, gift: it, date: dStr, isLegacy: Boolean(it.isLegacy) });
+    });
+  });
 
-  const sortedPubs = Object.entries(pubVols).sort((a, b) => b[1] - a[1]);
-  const favPub = sortedPubs[0] ? sortedPubs[0][0] : "Khác";
-  const favPubCnt = sortedPubs[0] ? sortedPubs[0][1] : 0;
-  const favPubPct = allVols.length ? Math.round((favPubCnt / allVols.length) * 100) : 0;
+  const availMonths = [...monthKeysSet].sort((a, b) => b.localeCompare(a));
+  const availYears = [...yearKeysSet].sort((a, b) => b.localeCompare(a));
+  let selectedMonth = availMonths[0] || season.ymKey;
+  let selectedYear = availYears[0] || season.yearKey;
 
-  const recentCovers = state.series
-    .filter((s) => resolveImg(s.cover))
-    .slice(0, 3)
-    .map((s) => ({ title: s.title, src: resolveImg(s.cover) }));
+  const fmtMonthVN = (ym) => {
+    const [y, m] = ym.split("-");
+    return `Tháng ${Number(m)}/${y}`;
+  };
 
-  const favPubCovers = state.series
-    .filter((s) => s.publisher === favPub && resolveImg(s.cover))
-    .slice(0, 3)
-    .map((s) => ({ title: s.title, src: resolveImg(s.cover) }));
+  const buildAllSlides = () => {
+    const sorted = [...allVols].sort((a, b) => a.date.localeCompare(b.date));
+    const firstEntry = sorted[0] || { series: state.series[state.series.length - 1], vol: null, date: todayISO() };
+    const latestEntry = sorted[sorted.length - 1] || { series: state.series[0], vol: null, date: todayISO() };
+    const phys =
+      typeof computePhysicalStats === "function"
+        ? computePhysicalStats()
+        : { totalVols: allVols.length, lengthText: "0 m", weightText: "0 kg", fullSeriesCount: 0, totalGiftQty: 0 };
 
-  const firstCover = resolveImg(firstEntry.vol?.image) || resolveImg(firstEntry.series?.cover);
-  const topCover = resolveImg(topSeries?.cover);
+    const sortedPubs = Object.entries(pubVols).sort((a, b) => b[1] - a[1]);
+    const favPub = sortedPubs[0] ? sortedPubs[0][0] : "Khác";
+    const favPubCnt = sortedPubs[0] ? sortedPubs[0][1] : 0;
+    const favPubPct = allVols.length ? Math.round((favPubCnt / allVols.length) * 100) : 0;
 
-  const slides = [
-    {
-      rgb: "214, 138, 72",
-      eyebrow: "KỶ NIỆM TỦ SÁCH",
-      title: `${phys.totalVols} cuốn truyện & sách đã về chung một nhà`,
-      sub: `Hành trình sưu tầm bắt đầu từ ${firstEntry.date} đến hôm nay — đủ xếp dài ${phys.lengthText} và nặng ${phys.weightText} giấy.`,
-      mediaHtml: recentCovers.length
-        ? `<div class="mem-collage">${recentCovers
-            .map((c) => `<div class="mem-collage-item"><img src="${esc(c.src)}" alt="" /></div>`)
-            .join("")}</div>`
-        : "",
-      pills: [`${state.series.length} đầu sách`, `${phys.fullSeriesCount} bộ đã FULL`, `${phys.totalGiftQty} món quà`],
-    },
-    {
-      rgb: "110, 168, 218",
-      eyebrow: "KHỞI ĐẦU HÀNH TRÌNH",
-      title: firstEntry.series?.title || "Cuốn đầu tiên",
-      sub: `Mốc đầu tiên được ghi lại vào ngày ${firstEntry.date}${firstEntry.vol ? ` (Tập ${firstEntry.vol.number})` : ""}. Mọi tủ sách lớn đều bắt đầu từ cuốn đầu tiên này.`,
-      mediaHtml: firstCover
-        ? `<div class="mem-polaroid"><img src="${esc(firstCover)}" alt="" /><div class="mem-polaroid-cap mono">${esc(firstEntry.date)}</div></div>`
-        : "",
-      pills: [firstEntry.series?.publisher || "Tủ Sách", firstEntry.series?.category || "Manga"],
-    },
-    {
-      rgb: "224, 112, 92",
-      eyebrow: "BỘ TÂM HUYẾT NHẤT",
-      title: topSeries?.title || "Bộ nhiều tập nhất",
-      sub: `Bạn đã gắn bó tới ${topSeriesCount} tập cho bộ này — chiếm vị trí trang trọng nhất trên kệ.`,
-      mediaHtml: topCover
-        ? `<div class="mem-polaroid" style="transform:rotate(2.2deg);"><img src="${esc(topCover)}" alt="" /><div class="mem-polaroid-cap mono">${topSeriesCount} tập</div></div>`
-        : "",
-      pills: [`${topSeriesCount} tập`, topSeries?.publisher || "", topSeries?.status || "Đang theo"].filter(Boolean),
-    },
-    {
+    const recentCovers = state.series
+      .filter((s) => resolveImg(s.cover))
+      .slice(0, 3)
+      .map((s) => ({ title: s.title, src: resolveImg(s.cover) }));
+
+    const favPubCovers = state.series
+      .filter((s) => s.publisher === favPub && resolveImg(s.cover))
+      .slice(0, 3)
+      .map((s) => ({ title: s.title, src: resolveImg(s.cover) }));
+
+    const firstCover = resolveImg(firstEntry.vol?.image) || resolveImg(firstEntry.series?.cover);
+    const topCover = resolveImg(topSeries?.cover);
+
+    return [
+      {
+        rgb: "214, 138, 72",
+        eyebrow: "KỶ NIỆM TỦ SÁCH",
+        title: `${phys.totalVols} cuốn truyện & sách đã về chung một nhà`,
+        sub: `Hành trình sưu tầm bắt đầu từ ${firstEntry.date} đến hôm nay — đủ xếp dài ${phys.lengthText} và nặng ${phys.weightText} giấy.`,
+        mediaHtml: recentCovers.length
+          ? `<div class="mem-collage">${recentCovers
+              .map((c) => `<div class="mem-collage-item"><img src="${esc(c.src)}" alt="" /></div>`)
+              .join("")}</div>`
+          : "",
+        pills: [`${state.series.length} đầu sách`, `${phys.fullSeriesCount} bộ đã FULL`, `${phys.totalGiftQty} món quà`],
+      },
+      {
+        rgb: "110, 168, 218",
+        eyebrow: "KHỞI ĐẦU HÀNH TRÌNH",
+        title: firstEntry.series?.title || "Cuốn đầu tiên",
+        sub: `Mốc đầu tiên được ghi lại vào ngày ${firstEntry.date}${firstEntry.vol ? ` (Tập ${firstEntry.vol.number})` : ""}. Mọi tủ sách lớn đều bắt đầu từ cuốn đầu tiên này.`,
+        mediaHtml: firstCover
+          ? `<div class="mem-polaroid"><img src="${esc(firstCover)}" alt="" /><div class="mem-polaroid-cap mono">${esc(firstEntry.date)}</div></div>`
+          : "",
+        pills: [firstEntry.series?.publisher || "Tủ Sách", firstEntry.series?.category || "Manga"],
+      },
+      {
+        rgb: "224, 112, 92",
+        eyebrow: "BỘ TÂM HUYẾT NHẤT",
+        title: topSeries?.title || "Bộ nhiều tập nhất",
+        sub: `Bạn đã gắn bó tới ${topSeriesCount} tập cho bộ này — chiếm vị trí trang trọng nhất trên kệ.`,
+        mediaHtml: topCover
+          ? `<div class="mem-polaroid" style="transform:rotate(2.2deg);"><img src="${esc(topCover)}" alt="" /><div class="mem-polaroid-cap mono">${topSeriesCount} tập</div></div>`
+          : "",
+        pills: [`${topSeriesCount} tập`, topSeries?.publisher || "", topSeries?.status || "Đang theo"].filter(Boolean),
+      },
+      {
+        rgb: "95, 179, 156",
+        eyebrow: "NHÀ XUẤT BẢN RUỘT",
+        title: `Tín đồ ${favPub}`,
+        sub: `${favPub} chiếm ${favPubPct}% toàn bộ tủ sách của bạn với ${favPubCnt} tập đã sưu tầm.`,
+        mediaHtml: favPubCovers.length
+          ? `<div class="mem-collage">${favPubCovers
+              .map((c) => `<div class="mem-collage-item"><img src="${esc(c.src)}" alt="" /></div>`)
+              .join("")}</div>`
+          : "",
+        pills: [`${favPubCnt} tập`, `${favPubPct}% tủ sách`],
+      },
+      {
+        rgb: "212, 170, 98",
+        eyebrow: "TIẾP TỤC VIẾT TIẾP",
+        title: `Mới nhất: ${latestEntry.series?.title || "Tủ Sách"}`,
+        sub: `Tổng giá trị sưu tầm ${fmtMoney(totalSpentAll)}. Chúc bạn săn được thật nhiều bản ĐB đẹp và lấp đầy kệ mơ ước!`,
+        mediaHtml: resolveImg(latestEntry.series?.cover)
+          ? `<div class="mem-polaroid"><img src="${esc(resolveImg(latestEntry.series?.cover))}" alt="" /><div class="mem-polaroid-cap mono">${esc(latestEntry.date)}</div></div>`
+          : "",
+        pills: [fmtMoney(totalSpentAll), `${phys.lengthText} kệ`, `${phys.totalVols} tập`],
+      },
+    ];
+  };
+
+  const buildMonthSlides = (ym) => {
+    const label = fmtMonthVN(ym);
+    const mVols = allVols.filter((x) => !x.isLegacy && x.date.startsWith(ym));
+    const mGifts = allGifts.filter((x) => !x.isLegacy && x.date.startsWith(ym));
+    const giftQty = mGifts.reduce((a, x) => a + Math.max(1, Number(x.gift.quantity) || 1), 0);
+    const giftSpent = mGifts.reduce((a, x) => a + (Number(x.gift.price) || 0), 0);
+
+    if (!mVols.length && !mGifts.length) {
+      return [
+        {
+          rgb: "110, 168, 218",
+          eyebrow: `TỔNG KẾT ${label.toUpperCase()}`,
+          title: `Chưa ghi nhận cuốn mới trong ${label}`,
+          sub: "Tháng này ví được nghỉ ngơi trọn vẹn (các tập đánh dấu 'Mua từ trước' không tính vào tổng kết tháng).",
+          mediaHtml: "",
+          pills: ["0 tập", "0đ thực chi"],
+        },
+      ];
+    }
+
+    const volSpent = mVols.reduce((a, x) => a + (Number(x.vol.paidPrice) || 0), 0);
+    const volCover = mVols.reduce((a, x) => a + (Number(x.vol.coverPrice) || 0), 0);
+    const saved = Math.max(0, volCover - volSpent);
+    const totalMonthSpent = volSpent + giftSpent;
+
+    const bySeries = new Map();
+    mVols.forEach((x) => {
+      const sid = x.series.id;
+      if (!bySeries.has(sid)) bySeries.set(sid, { series: x.series, vols: [], spent: 0 });
+      const rec = bySeries.get(sid);
+      rec.vols.push(x.vol);
+      rec.spent += Number(x.vol.paidPrice) || 0;
+    });
+    const rankedSeries = [...bySeries.values()].sort((a, b) => b.vols.length - a.vols.length || b.spent - a.spent);
+    const topM = rankedSeries[0] || null;
+
+    const covers = [];
+    const seenImg = new Set();
+    mVols.forEach((x) => {
+      const src = resolveImg(x.vol.image) || resolveImg(x.series.cover);
+      if (src && !seenImg.has(src) && covers.length < 3) {
+        seenImg.add(src);
+        covers.push(src);
+      }
+    });
+
+    const slides = [
+      {
+        rgb: "214, 138, 72",
+        eyebrow: `TỔNG KẾT CUỐI ${label.toUpperCase()}`,
+        title: `Rước thêm ${mVols.length} tập trong ${label}`,
+        sub: `Bổ sung cho ${rankedSeries.length} đầu truyện/sách${giftQty ? ` và ${giftQty} món quà` : ""}. Tổng thực chi ${fmtMoney(totalMonthSpent)}${saved > 0 ? ` — tiết kiệm được ${fmtMoney(saved)} so với giá bìa!` : "."}`,
+        mediaHtml: covers.length
+          ? `<div class="mem-collage">${covers
+              .map((src) => `<div class="mem-collage-item"><img src="${esc(src)}" alt="" /></div>`)
+              .join("")}</div>`
+          : "",
+        pills: [`+${mVols.length} tập`, `${rankedSeries.length} bộ`, fmtMoney(totalMonthSpent)],
+      },
+    ];
+
+    if (topM) {
+      const topImg = resolveImg(topM.vols[0]?.image) || resolveImg(topM.series.cover);
+      const nums = topM.vols.map((v) => v.number).sort((a, b) => a - b);
+      const numDesc = nums.length <= 4 ? `Tập ${nums.join(", ")}` : `Tập ${nums[0]}–${nums[nums.length - 1]}`;
+      slides.push({
+        rgb: "224, 112, 92",
+        eyebrow: `NGÔI SAO ${label.toUpperCase()}`,
+        title: topM.series.title,
+        sub: `Bộ bạn rước nhiều nhất tháng này với ${topM.vols.length} tập (${numDesc}) · Tổng chi ${fmtMoney(topM.spent)}.`,
+        mediaHtml: topImg
+          ? `<div class="mem-polaroid" style="transform:rotate(2deg);"><img src="${esc(topImg)}" alt="" /><div class="mem-polaroid-cap mono">+${topM.vols.length} tập</div></div>`
+          : "",
+        pills: [`${topM.vols.length} tập`, fmtMoney(topM.spent), topM.series.publisher || ""],
+      });
+    }
+
+    const summaryLines = rankedSeries
+      .slice(0, 6)
+      .map((r) => `${r.series.title} (+${r.vols.length})`);
+    if (rankedSeries.length > 6) summaryLines.push(`+${rankedSeries.length - 6} bộ khác`);
+
+    slides.push({
       rgb: "95, 179, 156",
-      eyebrow: "NHÀ XUẤT BẢN RUỘT",
-      title: `Tín đồ ${favPub}`,
-      sub: `${favPub} chiếm ${favPubPct}% toàn bộ tủ sách của bạn với ${favPubCnt} tập đã sưu tầm.`,
-      mediaHtml: favPubCovers.length
-        ? `<div class="mem-collage">${favPubCovers
-            .map((c) => `<div class="mem-collage-item"><img src="${esc(c.src)}" alt="" /></div>`)
-            .join("")}</div>`
-        : "",
-      pills: [`${favPubCnt} tập`, `${favPubPct}% tủ sách`],
-    },
-    {
-      rgb: "212, 170, 98",
-      eyebrow: "TIẾP TỤC VIẾT TIẾP",
-      title: `Mới nhất: ${latestEntry.series?.title || "Tủ Sách"}`,
-      sub: `Tổng giá trị sưu tầm ${fmtMoney(totalSpent)}. Chúc bạn săn được thật nhiều bản ĐB đẹp và lấp đầy kệ mơ ước!`,
-      mediaHtml: resolveImg(latestEntry.series?.cover)
-        ? `<div class="mem-polaroid"><img src="${esc(resolveImg(latestEntry.series?.cover))}" alt="" /><div class="mem-polaroid-cap mono">${esc(latestEntry.date)}</div></div>`
-        : "",
-      pills: [fmtMoney(totalSpent), `${phys.lengthText} kệ`, `${phys.totalVols} tập`],
-    },
-  ];
+      eyebrow: `DANH SÁCH ${label.toUpperCase()}`,
+      title: `Chốt sổ ${label}`,
+      sub: `Trung bình ${mVols.length ? fmtMoney(Math.round(volSpent / mVols.length)) : "0đ"}/tập${saved > 0 ? ` · Săn sale lời ${fmtMoney(saved)}` : ""}${giftQty ? ` · Kèm ${giftQty} quà` : ""}.`,
+      mediaHtml: "",
+      pills: summaryLines,
+    });
+
+    return slides;
+  };
+
+  const buildYearSlides = (yr) => {
+    const yVols = allVols.filter((x) => !x.isLegacy && x.date.startsWith(yr));
+    const yGifts = allGifts.filter((x) => !x.isLegacy && x.date.startsWith(yr));
+    const giftQty = yGifts.reduce((a, x) => a + Math.max(1, Number(x.gift.quantity) || 1), 0);
+    const giftSpent = yGifts.reduce((a, x) => a + (Number(x.gift.price) || 0), 0);
+
+    if (!yVols.length && !yGifts.length) {
+      return [
+        {
+          rgb: "110, 168, 218",
+          eyebrow: `TỔNG KẾT NĂM ${yr}`,
+          title: `Chưa có dữ liệu mua mới trong năm ${yr}`,
+          sub: "Các tập đánh dấu 'Mua từ trước' không tính vào tổng kết năm. Hãy ghi ngày mua cho các tập mới để cuối năm xem tổng kết nhé!",
+          mediaHtml: "",
+          pills: ["0 tập", "0đ thực chi"],
+        },
+      ];
+    }
+
+    const volSpent = yVols.reduce((a, x) => a + (Number(x.vol.paidPrice) || 0), 0);
+    const volCover = yVols.reduce((a, x) => a + (Number(x.vol.coverPrice) || 0), 0);
+    const saved = Math.max(0, volCover - volSpent);
+    const totalYearSpent = volSpent + giftSpent;
+    const addedMeters = ((yVols.length * 1.5) / 100).toFixed(2).replace(".", ",");
+
+    const bySeries = new Map();
+    const byMonth = new Map();
+    const byPub = {};
+    yVols.forEach((x) => {
+      const sid = x.series.id;
+      if (!bySeries.has(sid)) bySeries.set(sid, { series: x.series, vols: [], spent: 0 });
+      const rec = bySeries.get(sid);
+      rec.vols.push(x.vol);
+      rec.spent += Number(x.vol.paidPrice) || 0;
+
+      const mk = x.date.slice(0, 7);
+      if (!byMonth.has(mk)) byMonth.set(mk, { count: 0, spent: 0 });
+      const mr = byMonth.get(mk);
+      mr.count += 1;
+      mr.spent += Number(x.vol.paidPrice) || 0;
+
+      const pub = x.series.publisher || "Khác";
+      byPub[pub] = (byPub[pub] || 0) + 1;
+    });
+
+    const rankedSeries = [...bySeries.values()].sort((a, b) => b.vols.length - a.vols.length || b.spent - a.spent);
+    const rankedMonths = [...byMonth.entries()].sort((a, b) => b[1].count - a[1].count || b[1].spent - a[1].spent);
+    const topMonthEntry = rankedMonths[0];
+    const topPubEntry = Object.entries(byPub).sort((a, b) => b[1] - a[1])[0];
+
+    const topCovers = rankedSeries
+      .map((r) => resolveImg(r.series.cover) || resolveImg(r.vols[0]?.image))
+      .filter(Boolean)
+      .slice(0, 3);
+
+    const slides = [
+      {
+        rgb: "212, 170, 98",
+        eyebrow: `TỔNG KẾT CUỐI NĂM ${yr}`,
+        title: `${yVols.length} tập truyện & sách đã về tủ năm ${yr}`,
+        sub: `Gồm ${rankedSeries.length} đầu sách${giftQty ? ` và ${giftQty} món quà` : ""} — nối dài thêm ~${addedMeters} m kệ với tổng thực chi ${fmtMoney(totalYearSpent)}.`,
+        mediaHtml: topCovers.length
+          ? `<div class="mem-collage">${topCovers
+              .map((src) => `<div class="mem-collage-item"><img src="${esc(src)}" alt="" /></div>`)
+              .join("")}</div>`
+          : "",
+        pills: [`+${yVols.length} tập`, `${rankedSeries.length} bộ`, fmtMoney(totalYearSpent)],
+      },
+    ];
+
+    if (rankedSeries.length) {
+      const top1 = rankedSeries[0];
+      const top1Img = resolveImg(top1.series.cover) || resolveImg(top1.vols[0]?.image);
+      slides.push({
+        rgb: "224, 112, 92",
+        eyebrow: `TOP BỘ CỦA NĂM ${yr}`,
+        title: top1.series.title,
+        sub: `Dẫn đầu năm ${yr} với ${top1.vols.length} tập mới (${fmtMoney(top1.spent)})${
+          rankedSeries.length > 1
+            ? `. Theo sau là ${rankedSeries
+                .slice(1, 3)
+                .map((r) => `${r.series.title} (${r.vols.length})`)
+                .join(" & ")}.`
+            : "."
+        }`,
+        mediaHtml: top1Img
+          ? `<div class="mem-polaroid" style="transform:rotate(-2deg);"><img src="${esc(top1Img)}" alt="" /><div class="mem-polaroid-cap mono">${top1.vols.length} tập</div></div>`
+          : "",
+        pills: rankedSeries.slice(0, 3).map((r, i) => `#${i + 1} ${r.series.title.slice(0, 16)} (${r.vols.length})`),
+      });
+    }
+
+    if (topMonthEntry) {
+      slides.push({
+        rgb: "95, 179, 156",
+        eyebrow: `ĐỈNH CAO SƯU TẦM ${yr}`,
+        title: `${fmtMonthVN(topMonthEntry[0])} — tháng cháy ví nhất`,
+        sub: `Riêng ${fmtMonthVN(topMonthEntry[0])} bạn rước ${topMonthEntry[1].count} tập (${fmtMoney(topMonthEntry[1].spent)})${
+          topPubEntry ? `. Nhà xuất bản ruột năm ${yr}: ${topPubEntry[0]} (${topPubEntry[1]} tập).` : "."
+        }`,
+        mediaHtml: "",
+        pills: [
+          `${topMonthEntry[1].count} tập`,
+          fmtMoney(topMonthEntry[1].spent),
+          topPubEntry ? `NXB ${topPubEntry[0]}` : "",
+        ].filter(Boolean),
+      });
+    }
+
+    slides.push({
+      rgb: "110, 168, 218",
+      eyebrow: `CHỐT SỔ NĂM ${yr}`,
+      title: saved > 0 ? `Săn sale lời ${fmtMoney(saved)} cả năm!` : `Khép lại năm ${yr} rực rỡ`,
+      sub: `Tổng thực chi ${fmtMoney(totalYearSpent)} trên ${yVols.length} tập${giftQty ? ` & ${giftQty} quà` : ""}. Chúc năm tiếp theo săn được thật nhiều bản ĐB xịn sò!`,
+      mediaHtml: "",
+      pills: [`${yVols.length} tập`, fmtMoney(totalYearSpent), saved > 0 ? `Tiết kiệm ${fmtMoney(saved)}` : `${rankedSeries.length} bộ`],
+    });
+
+    return slides;
+  };
 
   const html = `
-    <div class="mem-card" id="memCard">
-      <div class="mem-glow" id="memGlow"></div>
-      <div class="mem-bars" id="memBars">
-        ${slides.map(() => `<div class="mem-bar-track"><div class="mem-bar-fill"></div></div>`).join("")}
+    <div class="form-grid" style="gap:9px;">
+      <div class="scope-switch-3" id="memModeSwitch" style="margin-bottom:0;">
+        <button type="button" class="${activeMode === "all" ? "active" : ""}" data-mm="all">Toàn tủ</button>
+        <button type="button" class="${activeMode === "month" ? "active" : ""}" data-mm="month">Cuối tháng</button>
+        <button type="button" class="${activeMode === "year" ? "active" : ""}" data-mm="year">Cuối năm</button>
       </div>
-      <div class="mem-body" id="memBody"></div>
-      <div class="mem-footer">
-        <span class="mono" id="memStepLabel">1 / ${slides.length}</span>
-        <span>Chạm trái / phải để chuyển · Giữ để dừng</span>
+
+      <div id="memPeriodPickerWrap" style="display:${activeMode === "all" ? "none" : "flex"}; justify-content:space-between; align-items:center; gap:8px;">
+        <span class="small-muted" id="memPeriodLabel">${activeMode === "month" ? "Chọn tháng tổng kết:" : "Chọn năm tổng kết:"}</span>
+        <select class="sort-select mono" id="memMonthSel" style="display:${activeMode === "month" ? "" : "none"}; height:30px;">
+          ${availMonths.map((ym) => `<option value="${esc(ym)}" ${ym === selectedMonth ? "selected" : ""}>${esc(fmtMonthVN(ym))}</option>`).join("")}
+        </select>
+        <select class="sort-select mono" id="memYearSel" style="display:${activeMode === "year" ? "" : "none"}; height:30px;">
+          ${availYears.map((yr) => `<option value="${esc(yr)}" ${yr === selectedYear ? "selected" : ""}>Năm ${esc(yr)}</option>`).join("")}
+        </select>
+      </div>
+
+      <div class="mem-card" id="memCard">
+        <div class="mem-glow" id="memGlow"></div>
+        <div class="mem-bars" id="memBars"></div>
+        <div class="mem-body" id="memBody"></div>
+        <div class="mem-footer">
+          <span class="mono" id="memStepLabel">1 / 1</span>
+          <span>Chạm trái / phải để chuyển · Giữ để dừng</span>
+        </div>
       </div>
     </div>`;
 
   let rafId = null;
-  openModal("Kỷ niệm Tủ Sách", html, (body) => {
+  openModal("Kỷ niệm & Tổng kết Tủ Sách", html, (body) => {
+    const modeSwitch = body.querySelector("#memModeSwitch");
+    const periodWrap = body.querySelector("#memPeriodPickerWrap");
+    const periodLabel = body.querySelector("#memPeriodLabel");
+    const monthSel = body.querySelector("#memMonthSel");
+    const yearSel = body.querySelector("#memYearSel");
     const card = body.querySelector("#memCard");
+    const barsEl = body.querySelector("#memBars");
     const bodyEl = body.querySelector("#memBody");
     const stepLbl = body.querySelector("#memStepLabel");
-    const barFills = [...body.querySelectorAll(".mem-bar-fill")];
 
+    let slides = [];
+    let barFills = [];
     let curIdx = 0;
-    let slideProg = 0; // 0 -> 1
+    let slideProg = 0;
     let paused = false;
     let lastTs = performance.now();
     const SLIDE_DUR = 4.6;
 
     const renderSlide = (idx) => {
+      if (!slides.length) return;
       curIdx = Math.max(0, Math.min(slides.length - 1, idx));
       slideProg = 0;
       const sl = slides[curIdx];
@@ -16211,6 +16618,47 @@ function openTimelapseModal() {
       });
     };
 
+    const loadCurrentDeck = () => {
+      periodWrap.style.display = activeMode === "all" ? "none" : "flex";
+      periodLabel.textContent = activeMode === "month" ? "Chọn tháng tổng kết:" : "Chọn năm tổng kết:";
+      monthSel.style.display = activeMode === "month" ? "" : "none";
+      yearSel.style.display = activeMode === "year" ? "" : "none";
+
+      slides =
+        activeMode === "month"
+          ? buildMonthSlides(selectedMonth)
+          : activeMode === "year"
+          ? buildYearSlides(selectedYear)
+          : buildAllSlides();
+
+      barsEl.innerHTML = slides.map(() => `<div class="mem-bar-track"><div class="mem-bar-fill"></div></div>`).join("");
+      barFills = [...barsEl.querySelectorAll(".mem-bar-fill")];
+      paused = false;
+      lastTs = performance.now();
+      renderSlide(0);
+    };
+
+    modeSwitch.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-mm]");
+      if (!btn || btn.dataset.mm === activeMode) return;
+      activeMode = btn.dataset.mm;
+      modeSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+      SFX.filter();
+      loadCurrentDeck();
+    });
+
+    monthSel.addEventListener("change", () => {
+      selectedMonth = monthSel.value;
+      SFX.filter();
+      loadCurrentDeck();
+    });
+
+    yearSel.addEventListener("change", () => {
+      selectedYear = yearSel.value;
+      SFX.filter();
+      loadCurrentDeck();
+    });
+
     const tick = (now) => {
       if (!card.isConnected) {
         rafId = null;
@@ -16218,7 +16666,7 @@ function openTimelapseModal() {
       }
       const dt = Math.min(0.05, Math.max(0.004, (now - lastTs) / 1000));
       lastTs = now;
-      if (!paused) {
+      if (!paused && barFills[curIdx]) {
         slideProg += dt / SLIDE_DUR;
         if (slideProg >= 1) {
           if (curIdx < slides.length - 1) {
@@ -16252,7 +16700,7 @@ function openTimelapseModal() {
     });
     card.addEventListener("pointercancel", () => { paused = false; });
 
-    renderSlide(0);
+    loadCurrentDeck();
     rafId = requestAnimationFrame(tick);
   }, () => {
     if (rafId !== null) cancelAnimationFrame(rafId);
@@ -16280,12 +16728,10 @@ function openVolumeBookFlip(seriesId, sectionId, volId) {
   const cp = Number(v.coverPrice) || 0;
   const pp = Number(v.paidPrice) || 0;
   const discPct = cp > 0 && pp <= cp ? Math.round(((cp - pp) / cp) * 100) : 0;
-  const READ_STATES = ["Chưa đọc", "Đang đọc", "Đã đọc", "Nguyên seal"];
 
   const frontHtml = coverImg
     ? `<img src="${esc(coverImg)}" alt="Tập ${esc(v.number)}" />
-       ${holo ? `<span class="holo-pill mono">ĐB</span>` : ""}
-       `
+       ${holo ? `<span class="holo-pill mono">ĐB</span>` : ""}`
     : `<div class="typo-cover" style="border-left-color:${pubColorVar(s.publisher)}; height:100%;">
          <div class="typo-pub mono">${esc(s.publisher)}</div>
          <div class="typo-title" style="font-size:15px;">${esc(s.title)}<br/><span class="mono" style="font-size:13px; color:var(--accent);">Tập ${esc(v.number)}</span></div>
@@ -16322,19 +16768,10 @@ function openVolumeBookFlip(seriesId, sectionId, volId) {
                 <span>Thực chi</span>
                 <strong class="mono">${fmtMoney(pp)}${discPct > 0 ? ` (-${discPct}%)` : ""}</strong>
               </div>
-              <div class="flip3d-row">
-                <span>Tình trạng</span>
-                <strong id="flipReadVal">${esc(v.readState || "Chưa đọc")}</strong>
-              </div>
-              ${
-                (v.lentTo || "").trim()
-                  ? `<div class="flip3d-row"><span>Cho mượn</span><strong style="color:#A83528;">${esc(v.lentTo)}</strong></div>`
-                  : ""
-              }
             </div>
             ${v.note ? `<div class="flip3d-note-box">${esc(v.note)}</div>` : ""}
           </div>
-          <div class="flip3d-stamp mono">${esc((v.readState || "TỦ SÁCH").toUpperCase())}</div>
+          <div class="flip3d-stamp mono">${esc((s.publisher || "TỦ SÁCH").toUpperCase())}</div>
         </div>
 
         <div class="flip3d-cover">
@@ -16351,7 +16788,10 @@ function openVolumeBookFlip(seriesId, sectionId, volId) {
     </div>
 
     <div class="modal-actions" style="justify-content:space-between; flex-wrap:wrap;">
-      <button type="button" class="btn btn-sm" id="flipCycleReadBtn">Đổi tình trạng đọc</button>
+      <label class="btn btn-sm" style="margin:0;">
+        ${v.image ? "Sửa ảnh" : "Thêm ảnh"}
+        <input type="file" id="flipPhotoInput" accept="image/*" style="display:none;" />
+      </label>
       <div style="display:flex; gap:6px;">
         <button type="button" class="btn btn-sm" id="flipToggleBtn">Lật mở bìa</button>
         <button type="button" class="btn btn-sm btn-primary" id="flipEditBtn">Sửa tập</button>
@@ -16362,8 +16802,6 @@ function openVolumeBookFlip(seriesId, sectionId, volId) {
     const bookEl = body.querySelector("#flip3dBook");
     const hintEl = body.querySelector("#flip3dHint");
     const toggleBtn = body.querySelector("#flipToggleBtn");
-    const readValEl = body.querySelector("#flipReadVal");
-    const stampEl = body.querySelector(".flip3d-stamp");
 
     const fbRgb = pubFallbackRGB(s.publisher);
     body.classList.add("has-ambient");
@@ -16394,20 +16832,31 @@ function openVolumeBookFlip(seriesId, sectionId, volId) {
     }
     body.querySelector("#flipEditBtn").addEventListener("click", () => openVolumeForm(seriesId, sectionId, volId));
 
-    body.querySelector("#flipCycleReadBtn").addEventListener("click", () => {
-      const idx = (READ_STATES.indexOf(v.readState || "Chưa đọc") + 1) % READ_STATES.length;
-      v.readState = READ_STATES[idx];
-      readValEl.textContent = v.readState;
-      if (stampEl) stampEl.textContent = v.readState.toUpperCase();
-      SFX.status(idx);
+    body.querySelector("#flipPhotoInput").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
+      if (!file) return;
+      const cropped = await openImageCropper(file, {
+        ratio: 2 / 3,
+        maxW: 1400,
+        maxH: 2100,
+        quality: 1.0,
+        title: `Cắt ảnh tập ${v.number}`,
+      });
+      if (!cropped) return;
+      pushUndo(`đổi ảnh tập ${v.number} (${s.title})`);
+      v.image = cropped;
+      if (!s.cover) s.cover = cropped;
       saveState();
       renderBooks();
-      if (!bookEl.classList.contains("is-open")) setFlipped(true);
-      showToast(`Tình trạng -> ${v.readState}`);
+      SFX.pop();
+      openVolumeBookFlip(seriesId, sectionId, volId);
+      showToast(`Đã cập nhật ảnh Tập ${v.number}!`, { undoable: true });
     });
   });
 }
 
+updateTimelapseBtnLabel();
 document.getElementById("openTimelapseBtn")?.addEventListener("click", () => {
   SFX.openBook();
   openTimelapseModal();
