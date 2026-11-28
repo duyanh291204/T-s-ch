@@ -9745,8 +9745,8 @@ function updateAndDrawCabinetDust(dt) {
   if (typeof isRichFx === "function" && !isRichFx()) return;
   if (!syncCabinetDustSize()) return;
 
-  const speedMul = cabinetIsOpen ? 1.18 : 0.86;
-  const brightMul = cabinetIsOpen ? 1.25 : 0.92;
+  const speedMul = cabinetIsOpen ? 1.15 : 0.85;
+  const brightMul = cabinetIsOpen ? 1.2 : 0.95;
   cabDust.clock += dt * speedMul;
 
   ctx.setTransform(cabDust.dpr, 0, 0, cabDust.dpr, 0, 0);
@@ -9755,6 +9755,9 @@ function updateAndDrawCabinetDust(dt) {
   const isMid = document.documentElement.getAttribute("data-theme") === "midnight";
   const w = cabDust.w;
   const h = cabDust.h;
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
 
   for (let i = 0; i < cabDust.motes.length; i++) {
     const m = cabDust.motes[i];
@@ -9766,56 +9769,58 @@ function updateAndDrawCabinetDust(dt) {
 
     const topX = m.beam === 0 ? w * 0.34 : w * 0.66;
     const botX = m.beam === 0 ? w * 0.24 : w * 0.76;
-    const coneHalfW = w * (0.06 + m.t * 0.25);
+    const coneHalfW = w * (0.07 + m.t * 0.25);
     const sway = Math.sin(cabDust.clock * m.swayFreq + m.swayPhase) * m.swayAmp;
     const px = topX + (botX - topX) * m.t + m.spread * coneHalfW + sway;
-    const py = 5 + m.t * (h * 0.8);
+    const py = 6 + m.t * (h * 0.78);
 
     const vFade = Math.sin(Math.min(1, m.t) * Math.PI);
-    const edgeFade = Math.max(0.18, 1 - Math.abs(m.spread) * 0.72);
+    const edgeFade = Math.max(0.22, 1 - Math.abs(m.spread) * 0.68);
     const rawPulse = 0.5 + 0.5 * Math.sin(cabDust.clock * m.twinkleFreq + m.twinklePhase);
-    const twinkle = 0.32 + 0.68 * (rawPulse * rawPulse);
-    const alpha = Math.min(1, vFade * edgeFade * twinkle * brightMul * 0.98);
-    if (alpha < 0.04) continue;
+    // Nhấp nháy sắc nét kiểu ánh kim cương (tối dịu rồi lóe sáng trắng tinh)
+    const flash = Math.pow(rawPulse, 3);
+    const alpha = Math.min(1, vFade * edgeFade * (0.18 + 0.82 * flash) * brightMul);
+    if (alpha < 0.05) continue;
 
-    const rgb = isMid
-      ? (m.warmTint > 0.5 ? "165, 224, 255" : "215, 238, 255")
-      : (m.warmTint > 0.45 ? "255, 236, 172" : "255, 250, 225");
+    // Màu ánh sáng trong trẻo: trắng tinh pha chút ánh kim cương / xanh băng (tuyệt đối không ngả nâu!)
+    const tintRgb = isMid
+      ? (m.warmTint > 0.5 ? "190, 238, 255" : "235, 248, 255")
+      : (m.warmTint > 0.55 ? "255, 250, 224" : "240, 248, 255");
 
-    // 1. Vầng bokeh mềm nhiều lớp
-    const grad = ctx.createRadialGradient(px, py, 0, px, py, m.r * 3.4);
-    grad.addColorStop(0, `rgba(255, 255, 250, ${(alpha * 0.92).toFixed(3)})`);
-    grad.addColorStop(0.35, `rgba(${rgb}, ${(alpha * 0.42).toFixed(3)})`);
-    grad.addColorStop(1, `rgba(${rgb}, 0)`);
+    // 1. Hào quang sáng trong trẻo (nhỏ gọn, không bị đục)
+    const haloR = m.r * (2.0 + flash * 1.4);
+    const grad = ctx.createRadialGradient(px, py, 0, px, py, haloR);
+    grad.addColorStop(0, `rgba(255, 255, 255, ${(alpha * 0.95).toFixed(3)})`);
+    grad.addColorStop(0.4, `rgba(${tintRgb}, ${(alpha * 0.45).toFixed(3)})`);
+    grad.addColorStop(1, `rgba(${tintRgb}, 0)`);
     ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.arc(px, py, m.r * 3.4, 0, Math.PI * 2);
+    ctx.arc(px, py, haloR, 0, Math.PI * 2);
     ctx.fill();
 
-    // 2. Tia sao lấp lánh sắc nét (4 cánh chính + 4 cánh chéo nhỏ khi đạt đỉnh sáng)
-    if (m.isStar && rawPulse > 0.62 && alpha > 0.25) {
-      const flare = (rawPulse - 0.62) / 0.38;
-      const arm = m.r * (3.2 + flare * 5.2);
-      const diag = arm * 0.45;
-      ctx.strokeStyle = `rgba(255, 253, 240, ${(alpha * 0.95).toFixed(3)})`;
-      ctx.lineWidth = 0.95;
+    // 2. Ngôi sao lấp lánh 4 cánh cong sắc nét (✦) kiểu anime/kim cương
+    if (m.isStar && flash > 0.22) {
+      const arm = m.r * (2.6 + flash * 5.0);
+      const waist = Math.max(0.65, arm * 0.16);
+      ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, alpha * 1.05).toFixed(3)})`;
       ctx.beginPath();
-      ctx.moveTo(px - arm, py);
-      ctx.lineTo(px + arm, py);
       ctx.moveTo(px, py - arm);
-      ctx.lineTo(px, py + arm);
-      ctx.stroke();
-
-      ctx.strokeStyle = `rgba(${rgb}, ${(alpha * 0.6).toFixed(3)})`;
-      ctx.lineWidth = 0.65;
+      ctx.quadraticCurveTo(px + waist, py - waist, px + arm, py);
+      ctx.quadraticCurveTo(px + waist, py + waist, px, py + arm);
+      ctx.quadraticCurveTo(px - waist, py + waist, px - arm, py);
+      ctx.quadraticCurveTo(px - waist, py - waist, px, py - arm);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      // Hạt lấp lánh nhỏ trắng tinh
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha.toFixed(3)})`;
       ctx.beginPath();
-      ctx.moveTo(px - diag, py - diag);
-      ctx.lineTo(px + diag, py + diag);
-      ctx.moveTo(px + diag, py - diag);
-      ctx.lineTo(px - diag, py + diag);
-      ctx.stroke();
+      ctx.arc(px, py, Math.max(0.7, m.r * 0.65), 0, Math.PI * 2);
+      ctx.fill();
     }
   }
+
+  ctx.restore();
 }
 
 function initCabinetCat(canvasEl, hitEl, frameEl) {
@@ -14476,12 +14481,12 @@ function ensureBudgetCatLoop() {
 
       const r = budgetCat.ratio;
       const pctClamped = Math.min(1, r);
-      const barEdgeX = Math.max(26, Math.min(cw - 26, cw * pctClamped));
+      const rawEdgeX = cw * pctClamped;
       const groundY = 42.8; // Khớp chuẩn từng pixel: đáy 4 chân (y + 5.2 = 48.0) chạm vừa khít mép trên thanh hạn mức!
 
       if (r < 0.5) {
-        // DƯỚI 50%: Đứng 4 chân vui vẻ đội đồng xu vàng trên đầu!
-        const cx = Math.max(28, Math.min(cw - 28, barEdgeX + 20));
+        // DƯỚI 50%: Đứng 4 chân đúng giữa vạch hạn mức, đội đồng xu vàng trên đầu!
+        const cx = Math.max(22, Math.min(cw - 22, rawEdgeX));
         const bob = Math.abs(Math.sin(budgetCat.clock * 3.4)) * 1.4;
         const catY = groundY - bob;
 
@@ -14585,9 +14590,9 @@ function ensureBudgetCatLoop() {
           ctx.stroke();
         });
       } else if (r < 1.0) {
-        // 50%–99%: Đổ mồ hôi hột, nghiêng người chống tay ĐẨY NGƯỢC đầu thanh tiến độ!
-        const shake = Math.sin(budgetCat.clock * 38) * 0.9;
-        const cx = Math.min(cw - 24, Math.max(28, barEdgeX + 14));
+        // 50%–99%: Đổ mồ hôi hột, mép tay trái chạm vừa khít vạch hạn mức để ĐẨY NGƯỢC!
+        const shake = Math.sin(budgetCat.clock * 38) * 0.7;
+        const cx = Math.min(cw - 22, Math.max(24, rawEdgeX + 22));
         drawExactCapooBase(ctx, {
           x: cx + shake,
           y: groundY,
@@ -14727,21 +14732,18 @@ function ensureBudgetCatLoop() {
 }
 
 /* ============================================================
-   3. MÈO THỢ SĂN (TAB SĂN KÈO / WISHLIST)
+   3. MÈO CANH 0H / CÀY PHÍM SĂN SALE (TAB SĂN KÈO / WISHLIST)
    ============================================================ */
 const hunterCat = {
-  x: 64,
-  dir: 1,
-  phase: "scan", // "scan" | "pounce" | "dash"
+  phase: "type", // "type" | "celebrate"
   timer: 0,
   clock: 0,
-  gait: 0,
   rafId: null,
   lastTs: 0,
 };
 
 function triggerHunterPounce() {
-  hunterCat.phase = "pounce";
+  hunterCat.phase = "celebrate";
   hunterCat.timer = 0;
   SFX.catWake();
   ensureHunterCatLoop();
@@ -14777,64 +14779,157 @@ function ensureHunterCatLoop() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, cw, 40);
 
-      let hopY = 0;
-      let moveMix = 0;
-      let scanDir = Math.sin(hunterCat.clock * 1.45);
-      if (hunterCat.phase === "scan") {
-        hunterCat.x = Math.max(36, Math.min(cw - 120, cw * 0.28));
-      } else if (hunterCat.phase === "pounce") {
+      const cx = Math.max(42, Math.min(cw - 130, cw * 0.28));
+      const groundY = 35.5;
+      const isCeleb = hunterCat.phase === "celebrate";
+
+      if (isCeleb) {
         hunterCat.timer += dt;
-        const p = Math.min(1, hunterCat.timer / 0.35);
-        hopY = -Math.sin(p * Math.PI) * 11;
-        if (p >= 1) {
-          hunterCat.phase = "dash";
-          hunterCat.timer = 0;
-        }
-      } else if (hunterCat.phase === "dash") {
-        hunterCat.timer += dt;
-        moveMix = 1;
-        hunterCat.gait += dt * 18;
-        hunterCat.x -= 160 * dt;
-        scanDir = -1;
-        if (hunterCat.x < -28) {
-          hunterCat.x = cw * 0.28;
-          hunterCat.phase = "scan";
+        if (hunterCat.timer >= 1.45) {
+          hunterCat.phase = "type";
           hunterCat.timer = 0;
         }
       }
 
+      const tapCycle = hunterCat.clock * 22;
+      const leftSlap = Math.sin(tapCycle) > 0 ? 1 : 0;
+      const rightSlap = leftSlap ? 0 : 1;
+      const hopY = isCeleb ? Math.abs(Math.sin(hunterCat.timer * 10)) * 5.5 : Math.abs(Math.sin(tapCycle * 0.5)) * 0.6;
+
       drawExactCapooBase(ctx, {
-        x: hunterCat.x,
-        y: 36.5 + hopY,
-        gait: hunterCat.gait,
-        moveMix,
-        faceDir: scanDir * 0.85,
-        tilt: moveMix ? -0.08 : 0,
-        faceDraw: hunterCat.phase === "scan"
-          ? (c, pal) => {
-              // Ống nhòm săn kèo (OO) trước mắt!
-              drawExactCapooDefaultFace(c, pal, scanDir * 0.6, false);
-              c.fillStyle = "#3A3F4B";
-              c.strokeStyle = "#1E2028";
-              c.lineWidth = 1.4;
-              c.beginPath();
-              c.arc(-4.6, -0.2, 3.6, 0, Math.PI * 2);
-              c.arc(4.6, -0.2, 3.6, 0, Math.PI * 2);
-              c.fill();
-              c.stroke();
-              c.fillStyle = "#7AD4FF";
-              c.beginPath();
-              c.arc(-4.6, -0.2, 2.0, 0, Math.PI * 2);
-              c.arc(4.6, -0.2, 2.0, 0, Math.PI * 2);
-              c.fill();
-              c.fillStyle = "#FFFFFF";
-              c.beginPath();
-              c.arc(-5.3, -0.9, 0.7, 0, Math.PI * 2);
-              c.arc(3.9, -0.9, 0.7, 0, Math.PI * 2);
-              c.fill();
+        x: cx,
+        y: groundY - hopY,
+        faceDir: isCeleb ? 0 : 0.65,
+        showShadow: false,
+        extraPass: (mode, pal, outlineCol, rx, ry) => {
+          const applyShape = () => {
+            if (mode === "outline") {
+              ctx.fillStyle = outlineCol;
+              ctx.strokeStyle = outlineCol;
+              ctx.lineWidth = 4.2;
+              ctx.stroke();
+              ctx.fill();
+            } else {
+              ctx.fillStyle = pal.body;
+              ctx.fill();
             }
-          : null,
+          };
+
+          if (isCeleb) {
+            // Giơ 2 tay ăn mừng vui vẻ (không hiện chữ)
+            const wave = Math.sin(hunterCat.timer * 18) * 0.25;
+            [-1, 1].forEach((side) => {
+              ctx.save();
+              ctx.translate(side * (rx * 0.88), -ry * 1.15);
+              ctx.rotate(side * (0.65 + wave));
+              ctx.beginPath();
+              ctx.ellipse(0, 0, 2.3, 4.4, 0, 0, Math.PI * 2);
+              applyShape();
+              ctx.restore();
+            });
+          } else {
+            // Hai tay vỗ phím bạch bạch liên tục về phía laptop bên phải!
+            ctx.save();
+            ctx.translate(rx * 0.86, -ry * 0.72 + leftSlap * 2.4);
+            ctx.rotate(1.15 - leftSlap * 0.35);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 2.1, 4.0, 0, 0, Math.PI * 2);
+            applyShape();
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(rx * 0.98, -ry * 0.52 + rightSlap * 2.4);
+            ctx.rotate(1.22 - rightSlap * 0.35);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 2.1, 4.0, 0, 0, Math.PI * 2);
+            applyShape();
+            ctx.restore();
+          }
+        },
+        faceDraw: (c, pal) => {
+          c.fillStyle = pal.cheek;
+          c.globalAlpha = 0.68;
+          c.beginPath();
+          c.ellipse(-8.4, 1.6, 2.0, 1.2, 0, 0, Math.PI * 2);
+          c.ellipse(8.4, 1.6, 2.0, 1.2, 0, 0, Math.PI * 2);
+          c.fill();
+          c.globalAlpha = 1;
+
+          if (isCeleb) {
+            // Mắt cười tít ^ ^ ăn mừng
+            c.strokeStyle = pal.mouthLine;
+            c.lineWidth = 1.75;
+            c.beginPath();
+            c.arc(-5.6, 0.5, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
+            c.stroke();
+            c.beginPath();
+            c.arc(5.6, 0.5, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
+            c.stroke();
+            c.lineWidth = 1.55;
+            c.beginPath();
+            c.moveTo(-2.85, 0.8);
+            c.quadraticCurveTo(-1.425, 2.8, 0, 1.1);
+            c.quadraticCurveTo(1.425, 2.8, 2.85, 0.8);
+            c.stroke();
+          } else {
+            // Mắt tập trung sáng rực canh 0h
+            drawExactCapooDefaultFace(c, pal, 0.75, false);
+          }
+        },
       });
+
+      // Laptop mini đặt ngay trước mặt bé mèo (bên phải)
+      const lx = cx + 22;
+      const ly = groundY + 3.2;
+      ctx.save();
+      // Đế bàn phím laptop
+      ctx.fillStyle = "#525866";
+      ctx.strokeStyle = "#24262E";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.rect(lx - 2, ly - 3.2, 16, 3.2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Màn hình laptop nghiêng nhẹ phát sáng xanh dịu
+      ctx.fillStyle = "#2E333E";
+      ctx.beginPath();
+      ctx.moveTo(lx + 11.5, ly - 3.2);
+      ctx.lineTo(lx + 15.5, ly - 15.5);
+      ctx.lineTo(lx + 18.2, ly - 15.0);
+      ctx.lineTo(lx + 14.2, ly - 3.2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Ánh sáng hắt từ màn hình laptop lên mặt bé mèo
+      const glowA = 0.14 + 0.08 * Math.sin(hunterCat.clock * 14);
+      ctx.fillStyle = `rgba(120, 215, 255, ${glowA.toFixed(3)})`;
+      ctx.beginPath();
+      ctx.moveTo(lx + 12, ly - 14);
+      ctx.lineTo(lx - 4, ly - 19);
+      ctx.lineTo(lx - 4, ly - 3);
+      ctx.lineTo(lx + 11, ly - 3);
+      ctx.closePath();
+      ctx.fill();
+
+      // Tia lấp lánh ✧ khi ăn mừng (không chữ)
+      if (isCeleb) {
+        const spA = 0.4 + 0.6 * Math.abs(Math.sin(hunterCat.timer * 12));
+        ctx.strokeStyle = `rgba(255, 215, 90, ${spA.toFixed(2)})`;
+        ctx.lineWidth = 1.4;
+        [[-18, -22], [16, -24]].forEach(([dx, dy]) => {
+          const sx = cx + dx;
+          const sy = groundY + dy - hopY;
+          ctx.beginPath();
+          ctx.moveTo(sx - 3, sy);
+          ctx.lineTo(sx + 3, sy);
+          ctx.moveTo(sx, sy - 3);
+          ctx.lineTo(sx, sy + 3);
+          ctx.stroke();
+        });
+      }
+      ctx.restore();
     }
 
     hunterCat.rafId = requestAnimationFrame(tick);
