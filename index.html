@@ -14711,72 +14711,75 @@ function ensureBudgetCatLoop() {
           },
         });
 
-        // Ví xu tròn Gamaguchi kiểu Nhật dốc ngược lắc lắc trên đầu (mở miệng rỗng tuếch!)
-        const shakeAng = Math.sin(budgetCat.clock * 8.5) * 0.16;
+        // Ví xu tròn Gamaguchi đặt ngửa miệng lên trên, dính gọn vào đỉnh đầu bé mèo (đứng yên, chỉ có con ruồi bay)
         const { outlineCol: pInk } = getExactCapooPalette();
         const px = cx;
-        const py = groundY - 28.5 + sighY;
+        const py = groundY - 20.5 + sighY;
 
         ctx.save();
         ctx.translate(px, py);
-        ctx.rotate(shakeAng);
 
-        // Thân ví tròn bầu bĩnh dốc ngược (màu đỏ rượu / cam đất nổi bật)
-        const pGrad = ctx.createLinearGradient(-8, -8, 8, 4);
+        // Thân ví bầu bĩnh dính gọn lên đầu bé mèo
+        const pGrad = ctx.createLinearGradient(-8, -6, 8, 4);
         pGrad.addColorStop(0, "#E06B58");
         pGrad.addColorStop(1, "#B24336");
         ctx.fillStyle = pGrad;
         ctx.strokeStyle = pInk;
-        ctx.lineWidth = 1.7;
+        ctx.lineWidth = 1.65;
         ctx.beginPath();
-        ctx.moveTo(-6.2, 2.5);
-        ctx.bezierCurveTo(-10.5, -2.5, -8.5, -9.5, 0, -9.5);
-        ctx.bezierCurveTo(8.5, -9.5, 10.5, -2.5, 6.2, 2.5);
+        ctx.moveTo(-6.2, -4.2);
+        ctx.bezierCurveTo(-10.2, 0.2, -8.2, 4.2, 0, 4.2);
+        ctx.bezierCurveTo(8.2, 4.2, 10.2, 0.2, 6.2, -4.2);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
 
         // Nếp gấp vải ví mềm mại
         ctx.strokeStyle = "rgba(255, 232, 215, 0.35)";
-        ctx.lineWidth = 0.9;
+        ctx.lineWidth = 0.85;
         ctx.beginPath();
-        ctx.moveTo(-2.5, -7.8);
-        ctx.quadraticCurveTo(-3.2, -3.0, -2.0, 1.2);
-        ctx.moveTo(2.5, -7.8);
-        ctx.quadraticCurveTo(3.2, -3.0, 2.0, 1.2);
+        ctx.moveTo(-2.5, 2.8);
+        ctx.quadraticCurveTo(-3.2, -0.5, -2.0, -3.2);
+        ctx.moveTo(2.5, 2.8);
+        ctx.quadraticCurveTo(3.2, -0.5, 2.0, -3.2);
         ctx.stroke();
 
-        // Miệng ví mở toang tối bên dưới (trống rỗng!)
+        // Miệng ví mở ngửa lên trên (trống rỗng tối bên trong)
         ctx.fillStyle = "#2E1714";
         ctx.strokeStyle = "#E8C36A";
-        ctx.lineWidth = 1.6;
+        ctx.lineWidth = 1.55;
         ctx.beginPath();
-        ctx.ellipse(0, 3.0, 6.4, 2.4, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, -4.5, 6.4, 2.3, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        // 2 nút gài tròn vàng đồng đặc trưng của ví Gamaguchi
+        // 2 nút gài tròn vàng đồng ở mép trên miệng ví
         ctx.fillStyle = "#FFD86B";
         ctx.strokeStyle = pInk;
-        ctx.lineWidth = 1.2;
+        ctx.lineWidth = 1.15;
         [-2.2, 2.2].forEach((kx) => {
           ctx.beginPath();
-          ctx.arc(kx, 5.4, 1.6, 0, Math.PI * 2);
+          ctx.arc(kx, -7.2, 1.45, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
         });
         ctx.restore();
 
-        // Làn gió nhẹ bay ra từ miệng ví rỗng
-        const puffP = (budgetCat.clock * 1.1) % 1;
-        const puffA = Math.sin(puffP * Math.PI) * 0.65;
+        // Con ruồi nhỏ bay vòng vòng phía trên miệng ví rỗng
+        const fx = px + Math.cos(budgetCat.clock * 4.4) * 9.5;
+        const fy = py - 12.5 + Math.sin(budgetCat.clock * 8.8) * 3.0;
         ctx.save();
-        ctx.strokeStyle = `rgba(180, 195, 210, ${puffA.toFixed(2)})`;
-        ctx.lineWidth = 1.1;
+        ctx.fillStyle = "#2C2D35";
         ctx.beginPath();
-        ctx.moveTo(px - 10 - puffP * 5, py + 4 + puffP * 2);
-        ctx.quadraticCurveTo(px - 13 - puffP * 5, py + 2 + puffP * 2, px - 15 - puffP * 5, py + 5 + puffP * 2);
-        ctx.stroke();
+        ctx.arc(fx, fy, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        // Cánh ruồi vỗ nhẹ
+        const wingFlap = Math.sin(budgetCat.clock * 42) * 1.1;
+        ctx.fillStyle = "rgba(220, 238, 255, 0.85)";
+        ctx.beginPath();
+        ctx.ellipse(fx - 1.4, fy - 1.3 + wingFlap * 0.4, 1.5, 0.8, -0.5, 0, Math.PI * 2);
+        ctx.ellipse(fx + 1.4, fy - 1.3 - wingFlap * 0.4, 1.5, 0.8, 0.5, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
       }
     }
