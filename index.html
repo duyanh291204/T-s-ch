@@ -2533,7 +2533,7 @@ body {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink);
-  margin: 0 0 9px;
+  margin: 4px 0 12px;
   padding: 0 4px;
 }
 
@@ -2544,10 +2544,22 @@ body {
 }
 
 /* Khung tủ gỗ vuông vức, đồng bộ màu gỗ trầm sang trọng của Tủ kính */
+.shelf-cat-canvas {
+  position: absolute;
+  top: -35px;
+  left: 6px;
+  width: calc(100% - 12px);
+  height: 40px;
+  z-index: 15;
+  pointer-events: none;
+  display: block;
+}
+
 .shelf-bookcase {
   position: relative;
   border-radius: 2px;
   padding: 11px 11px 13px;
+  cursor: pointer;
   background: linear-gradient(155deg, #4E3E31 0%, #2D231C 52%, #1B1511 100%);
   border: 1.5px solid rgba(255, 232, 200, 0.18);
   box-shadow:
@@ -3224,6 +3236,21 @@ body {
 
 .cabinet-frame.is-open .cabinet-spot {
   opacity: 1;
+}
+
+/* Bụi lấp lánh bay trong luồng đèn spotlight */
+.cabinet-dust-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  display: block;
+}
+
+[data-fx="minimal"] .cabinet-dust-canvas {
+  display: none;
 }
 
 /* Vầng cầu ánh sáng mờ giúp định hình không gian hình cầu 3D */
@@ -5904,7 +5931,418 @@ function formatSpineTitleHtml(rawTitle, hasThumb) {
   return `<span class="sp-title-vert is-two-line"><span class="sp-line">${esc(title.slice(0, half))}</span><span class="sp-line">${esc(title.slice(half))}</span></span>`;
 }
 
+// ============================
+// MÈO CAPOO TUẦN TRA TRÊN NÓC KỆ GỖ (CHẠM VÀO KỆ GỖ ĐỂ GỌI MÈO LÊN TUẦN TRA!)
+// ============================
+const shelfCat = {
+  bookcaseEl: null,
+  canvas: null,
+  ctx: null,
+  w: 0,
+  h: 40,
+  dpr: 1,
+  x: 60,
+  dir: 1,
+  phase: "idle", // "idle" | "jumpIn" | "patrol" | "inspect" | "jumpOut"
+  timer: 0,
+  patrolTime: 0,
+  maxPatrolTime: 15,
+  inspectCooldown: 3.4,
+  gait: 0,
+  clock: 0,
+  blinkT: 2.0,
+  blinkDur: 0,
+  hopY: 0,
+  hopVel: 0,
+  sparkleT: 0,
+  rafId: null,
+  lastTs: 0,
+};
+
+function stopShelfCatPatrol() {
+  if (shelfCat.rafId !== null) {
+    cancelAnimationFrame(shelfCat.rafId);
+    shelfCat.rafId = null;
+  }
+  if (shelfCat.ctx && shelfCat.canvas) {
+    shelfCat.ctx.setTransform(shelfCat.dpr, 0, 0, shelfCat.dpr, 0, 0);
+    shelfCat.ctx.clearRect(0, 0, shelfCat.w, shelfCat.h);
+  }
+  shelfCat.phase = "idle";
+  shelfCat.bookcaseEl = null;
+  shelfCat.canvas = null;
+  shelfCat.ctx = null;
+}
+
+function syncShelfCatSize() {
+  if (!shelfCat.canvas) return false;
+  const cw = Math.round(shelfCat.canvas.clientWidth || 0);
+  if (cw < 40) return false;
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  if (cw === shelfCat.w && shelfCat.dpr === dpr && shelfCat.canvas.width === Math.round(cw * dpr)) {
+    return true;
+  }
+  const prevW = shelfCat.w;
+  shelfCat.w = cw;
+  shelfCat.h = 40;
+  shelfCat.dpr = dpr;
+  shelfCat.canvas.width = Math.round(cw * dpr);
+  shelfCat.canvas.height = Math.round(40 * dpr);
+  if (prevW >= 40) {
+    shelfCat.x = Math.max(24, Math.min(cw - 24, (shelfCat.x / prevW) * cw));
+  }
+  return true;
+}
+
+function drawShelfCatFrame(dt) {
+  const canvas = shelfCat.canvas;
+  const ctx = shelfCat.ctx;
+  if (!canvas || !ctx || !canvas.isConnected) return false;
+  if (state.catEnabled === false || state.bookView !== "shelf" || document.hidden) return false;
+  const booksView = document.getElementById("view-books");
+  if (!booksView || !booksView.classList.contains("active")) return false;
+  if (!syncShelfCatSize()) return true;
+
+  shelfCat.clock += dt;
+  shelfCat.blinkT -= dt;
+  if (shelfCat.blinkT <= 0) {
+    shelfCat.blinkDur = 0.13;
+    shelfCat.blinkT = 2.2 + Math.random() * 2.4;
+  }
+  if (shelfCat.blinkDur > 0) shelfCat.blinkDur -= dt;
+  if (shelfCat.sparkleT > 0) shelfCat.sparkleT -= dt;
+
+  // Vật lý nhảy bật nhẹ khi người dùng chạm tiếp lên kệ
+  if (shelfCat.hopY < 0 || shelfCat.hopVel !== 0) {
+    shelfCat.hopY += shelfCat.hopVel * dt;
+    shelfCat.hopVel += 380 * dt;
+    if (shelfCat.hopY >= 0) {
+      shelfCat.hopY = 0;
+      shelfCat.hopVel = 0;
+    }
+  }
+
+  const minX = 26;
+  const maxX = Math.max(minX + 10, shelfCat.w - 26);
+  let yOffset = 0;
+  let alpha = 1;
+
+  if (shelfCat.phase === "jumpIn") {
+    shelfCat.timer += dt;
+    const p = Math.min(1, shelfCat.timer / 0.34);
+    // Nhảy vòng cung từ sau nóc kệ lên đứng trên thanh gỗ
+    yOffset = (1 - p) * 18 - Math.sin(p * Math.PI) * 11;
+    alpha = Math.min(1, p * 1.6);
+    if (p >= 1) {
+      shelfCat.phase = "patrol";
+      shelfCat.timer = 0;
+      shelfCat.sparkleT = 0.45;
+    }
+  } else if (shelfCat.phase === "patrol") {
+    shelfCat.patrolTime += dt;
+    shelfCat.inspectCooldown -= dt;
+    const speed = 78;
+    shelfCat.gait += dt * 15;
+    shelfCat.x += shelfCat.dir * speed * dt;
+    if (shelfCat.x >= maxX) {
+      shelfCat.x = maxX;
+      shelfCat.dir = -1;
+    } else if (shelfCat.x <= minX) {
+      shelfCat.x = minX;
+      shelfCat.dir = 1;
+    }
+    if (shelfCat.patrolTime >= shelfCat.maxPatrolTime) {
+      shelfCat.phase = "jumpOut";
+      shelfCat.timer = 0;
+    } else if (shelfCat.inspectCooldown <= 0 && shelfCat.x > minX + 20 && shelfCat.x < maxX - 20) {
+      shelfCat.phase = "inspect";
+      shelfCat.timer = 0;
+      shelfCat.inspectCooldown = 3.2 + Math.random() * 2.4;
+    }
+  } else if (shelfCat.phase === "inspect") {
+    // Dừng lại ngó xuống kiểm tra hàng truyện trên kệ rồi đi tuần tiếp
+    shelfCat.timer += dt;
+    shelfCat.patrolTime += dt;
+    if (shelfCat.timer >= 1.25) {
+      shelfCat.phase = shelfCat.patrolTime >= shelfCat.maxPatrolTime ? "jumpOut" : "patrol";
+      shelfCat.timer = 0;
+      if (Math.random() < 0.35) shelfCat.dir *= -1;
+    }
+  } else if (shelfCat.phase === "jumpOut") {
+    shelfCat.timer += dt;
+    const p = Math.min(1, shelfCat.timer / 0.32);
+    yOffset = p * 18 - Math.sin(p * Math.PI) * 9;
+    alpha = Math.max(0, 1 - p * 1.25);
+    if (p >= 1) {
+      return false;
+    }
+  }
+
+  ctx.setTransform(shelfCat.dpr, 0, 0, shelfCat.dpr, 0, 0);
+  ctx.clearRect(0, 0, shelfCat.w, shelfCat.h);
+
+  const pal = (typeof CAT_COLORS !== "undefined" && typeof getCapooColorKey === "function" && CAT_COLORS[getCapooColorKey()]) || {
+    body: "#59CBF0",
+    belly: "#FFFFFF",
+    ink: "#363740",
+    eye: "#2C2D35",
+    eyeShine: "#FFFFFF",
+    mouthLine: "#2C2D35",
+    pink: "#FF7B89",
+    cheek: "#FF9AA6",
+    isBlack: false,
+  };
+  const outlineCol = pal.isBlack ? "#6A7082" : pal.ink;
+  const isWalking = shelfCat.phase === "patrol";
+  const isInspecting = shelfCat.phase === "inspect";
+  const groundY = shelfCat.h - 4;
+  const bounce = isWalking ? Math.abs(Math.sin(shelfCat.gait)) * 2.0 : Math.sin(shelfCat.clock * 3.0) * 0.35;
+  const tilt = isWalking ? shelfCat.dir * 0.065 : isInspecting ? Math.sin(shelfCat.timer * 4.5) * 0.06 : 0;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(shelfCat.x, groundY - bounce + shelfCat.hopY + yOffset);
+  ctx.rotate(tilt);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  // Bóng mờ dưới chân trên nóc tủ gỗ
+  if (shelfCat.phase === "patrol" || shelfCat.phase === "inspect") {
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.beginPath();
+    ctx.ellipse(0, 1.3 + bounce * 0.35 - shelfCat.hopY * 0.2, isWalking ? 15.5 : 16.2, 2.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Bê nguyên 100% dáng thân, tai, bụng & mắt từ bé mèo bên Tủ sách
+  const rx = isWalking ? 17.5 : 16.6;
+  const ry = 9.7;
+  const earDroop = isWalking ? 0.16 : isInspecting ? 0.05 : 0;
+
+  const traceBody = () => {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(rx * 0.9, 0, rx * 1.12, -ry * 0.24, rx * 1.02, -ry * 0.96);
+    ctx.bezierCurveTo(rx * 0.92, -ry * 1.66, rx * 0.55, -ry * 1.92, 0, -ry * 1.92);
+    ctx.bezierCurveTo(-rx * 0.55, -ry * 1.92, -rx * 0.92, -ry * 1.66, -rx * 1.02, -ry * 0.96);
+    ctx.bezierCurveTo(-rx * 1.12, -ry * 0.24, -rx * 0.9, 0, 0, 0);
+    ctx.closePath();
+  };
+
+  const traceEar = (side) => {
+    const bx1 = side * rx * 0.2;
+    const bx2 = side * rx * 0.86;
+    const by1 = -ry * 1.64;
+    const by2 = -ry * 1.16;
+    const tx = side * rx * (0.64 + earDroop * 0.12);
+    const ty = -ry * 2.38 + earDroop * 4.0;
+    ctx.beginPath();
+    ctx.moveTo(bx1, by1);
+    ctx.quadraticCurveTo(side * rx * 0.42, ty - 0.5, tx, ty);
+    ctx.quadraticCurveTo(side * rx * 0.92, ty + 1.3, bx2, by2);
+    ctx.closePath();
+  };
+
+  const paintPass = (mode) => {
+    const apply = () => {
+      if (mode === "outline") {
+        ctx.fillStyle = outlineCol;
+        ctx.strokeStyle = outlineCol;
+        ctx.lineWidth = 3.5;
+        ctx.stroke();
+        ctx.fill();
+      } else {
+        ctx.fillStyle = pal.body;
+        ctx.fill();
+      }
+    };
+
+    traceEar(-1);
+    apply();
+    traceEar(1);
+    apply();
+
+    if (isWalking) {
+      const s1 = Math.sin(shelfCat.gait) * 2.2;
+      const s2 = Math.sin(shelfCat.gait + Math.PI) * 2.2;
+      [
+        { x: -9.2 + s1 * 0.55, y: -0.9 - Math.max(0, s1) * 0.8 },
+        { x: -4.4 + s2 * 0.55, y: -0.9 - Math.max(0, s2) * 0.8 },
+        { x: 4.4 + s1 * 0.55, y: -0.9 - Math.max(0, s1) * 0.8 },
+        { x: 9.2 + s2 * 0.55, y: -0.9 - Math.max(0, s2) * 0.8 },
+      ].forEach((p) => {
+        ctx.beginPath();
+        ctx.ellipse(p.x, p.y, 2.2, 2.7, 0, 0, Math.PI * 2);
+        apply();
+      });
+    } else {
+      ctx.beginPath();
+      ctx.ellipse(-4.9, -0.8, 2.3, 2.75, 0, 0, Math.PI * 2);
+      apply();
+      ctx.beginPath();
+      ctx.ellipse(4.9, -0.8, 2.3, 2.75, 0, 0, Math.PI * 2);
+      apply();
+    }
+
+    traceBody();
+    apply();
+  };
+
+  paintPass("outline");
+  paintPass("fill");
+
+  const lookX = isWalking ? shelfCat.dir * 3.4 : 0;
+  const lookY = isInspecting ? 1.4 : 0;
+
+  // Vòng lông bụng khác màu y hệt bên Tủ sách
+  ctx.save();
+  traceBody();
+  ctx.clip();
+  ctx.fillStyle = pal.belly;
+  ctx.beginPath();
+  ctx.ellipse(lookX * 0.55, 1.5, rx * 0.46, ry * 0.68, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Khuôn mặt y hệt bên Tủ sách
+  ctx.save();
+  ctx.translate(lookX, -ry * 1.14 + lookY);
+
+  ctx.fillStyle = pal.cheek;
+  ctx.globalAlpha = 0.5;
+  ctx.beginPath();
+  ctx.ellipse(-8.4, 1.6, 2.0, 1.2, 0, 0, Math.PI * 2);
+  ctx.ellipse(8.4, 1.6, 2.0, 1.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  if (shelfCat.blinkDur > 0) {
+    ctx.strokeStyle = pal.mouthLine;
+    ctx.lineWidth = 1.7;
+    ctx.beginPath();
+    ctx.moveTo(-7.4, 0);
+    ctx.lineTo(-4.2, 0);
+    ctx.moveTo(4.2, 0);
+    ctx.lineTo(7.4, 0);
+    ctx.stroke();
+  } else {
+    const rX = 2.05;
+    const rY = 2.3;
+    const fDir = isWalking ? shelfCat.dir : 0;
+    const pShiftY = isInspecting ? 0.55 : 0;
+    [-5.8, 5.8].forEach((ex) => {
+      const ey = -0.2;
+      if (pal.isBlack) {
+        ctx.fillStyle = "#FFFDF7";
+        ctx.beginPath();
+        ctx.ellipse(ex, ey, rX * 1.05, rY * 1.05, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#1D1F28";
+        ctx.beginPath();
+        ctx.ellipse(ex + fDir * 0.3, ey + pShiftY, rX * 0.65, rY * 0.68, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.arc(ex - rX * 0.34, ey - rY * 0.34, 0.65, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = pal.eye;
+        ctx.beginPath();
+        ctx.ellipse(ex, ey, rX, rY, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = pal.eyeShine || "#FFFFFF";
+        ctx.beginPath();
+        ctx.arc(ex - rX * 0.32, ey - rY * 0.34, 0.65, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+  }
+
+  ctx.strokeStyle = pal.mouthLine;
+  ctx.lineWidth = 1.55;
+  ctx.beginPath();
+  ctx.moveTo(-2.85, 0.6);
+  ctx.quadraticCurveTo(-1.425, 2.7, 0, 1.0);
+  ctx.quadraticCurveTo(1.425, 2.7, 2.85, 0.6);
+  ctx.stroke();
+  ctx.restore();
+
+  // Tia lấp lánh nhỏ khi vừa nhảy lên kệ
+  if (shelfCat.sparkleT > 0) {
+    ctx.strokeStyle = "#FFE8A3";
+    ctx.globalAlpha = Math.min(1, shelfCat.sparkleT * 2.2) * alpha;
+    ctx.lineWidth = 1.4;
+    const sx = 18;
+    const sy = -ry * 2.05;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy - 3.5);
+    ctx.lineTo(sx, sy + 3.5);
+    ctx.moveTo(sx - 3.5, sy);
+    ctx.lineTo(sx + 3.5, sy);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+  return true;
+}
+
+function startShelfCatPatrol(bookcaseEl, tapClientX) {
+  if (state.catEnabled === false || !bookcaseEl) return;
+  const canvas = bookcaseEl.querySelector(".shelf-cat-canvas");
+  if (!canvas) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const relX = typeof tapClientX === "number" && rect.width > 40
+    ? Math.max(28, Math.min(rect.width - 28, tapClientX - rect.left))
+    : Math.max(28, (rect.width || 240) * 0.5);
+
+  if (shelfCat.bookcaseEl === bookcaseEl && (shelfCat.phase === "patrol" || shelfCat.phase === "inspect")) {
+    // Chạm thêm lần nữa khi mèo đang tuần tra: nhảy bật vui vẻ, đổi hướng về phía ngón tay & gia hạn tuần tra
+    shelfCat.dir = relX >= shelfCat.x ? 1 : -1;
+    shelfCat.phase = "patrol";
+    shelfCat.patrolTime = 0;
+    shelfCat.hopVel = -115;
+    shelfCat.sparkleT = 0.4;
+    SFX.catTap(true);
+    return;
+  }
+
+  stopShelfCatPatrol();
+  shelfCat.bookcaseEl = bookcaseEl;
+  shelfCat.canvas = canvas;
+  shelfCat.ctx = canvas.getContext("2d");
+  shelfCat.w = 0;
+  syncShelfCatSize();
+
+  shelfCat.x = Math.max(26, Math.min((shelfCat.w || 240) - 26, relX));
+  shelfCat.dir = shelfCat.x > (shelfCat.w || 240) * 0.5 ? -1 : 1;
+  shelfCat.phase = "jumpIn";
+  shelfCat.timer = 0;
+  shelfCat.patrolTime = 0;
+  shelfCat.maxPatrolTime = 15;
+  shelfCat.inspectCooldown = 3.0 + Math.random() * 2.0;
+  shelfCat.hopY = 0;
+  shelfCat.hopVel = 0;
+  shelfCat.sparkleT = 0;
+  shelfCat.lastTs = performance.now();
+
+  SFX.catWake();
+
+  const step = (now) => {
+    const dt = Math.min(0.033, Math.max(0.004, (now - shelfCat.lastTs) / 1000));
+    shelfCat.lastTs = now;
+    const alive = drawShelfCatFrame(dt);
+    if (alive) {
+      shelfCat.rafId = requestAnimationFrame(step);
+    } else {
+      stopShelfCatPatrol();
+    }
+  };
+  shelfCat.rafId = requestAnimationFrame(step);
+}
+
 function renderBooks() {
+  stopShelfCatPatrol();
   const container = document.getElementById("booksContainer");
   const q = normVN(filters.bookSearch);
 
@@ -6040,7 +6478,8 @@ function renderBooks() {
             <span>${esc(groupTitle)}</span>
             <span class="mono">${items.length} bộ · ${grpVolTotal} tập</span>
           </div>
-          <div class="shelf-bookcase">
+          <div class="shelf-bookcase" data-shelf-bookcase="1">
+            <canvas class="shelf-cat-canvas" aria-hidden="true"></canvas>
             <div class="shelf-wrap">${rows
               .map((rowItems, rIdx) => {
                 const rowVolTotal = rowItems.reduce((a, s) => a + getAllSeriesVolumes(s).length, 0);
@@ -6131,6 +6570,14 @@ function renderBooks() {
           openSeriesDetail(s.id);
           setTimeout(() => el.classList.remove("pulled"), 140);
         }, 120);
+      });
+    });
+
+    // Chạm vào khung gỗ / nền tủ kệ (không phải gáy truyện) -> Mèo nhảy lên nóc kệ gỗ đi tuần tra!
+    container.querySelectorAll("[data-shelf-bookcase]").forEach((bc) => {
+      bc.addEventListener("click", (e) => {
+        if (e.target.closest("[data-shelf-id]")) return;
+        startShelfCatPatrol(bc, e.clientX);
       });
     });
     return;
@@ -9207,6 +9654,129 @@ function syncCabinetCatHit() {
   }
 }
 
+// Bụi sáng lấp lánh (dust motes) bay nhẹ trong 2 luồng đèn spotlight tủ kính
+const cabDust = {
+  canvas: null,
+  ctx: null,
+  w: 0,
+  h: 0,
+  dpr: 1,
+  clock: 0,
+  motes: [],
+};
+
+function initCabinetDust(canvasEl) {
+  cabDust.canvas = canvasEl || null;
+  cabDust.ctx = canvasEl ? canvasEl.getContext("2d") : null;
+  cabDust.w = 0;
+  cabDust.h = 0;
+  cabDust.clock = 0;
+  cabDust.motes = [];
+  if (!canvasEl) return;
+
+  const count = 34;
+  for (let i = 0; i < count; i++) {
+    cabDust.motes.push({
+      beam: i % 2, // 0 = luồng đèn trái, 1 = luồng đèn phải
+      t: Math.random(), // 0 (nóc đèn) -> 1 (đáy luồng sáng)
+      spread: (Math.random() * 2 - 1) * 0.92,
+      speed: 0.028 + Math.random() * 0.042,
+      swayPhase: Math.random() * Math.PI * 2,
+      swayFreq: 0.7 + Math.random() * 1.1,
+      swayAmp: 4 + Math.random() * 9,
+      twinklePhase: Math.random() * Math.PI * 2,
+      twinkleFreq: 1.6 + Math.random() * 2.6,
+      r: 0.75 + Math.random() * 1.35,
+      isStar: i % 3 === 0,
+    });
+  }
+  syncCabinetDustSize();
+}
+
+function syncCabinetDustSize() {
+  if (!cabDust.canvas) return false;
+  const cw = Math.round(cabDust.canvas.clientWidth || 0);
+  const ch = Math.round(cabDust.canvas.clientHeight || 0);
+  if (cw < 40 || ch < 40) return false;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if (cw === cabDust.w && ch === cabDust.h && cabDust.dpr === dpr) return true;
+  cabDust.w = cw;
+  cabDust.h = ch;
+  cabDust.dpr = dpr;
+  cabDust.canvas.width = Math.round(cw * dpr);
+  cabDust.canvas.height = Math.round(ch * dpr);
+  return true;
+}
+
+function updateAndDrawCabinetDust(dt) {
+  const canvas = cabDust.canvas;
+  const ctx = cabDust.ctx;
+  if (!canvas || !ctx || !canvas.isConnected) return;
+  if (typeof isRichFx === "function" && !isRichFx()) return;
+  if (!syncCabinetDustSize()) return;
+
+  const speedMul = cabinetIsOpen ? 1.22 : 0.85;
+  const brightMul = cabinetIsOpen ? 1.18 : 0.82;
+  cabDust.clock += dt * speedMul;
+
+  ctx.setTransform(cabDust.dpr, 0, 0, cabDust.dpr, 0, 0);
+  ctx.clearRect(0, 0, cabDust.w, cabDust.h);
+
+  const isMid = document.documentElement.getAttribute("data-theme") === "midnight";
+  const rgb = isMid ? "175, 224, 255" : "255, 240, 198";
+  const w = cabDust.w;
+  const h = cabDust.h;
+
+  for (let i = 0; i < cabDust.motes.length; i++) {
+    const m = cabDust.motes[i];
+    m.t += m.speed * speedMul * dt;
+    if (m.t > 1) {
+      m.t -= 1;
+      m.spread = (Math.random() * 2 - 1) * 0.92;
+    }
+
+    // Tâm 2 luồng đèn spotlight rọi từ nóc tủ xiên nhẹ sang 2 bên
+    const topX = m.beam === 0 ? w * 0.34 : w * 0.66;
+    const botX = m.beam === 0 ? w * 0.25 : w * 0.75;
+    const coneHalfW = w * (0.06 + m.t * 0.24);
+    const sway = Math.sin(cabDust.clock * m.swayFreq + m.swayPhase) * m.swayAmp;
+    const px = topX + (botX - topX) * m.t + m.spread * coneHalfW + sway;
+    const py = 6 + m.t * (h * 0.78);
+
+    // Mờ dần ở sát nóc và ở cuối luồng đèn, rực nhất ở giữa luồng đèn
+    const vFade = Math.sin(Math.min(1, m.t) * Math.PI);
+    const edgeFade = Math.max(0.15, 1 - Math.abs(m.spread) * 0.75);
+    const twinkle = 0.42 + 0.58 * (0.5 + 0.5 * Math.sin(cabDust.clock * m.twinkleFreq + m.twinklePhase));
+    const alpha = Math.min(0.95, vFade * edgeFade * twinkle * brightMul * 0.88);
+    if (alpha < 0.04) continue;
+
+    // Hào quang mờ xung quanh hạt bụi sáng
+    ctx.fillStyle = `rgba(${rgb}, ${(alpha * 0.28).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(px, py, m.r * 2.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Lõi hạt bụi sáng
+    ctx.fillStyle = `rgba(255, 253, 245, ${alpha.toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(px, py, m.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tia lấp lánh 4 cánh khi hạt đạt đỉnh sáng
+    if (m.isStar && twinkle > 0.78 && alpha > 0.32) {
+      const arm = m.r * (2.6 + (twinkle - 0.78) * 6.5);
+      ctx.strokeStyle = `rgba(${rgb}, ${(alpha * 0.85).toFixed(3)})`;
+      ctx.lineWidth = 0.85;
+      ctx.beginPath();
+      ctx.moveTo(px - arm, py);
+      ctx.lineTo(px + arm, py);
+      ctx.moveTo(px, py - arm);
+      ctx.lineTo(px, py + arm);
+      ctx.stroke();
+    }
+  }
+}
+
 function initCabinetCat(canvasEl, hitEl, frameEl) {
   if (cabCat._safetyTimer) {
     clearTimeout(cabCat._safetyTimer);
@@ -9716,6 +10286,7 @@ function resumeCabinetOrbitIfVisible() {
       cabinetNeedsLayout = false;
     }
 
+    updateAndDrawCabinetDust(dt);
     updateAndDrawCabinetCat(dt);
     cabinetAnimId = requestAnimationFrame(tick);
   };
@@ -9914,6 +10485,7 @@ function renderMerch() {
             <div class="cabinet-arch"></div>
             <div class="cabinet-spot cabinet-spot-left"></div>
             <div class="cabinet-spot cabinet-spot-right"></div>
+            <canvas class="cabinet-dust-canvas" id="cabinetDustCanvas" aria-hidden="true"></canvas>
             <div class="cabinet-sphere-aura"></div>
             <div class="cabinet-sphere-equator"></div>
             <div class="cabinet-led"></div>
@@ -9944,6 +10516,7 @@ function renderMerch() {
         : "Chạm bé mèo hoặc tủ để mở";
     };
 
+    initCabinetDust(container.querySelector("#cabinetDustCanvas"));
     initCabinetCat(container.querySelector("#cabinetCatCanvas"), catHitEl, frameEl);
 
     const setCabinetOpen = (openVal) => {
