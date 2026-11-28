@@ -2907,11 +2907,15 @@ body {
 /* Batch attach images grid & multi-AI progress */
 .bai-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 7px;
-  max-height: 40dvh;
-  overflow-y: auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   padding: 2px;
+}
+
+@media (min-width: 520px) {
+  .bai-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .bai-dropzone {
@@ -2960,11 +2964,43 @@ body {
   transform: scale(1.03);
 }
 
-.bai-thumb {
+.bai-thumb-wrap {
+  position: relative;
   width: 100%;
   aspect-ratio: 2 / 3;
-  object-fit: cover;
+  background: #141312;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.bai-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   display: block;
+}
+
+.bai-crop-btn {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 3px;
+  background: rgba(18, 17, 16, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #FFF;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bai-crop-btn.is-cropped {
+  background: var(--forest);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .bai-tag {
@@ -8632,14 +8668,41 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
           .map((it, idx) => {
             const tgt = plan[idx];
             const lbl = tgt ? (tgt.isNew ? `+T.${tgt.number}` : `T.${tgt.number}`) : "Dư";
+            const srcShow = it.croppedDataUrl || it.url;
             return `
               <div class="bai-item" draggable="${!isBusy ? "true" : "false"}" data-bai-idx="${idx}" title="Kéo để đổi vị trí">
-                <img class="bai-thumb" src="${esc(it.url)}" alt="" draggable="false" />
-                ${!isBusy ? `<button type="button" class="bai-rm" data-bai-rm="${idx}" title="Bỏ ảnh này">×</button>` : ""}
+                <div class="bai-thumb-wrap">
+                  <img class="bai-thumb" src="${esc(srcShow)}" alt="" draggable="false" />
+                  ${!isBusy ? `<button type="button" class="bai-crop-btn ${it.croppedDataUrl ? "is-cropped" : ""}" data-bai-crop="${idx}" title="Cắt ảnh này">${it.croppedDataUrl ? "Đã cắt" : "Cắt"}</button>` : ""}
+                  ${!isBusy ? `<button type="button" class="bai-rm" data-bai-rm="${idx}" title="Bỏ ảnh này">×</button>` : ""}
+                </div>
                 <div class="bai-tag mono" style="${tgt ? (tgt.isNew ? "color:var(--accent);" : "") : "opacity:0.45;"}">${esc(lbl)}</div>
               </div>`;
           })
           .join("");
+
+        gridEl.querySelectorAll("[data-bai-crop]").forEach((btn) => {
+          btn.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            if (isBusy) return;
+            const idx = Number(btn.dataset.baiCrop);
+            const it = pickedItems[idx];
+            if (!it || !it.file) return;
+            const tgt = plan[idx];
+            const cropped = await openImageCropper(it.file, {
+              ratio: 2 / 3,
+              maxW: 1400,
+              maxH: 2100,
+              quality: 1.0,
+              title: tgt ? `Cắt ảnh Tập ${tgt.number}` : `Cắt ảnh #${idx + 1}`,
+            });
+            if (cropped) {
+              it.croppedDataUrl = cropped;
+              SFX.pop();
+              renderPreview();
+            }
+          });
+        });
 
         gridEl.querySelectorAll("[data-bai-rm]").forEach((btn) => {
           btn.addEventListener("click", (e) => {
@@ -8786,7 +8849,7 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
         for (let i = 0; i < count; i++) {
           applyBtn.textContent = `Đang nạp ${i + 1}/${count}...`;
           try {
-            const dataUrl = await compressImageFile(pickedItems[i].file, 0, 0, 1.0);
+            const dataUrl = pickedItems[i].croppedDataUrl || (await compressImageFile(pickedItems[i].file, 0, 0, 1.0));
             const tgt = plan[i];
             if (tgt.existingVol) {
               tgt.existingVol.image = dataUrl;
