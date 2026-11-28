@@ -3464,13 +3464,17 @@ body {
 .cabinet-door-right .cabinet-handle { left: 8px; }
 
 /* Mèo Capoo quản gia đứng & đi ngay trên thanh gỗ đáy tủ kính */
+.cabinet-frame.is-pulling-close .cabinet-door {
+  transition: none !important;
+}
+
 .cabinet-cat-canvas {
   position: absolute;
   left: 11px;
   right: 11px;
-  bottom: 9px;
+  bottom: 8px;
   width: calc(100% - 22px);
-  height: 42px;
+  height: 50px;
   z-index: 250;
   pointer-events: none;
   display: block;
@@ -3480,8 +3484,8 @@ body {
   position: absolute;
   left: 11px;
   bottom: 2px;
-  width: 64px;
-  height: 50px;
+  width: 72px;
+  height: 56px;
   z-index: 260;
   cursor: pointer;
   background: transparent;
@@ -9092,13 +9096,16 @@ function layoutCabinetItems(stageEl, specs) {
   }
 }
 
-// Mèo Capoo quản gia đi trên thanh gỗ đáy tủ kính (mắt lấp lánh · quay lưng mở tủ · 1 tay kéo nặng đóng tủ)
+// Mèo Capoo quản gia đi trên thanh gỗ đáy tủ kính (to rõ nét · quay lưng mở tủ · 2 tay kéo dần 2 cánh tủ vào giữa đóng nặng nề)
 const cabCat = {
   canvas: null,
   ctx: null,
   hitEl: null,
+  frameEl: null,
+  doorL: null,
+  doorR: null,
   w: 0,
-  h: 42,
+  h: 50,
   dpr: 1,
   x: 0,
   dir: -1,
@@ -9114,25 +9121,53 @@ const cabCat = {
   _lastHitX: -1,
 };
 
+function clearDoorPullInline() {
+  if (cabCat.frameEl) cabCat.frameEl.classList.remove("is-pulling-close");
+  if (cabCat.doorL) {
+    cabCat.doorL.style.transform = "";
+    cabCat.doorL.style.opacity = "";
+  }
+  if (cabCat.doorR) {
+    cabCat.doorR.style.transform = "";
+    cabCat.doorR.style.opacity = "";
+  }
+}
+
+function setDoorPullProgress(p) {
+  // p: 0 (đang mở toang -104deg/104deg) -> 1 (đóng khít 0deg)
+  const clamped = Math.max(0, Math.min(1, p));
+  const ang = 104 * (1 - clamped);
+  const op = 0.35 + 0.65 * clamped;
+  if (cabCat.frameEl) cabCat.frameEl.classList.add("is-pulling-close");
+  if (cabCat.doorL) {
+    cabCat.doorL.style.transform = `rotateY(${(-ang).toFixed(1)}deg)`;
+    cabCat.doorL.style.opacity = op.toFixed(2);
+  }
+  if (cabCat.doorR) {
+    cabCat.doorR.style.transform = `rotateY(${ang.toFixed(1)}deg)`;
+    cabCat.doorR.style.opacity = op.toFixed(2);
+  }
+}
+
 function syncCabinetCatSize() {
   if (!cabCat.canvas) return false;
   const cw = Math.round(cabCat.canvas.clientWidth || 0);
-  if (cw < 40) return false; // Tab đang ẩn (display:none) -> chưa đo, tránh bị kéo ngang 1.7x!
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if (cw < 40) return false;
+  const dpr = Math.min(window.devicePixelRatio || 1, 3); // Canvas nhỏ nên dùng dpr 3 cho nét căng trên iPhone Retina
   if (cw === cabCat.w && cabCat.dpr === dpr && cabCat.canvas.width === Math.round(cw * dpr)) {
     return true;
   }
   const prevW = cabCat.w;
   const wasHome = cabCat.phase === "sit" || prevW < 40;
   cabCat.w = cw;
-  cabCat.h = 42;
+  cabCat.h = 50;
   cabCat.dpr = dpr;
   cabCat.canvas.width = Math.round(cw * dpr);
-  cabCat.canvas.height = Math.round(42 * dpr);
+  cabCat.canvas.height = Math.round(50 * dpr);
   if (wasHome) {
-    cabCat.x = cw - 24;
+    cabCat.x = cw - 28;
   } else {
-    cabCat.x = Math.max(22, Math.min(cw - 22, (cabCat.x / prevW) * cw));
+    cabCat.x = Math.max(24, Math.min(cw - 24, (cabCat.x / prevW) * cw));
   }
   cabCat._lastHitX = -1;
   syncCabinetCatHit();
@@ -9141,17 +9176,20 @@ function syncCabinetCatSize() {
 
 function syncCabinetCatHit() {
   if (!cabCat.hitEl || cabCat.w < 40) return;
-  const hx = Math.max(0, Math.min(cabCat.w - 64, Math.round(cabCat.x - 32)));
+  const hx = Math.max(0, Math.min(cabCat.w - 72, Math.round(cabCat.x - 36)));
   if (cabCat._lastHitX !== hx) {
     cabCat._lastHitX = hx;
     cabCat.hitEl.style.transform = `translate3d(${hx}px, 0, 0)`;
   }
 }
 
-function initCabinetCat(canvasEl, hitEl) {
+function initCabinetCat(canvasEl, hitEl, frameEl) {
   cabCat.canvas = canvasEl || null;
   cabCat.ctx = canvasEl ? canvasEl.getContext("2d") : null;
   cabCat.hitEl = hitEl || null;
+  cabCat.frameEl = frameEl || null;
+  cabCat.doorL = frameEl ? frameEl.querySelector(".cabinet-door-left") : null;
+  cabCat.doorR = frameEl ? frameEl.querySelector(".cabinet-door-right") : null;
   cabCat.phase = "sit";
   cabCat.timer = 0;
   cabCat.acted = false;
@@ -9160,6 +9198,7 @@ function initCabinetCat(canvasEl, hitEl) {
   cabCat.w = 0;
   cabCat.x = 0;
   cabCat.dir = -1;
+  clearDoorPullInline();
   if (canvasEl) syncCabinetCatSize();
 }
 
@@ -9201,9 +9240,10 @@ function updateAndDrawCabinetCat(dt) {
   }
   if (cabCat.blinkDur > 0) cabCat.blinkDur -= dt;
 
-  const homeX = cabCat.w - 24;
+  const homeX = cabCat.w - 28;
   const midX = cabCat.w * 0.5;
   const speed = 185;
+  let closePullP = 0; // Tiến độ kéo 2 cánh cửa vào giữa (0 -> 1)
 
   if (cabCat.phase === "toCenter") {
     const dx = midX - cabCat.x;
@@ -9219,19 +9259,40 @@ function updateAndDrawCabinetCat(dt) {
     }
   } else if (cabCat.phase === "act") {
     cabCat.timer += dt;
-    const triggerAt = cabCat.action === "close" ? 0.24 : 0.16;
-    const doneAt = cabCat.action === "close" ? 0.62 : 0.46;
-    if (!cabCat.acted && cabCat.timer >= triggerAt) {
-      cabCat.acted = true;
-      if (typeof cabCat.onActionCb === "function") {
-        const cb = cabCat.onActionCb;
-        cabCat.onActionCb = null;
-        cb();
+    if (cabCat.action === "open") {
+      if (!cabCat.acted && cabCat.timer >= 0.16) {
+        cabCat.acted = true;
+        if (typeof cabCat.onActionCb === "function") {
+          const cb = cabCat.onActionCb;
+          cabCat.onActionCb = null;
+          cb();
+        }
       }
-    }
-    if (cabCat.timer >= doneAt) {
-      cabCat.phase = "return";
-      cabCat.timer = 0;
+      if (cabCat.timer >= 0.48) {
+        cabCat.phase = "return";
+        cabCat.timer = 0;
+      }
+    } else {
+      // ĐÓNG TỦ: Kéo dần 2 cánh cửa vào giữa trong 0.95s có nhịp giật nặng
+      const pullDur = 0.95;
+      const rawP = Math.min(1, cabCat.timer / pullDur);
+      // Nhịp kéo nặng: kéo từng nấc nhẹ rồi khép hẳn
+      closePullP = Math.min(1, rawP - Math.sin(rawP * Math.PI * 3) * 0.035 * (1 - rawP));
+      setDoorPullProgress(closePullP);
+
+      if (!cabCat.acted && cabCat.timer >= pullDur) {
+        cabCat.acted = true;
+        clearDoorPullInline();
+        if (typeof cabCat.onActionCb === "function") {
+          const cb = cabCat.onActionCb;
+          cabCat.onActionCb = null;
+          cb();
+        }
+      }
+      if (cabCat.timer >= pullDur + 0.16) {
+        cabCat.phase = "return";
+        cabCat.timer = 0;
+      }
     }
   } else if (cabCat.phase === "return") {
     const dx = homeX - cabCat.x;
@@ -9270,16 +9331,15 @@ function updateAndDrawCabinetCat(dt) {
   const isOpening = cabCat.phase === "act" && cabCat.action === "open";
   const isClosing = cabCat.phase === "act" && cabCat.action === "close";
 
-  const pullShake = isClosing ? Math.sin(cabCat.timer * 42) * 0.9 : 0;
-  const pullLean = isClosing ? 0.18 : 0;
+  const pullShake = isClosing && !cabCat.acted ? Math.sin(cabCat.timer * 48) * 1.15 : 0;
   const bounce = isMoving
-    ? Math.abs(Math.sin(cabCat.gait)) * 2.0
+    ? Math.abs(Math.sin(cabCat.gait)) * 2.2
     : isOpening
-    ? Math.sin(Math.min(1, cabCat.timer / 0.35) * Math.PI) * 1.9
+    ? Math.sin(Math.min(1, cabCat.timer / 0.35) * Math.PI) * 2.2
     : isClosing
-    ? 0.3
-    : Math.sin(cabCat.clock * 2.8) * 0.35;
-  const tilt = isMoving ? cabCat.dir * 0.07 : pullLean;
+    ? 0.2
+    : Math.sin(cabCat.clock * 2.8) * 0.4;
+  const tilt = isMoving ? cabCat.dir * 0.07 : 0;
 
   ctx.save();
   ctx.translate(cabCat.x + pullShake, groundY - bounce);
@@ -9290,12 +9350,12 @@ function updateAndDrawCabinetCat(dt) {
   // Bóng mờ dưới chân trên thanh gỗ
   ctx.fillStyle = "rgba(0,0,0,0.34)";
   ctx.beginPath();
-  ctx.ellipse(0, 1.3 + bounce * 0.35, isMoving ? 13.5 : 14.5, 2.2, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 1.5 + bounce * 0.35, isMoving ? 15.5 : 16.5, 2.5, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Tỷ lệ chuẩn gọn xinh giống hệt bé mèo ở Tủ sách (khung 42px)
-  const rx = isMoving ? 14.8 : isClosing ? 14.5 : 14.0;
-  const ry = isOpening ? 10.2 : isClosing ? 9.2 : 9.6;
+  // Kích thước to hơn xíu & rõ nét, giữ đúng tỷ lệ bánh bao cute
+  const rx = isMoving ? 17.2 : isClosing ? 17.2 + Math.sin(closePullP * Math.PI) * 0.8 : 16.4;
+  const ry = isOpening ? 11.8 : isClosing ? 10.6 : 11.2;
 
   const traceBody = () => {
     ctx.beginPath();
@@ -9320,7 +9380,7 @@ function updateAndDrawCabinetCat(dt) {
       if (mode === "outline") {
         ctx.fillStyle = outlineCol;
         ctx.strokeStyle = outlineCol;
-        ctx.lineWidth = 3.2;
+        ctx.lineWidth = 3.6;
         ctx.stroke();
         ctx.fill();
       } else {
@@ -9335,50 +9395,55 @@ function updateAndDrawCabinetCat(dt) {
     apply();
 
     if (isMoving) {
-      const s1 = Math.sin(cabCat.gait) * 2.0;
-      const s2 = Math.sin(cabCat.gait + Math.PI) * 2.0;
+      const s1 = Math.sin(cabCat.gait) * 2.2;
+      const s2 = Math.sin(cabCat.gait + Math.PI) * 2.2;
       [
-        { x: -8.0 + s1 * 0.55, y: -1.0 - Math.max(0, s1) * 0.75 },
-        { x: -3.8 + s2 * 0.55, y: -1.0 - Math.max(0, s2) * 0.75 },
-        { x: 3.8 + s1 * 0.55, y: -1.0 - Math.max(0, s1) * 0.75 },
-        { x: 8.0 + s2 * 0.55, y: -1.0 - Math.max(0, s2) * 0.75 },
+        { x: -9.2 + s1 * 0.55, y: -1.1 - Math.max(0, s1) * 0.8 },
+        { x: -4.4 + s2 * 0.55, y: -1.1 - Math.max(0, s2) * 0.8 },
+        { x: 4.4 + s1 * 0.55, y: -1.1 - Math.max(0, s1) * 0.8 },
+        { x: 9.2 + s2 * 0.55, y: -1.1 - Math.max(0, s2) * 0.8 },
       ].forEach((p) => {
         ctx.beginPath();
-        ctx.ellipse(p.x, p.y, 1.9, 2.4, 0, 0, Math.PI * 2);
+        ctx.ellipse(p.x, p.y, 2.2, 2.7, 0, 0, Math.PI * 2);
         apply();
       });
     } else if (isOpening) {
-      const reach = Math.sin(Math.min(1, cabCat.timer / 0.3) * Math.PI) * 3.4;
+      const reach = Math.sin(Math.min(1, cabCat.timer / 0.3) * Math.PI) * 3.8;
       [-1, 1].forEach((side) => {
         ctx.save();
-        ctx.translate(side * (rx * 0.8 + reach * 0.55), -ry * 1.35 - reach * 0.45);
+        ctx.translate(side * (rx * 0.82 + reach * 0.55), -ry * 1.35 - reach * 0.45);
         ctx.rotate(side * 0.6);
         ctx.beginPath();
-        ctx.ellipse(0, 0, 2.0, 3.4, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, 2.3, 3.8, 0, 0, Math.PI * 2);
         apply();
         ctx.restore();
       });
     } else if (isClosing) {
-      const tug = Math.sin(cabCat.timer * 18) * 1.2;
-      ctx.save();
-      ctx.translate(-rx * 0.9, -ry * 1.3 + tug);
-      ctx.rotate(-0.85);
+      // 2 TAY KÉO DẦN 2 CÁNH TỦ VÀO GIỮA: dang rộng (24px) -> kéo sát vào ngực (7px)
+      const armSpread = 23.5 - closePullP * 15.5;
+      const armY = -ry * 1.15 - (1 - closePullP) * 2.5;
+      [-1, 1].forEach((side) => {
+        ctx.save();
+        ctx.translate(side * armSpread, armY);
+        ctx.rotate(side * (1.18 - closePullP * 0.65));
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 2.6, 5.2, 0, 0, Math.PI * 2);
+        apply();
+        ctx.restore();
+      });
+      // 2 chân trụ rộng giữ thăng bằng khi gồng kéo
       ctx.beginPath();
-      ctx.ellipse(0, 0, 2.2, 4.1, 0, 0, Math.PI * 2);
+      ctx.ellipse(-6.8, -1.0, 2.5, 2.9, 0, 0, Math.PI * 2);
       apply();
-      ctx.restore();
       ctx.beginPath();
-      ctx.ellipse(-5.2, -0.9, 2.1, 2.6, 0, 0, Math.PI * 2);
-      apply();
-      ctx.beginPath();
-      ctx.ellipse(5.4, -0.9, 2.1, 2.6, 0, 0, Math.PI * 2);
+      ctx.ellipse(6.8, -1.0, 2.5, 2.9, 0, 0, Math.PI * 2);
       apply();
     } else {
       ctx.beginPath();
-      ctx.ellipse(-4.2, -0.9, 2.1, 2.6, 0, 0, Math.PI * 2);
+      ctx.ellipse(-4.9, -1.0, 2.4, 2.9, 0, 0, Math.PI * 2);
       apply();
       ctx.beginPath();
-      ctx.ellipse(4.2, -0.9, 2.1, 2.6, 0, 0, Math.PI * 2);
+      ctx.ellipse(4.9, -1.0, 2.4, 2.9, 0, 0, Math.PI * 2);
       apply();
     }
 
@@ -9393,13 +9458,13 @@ function updateAndDrawCabinetCat(dt) {
     // QUAY LƯNG MỞ TỦ: vẫy đuôi phía sau
     const wag = Math.sin(cabCat.timer * 24) * 0.38;
     ctx.save();
-    ctx.translate(0, -2.8);
+    ctx.translate(0, -3.2);
     ctx.rotate(wag);
     ctx.fillStyle = pal.body;
     ctx.strokeStyle = outlineCol;
-    ctx.lineWidth = 1.8;
+    ctx.lineWidth = 2.0;
     ctx.beginPath();
-    ctx.ellipse(0, 1.3, 2.1, 3.6, 0.25, 0, Math.PI * 2);
+    ctx.ellipse(0, 1.5, 2.4, 4.1, 0.25, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.restore();
@@ -9408,15 +9473,15 @@ function updateAndDrawCabinetCat(dt) {
       const a = Math.max(0, 1 - (cabCat.timer - 0.16) / 0.3);
       ctx.strokeStyle = "#FFE8A3";
       ctx.globalAlpha = a;
-      ctx.lineWidth = 1.4;
+      ctx.lineWidth = 1.6;
       [-1, 1].forEach((side) => {
-        const sx = side * 17;
+        const sx = side * 20;
         const sy = -ry * 1.75;
         ctx.beginPath();
-        ctx.moveTo(sx, sy - 3.5);
-        ctx.lineTo(sx, sy + 3.5);
-        ctx.moveTo(sx - 3.5, sy);
-        ctx.lineTo(sx + 3.5, sy);
+        ctx.moveTo(sx, sy - 4);
+        ctx.lineTo(sx, sy + 4);
+        ctx.moveTo(sx - 4, sy);
+        ctx.lineTo(sx + 4, sy);
         ctx.stroke();
       });
     }
@@ -9432,89 +9497,91 @@ function updateAndDrawCabinetCat(dt) {
     ctx.restore();
 
     // Khuôn mặt
-    const lookX = isMoving ? cabCat.dir * 3.0 : isClosing ? 1.6 : 0;
+    const lookX = isMoving ? cabCat.dir * 3.4 : 0;
     ctx.save();
     ctx.translate(lookX, -ry * 1.02);
 
-    // Má hồng
+    // Má hồng đậm hơn khi gồng kéo nặng
     ctx.fillStyle = pal.cheek;
-    ctx.globalAlpha = isClosing ? 0.9 : 0.78;
+    ctx.globalAlpha = isClosing ? 0.95 : 0.8;
     ctx.beginPath();
-    ctx.ellipse(-6.4, 1.7, 1.9, 1.1, 0, 0, Math.PI * 2);
-    ctx.ellipse(6.4, 1.7, 1.9, 1.1, 0, 0, Math.PI * 2);
+    ctx.ellipse(-7.5, 2.0, isClosing ? 2.5 : 2.2, 1.3, 0, 0, Math.PI * 2);
+    ctx.ellipse(7.5, 2.0, isClosing ? 2.5 : 2.2, 1.3, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
 
     ctx.strokeStyle = pal.mouthLine;
     ctx.fillStyle = pal.eye;
-    ctx.lineWidth = 1.45;
+    ctx.lineWidth = 1.65;
 
     if (isClosing) {
-      // BIỂU CẢM GỒNG KÉO NẶNG: mắt nhắm nghiền > < + miệng mím gồng + giọt mồ hôi
+      // BIỂU CẢM GỒNG KÉO NẶNG RÕ NÉT: mắt nhắm nghiền > < + miệng mím gồng + 2 giọt mồ hôi rơi!
       ctx.beginPath();
-      ctx.moveTo(-6.2, -1.8);
-      ctx.lineTo(-3.6, -0.4);
-      ctx.lineTo(-6.2, 1.0);
-      ctx.moveTo(6.2, -1.8);
-      ctx.lineTo(3.6, -0.4);
-      ctx.lineTo(6.2, 1.0);
+      ctx.moveTo(-7.6, -2.3);
+      ctx.lineTo(-4.2, -0.5);
+      ctx.lineTo(-7.6, 1.3);
+      ctx.moveTo(7.6, -2.3);
+      ctx.lineTo(4.2, -0.5);
+      ctx.lineTo(7.6, 1.3);
       ctx.stroke();
 
-      ctx.lineWidth = 1.25;
+      // Miệng gồng (~) rõ nét
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(-2.4, 2.0);
-      ctx.quadraticCurveTo(-1.1, 0.9, 0, 1.9);
-      ctx.quadraticCurveTo(1.1, 2.9, 2.4, 1.8);
+      ctx.moveTo(-3.2, 2.5);
+      ctx.quadraticCurveTo(-1.5, 1.0, 0, 2.3);
+      ctx.quadraticCurveTo(1.5, 3.6, 3.2, 2.1);
       ctx.stroke();
 
-      const swY = -5.0 + (cabCat.timer * 7) % 3.6;
-      ctx.fillStyle = "#6EC9FF";
-      ctx.strokeStyle = "#2E6F9E";
-      ctx.lineWidth = 0.85;
+      // Giọt mồ hôi xanh rõ nét bên trán
+      const swY = -6.2 + ((cabCat.timer * 9) % 4.5);
+      ctx.fillStyle = "#6ED0FF";
+      ctx.strokeStyle = "#266899";
+      ctx.lineWidth = 1.0;
       ctx.beginPath();
-      ctx.moveTo(9.8, swY - 2.3);
-      ctx.quadraticCurveTo(11.7, swY + 1.0, 9.8, swY + 2.0);
-      ctx.quadraticCurveTo(7.9, swY + 1.0, 9.8, swY - 2.3);
+      ctx.moveTo(11.8, swY - 3.0);
+      ctx.quadraticCurveTo(14.2, swY + 1.2, 11.8, swY + 2.4);
+      ctx.quadraticCurveTo(9.4, swY + 1.2, 11.8, swY - 3.0);
       ctx.fill();
       ctx.stroke();
     } else if (cabCat.blinkDur > 0) {
       ctx.beginPath();
-      ctx.moveTo(-6.0, -0.4);
-      ctx.lineTo(-3.0, -0.4);
-      ctx.moveTo(3.0, -0.4);
-      ctx.lineTo(6.0, -0.4);
+      ctx.moveTo(-7.0, -0.4);
+      ctx.lineTo(-3.5, -0.4);
+      ctx.moveTo(3.5, -0.4);
+      ctx.lineTo(7.0, -0.4);
       ctx.stroke();
-      ctx.lineWidth = 1.25;
+      ctx.lineWidth = 1.45;
       ctx.beginPath();
-      ctx.moveTo(-2.3, 1.5);
-      ctx.quadraticCurveTo(-1.15, 2.8, 0, 1.7);
-      ctx.quadraticCurveTo(1.15, 2.8, 2.3, 1.5);
+      ctx.moveTo(-2.7, 1.8);
+      ctx.quadraticCurveTo(-1.35, 3.3, 0, 2.0);
+      ctx.quadraticCurveTo(1.35, 3.3, 2.7, 1.8);
       ctx.stroke();
     } else {
-      // MẮT LẤP LÁNH GIỐNG MÈO TỦ SÁCH
-      const rX = 1.9;
-      const rY = 2.05;
+      // MẮT LẤP LÁNH TO RÕ NÉT GIỐNG MÈO TỦ SÁCH
+      const rX = 2.25;
+      const rY = 2.45;
       const shineCol = pal.eyeShine || "#FFFFFF";
-      [-4.5, 4.5].forEach((ex) => {
-        const ey = -0.65;
+      [-5.2, 5.2].forEach((ex) => {
+        const ey = -0.7;
         ctx.fillStyle = pal.eye;
         ctx.beginPath();
         ctx.ellipse(ex, ey, rX, rY, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = shineCol;
         ctx.beginPath();
-        ctx.arc(ex - rX * 0.32, ey - rY * 0.34, 0.85, 0, Math.PI * 2);
+        ctx.arc(ex - rX * 0.32, ey - rY * 0.34, 1.02, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(ex + rX * 0.3, ey + rY * 0.32, 0.44, 0, Math.PI * 2);
+        ctx.arc(ex + rX * 0.3, ey + rY * 0.32, 0.54, 0, Math.PI * 2);
         ctx.fill();
       });
       ctx.strokeStyle = pal.mouthLine;
-      ctx.lineWidth = 1.25;
+      ctx.lineWidth = 1.45;
       ctx.beginPath();
-      ctx.moveTo(-2.3, 1.5);
-      ctx.quadraticCurveTo(-1.15, 2.8, 0, 1.7);
-      ctx.quadraticCurveTo(1.15, 2.8, 2.3, 1.5);
+      ctx.moveTo(-2.7, 1.8);
+      ctx.quadraticCurveTo(-1.35, 3.3, 0, 2.0);
+      ctx.quadraticCurveTo(1.35, 3.3, 2.7, 1.8);
       ctx.stroke();
     }
     ctx.restore();
@@ -9790,7 +9857,7 @@ function renderMerch() {
         : "Chạm bé mèo hoặc tủ để mở";
     };
 
-    initCabinetCat(container.querySelector("#cabinetCatCanvas"), catHitEl);
+    initCabinetCat(container.querySelector("#cabinetCatCanvas"), catHitEl, frameEl);
 
     const setCabinetOpen = (openVal) => {
       if (cabinetIsOpen === openVal) return;
