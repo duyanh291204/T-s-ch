@@ -6050,16 +6050,20 @@ function updateHeaderSummary() {
   document.getElementById("headerSummary").textContent = `${seriesCount} đầu sách · ${volCount} tập`;
 }
 
-// Nén ảnh chọn từ máy (iPhone/Laptop) để lưu nhẹ trong localStorage
-function compressImageFile(file, maxW = 320, maxH = 480, quality = 0.74) {
+// Đọc ảnh chọn từ máy (mặc định giữ 100% chất lượng gốc sắc nét)
+function compressImageFile(file, maxW = 0, maxH = 0, quality = 1.0) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
+      if (quality >= 1 && (!maxW || !maxH)) {
+        resolve(reader.result);
+        return;
+      }
       const img = new Image();
       img.onload = () => {
         let w = img.width;
         let h = img.height;
-        const ratio = Math.min(maxW / w, maxH / h, 1);
+        const ratio = maxW && maxH ? Math.min(maxW / w, maxH / h, 1) : 1;
         w = Math.round(w * ratio);
         h = Math.round(h * ratio);
         const canvas = document.createElement("canvas");
@@ -6067,7 +6071,7 @@ function compressImageFile(file, maxW = 320, maxH = 480, quality = 0.74) {
         canvas.height = h;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", quality));
+        resolve(canvas.toDataURL("image/jpeg", Math.min(1, quality)));
       };
       img.onerror = reject;
       img.src = reader.result;
@@ -6087,9 +6091,9 @@ function compressImageFile(file, maxW = 320, maxH = 480, quality = 0.74) {
 // ============================
 function openImageCropper(file, opts = {}) {
   const defaultRatio = opts.ratio !== undefined ? opts.ratio : 2 / 3;
-  const maxW = opts.maxW || 360;
-  const maxH = opts.maxH || 540;
-  const quality = opts.quality || 0.76;
+  const maxW = opts.maxW || 1400;
+  const maxH = opts.maxH || 2100;
+  const quality = opts.quality !== undefined ? opts.quality : 1.0;
   const title = opts.title || "Cắt ảnh";
 
   return new Promise((resolve) => {
@@ -6329,8 +6333,8 @@ function openImageCropper(file, opts = {}) {
         const onUseOrig = async () => {
           cleanup();
           try {
-            const compressed = await compressImageFile(file, maxW, maxH, quality);
-            resolve(compressed);
+            const orig = await compressImageFile(file, 0, 0, 1.0);
+            resolve(orig);
           } catch {
             resolve(null);
           }
@@ -7118,7 +7122,7 @@ function openSeriesForm(existingId = null, initialMode = "single") {
       const file = e.target.files?.[0];
       e.target.value = "";
       if (!file) return;
-      const cropped = await openImageCropper(file, { ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.76, title: "Cắt ảnh bìa" });
+      const cropped = await openImageCropper(file, { ratio: 2 / 3, maxW: 1400, maxH: 2100, quality: 1.0, title: "Cắt ảnh bìa" });
       if (cropped) {
         setPreview(cropped);
         if (undoCoverBtn) undoCoverBtn.style.display = "none";
@@ -7634,7 +7638,7 @@ function openSectionForm(seriesId, sectionId = null) {
       const file = e.target.files?.[0];
       e.target.value = "";
       if (!file) return;
-      const cropped = await openImageCropper(file, { ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.76, title: "Cắt ảnh mục" });
+      const cropped = await openImageCropper(file, { ratio: 2 / 3, maxW: 1400, maxH: 2100, quality: 1.0, title: "Cắt ảnh mục" });
       if (cropped) {
         setSecPreview(cropped);
         if (undoSecImgBtn) undoSecImgBtn.style.display = "none";
@@ -7769,8 +7773,7 @@ function openSectionDetail(seriesId, sectionId) {
           : "";
         const mediaHtml = volImg
           ? `<img src="${esc(volImg)}" alt="Tập ${esc(v.number)}" loading="lazy" />
-             ${flagHtml}
-             <span class="vol-card-badge mono">T.${esc(numStr)}</span>`
+             ${flagHtml}`
           : `${flagHtml}
              <span class="vol-card-num-big mono">${esc(numStr)}</span>
              <span class="small-muted" style="font-size:10px; margin-top:2px;">Tập ${esc(v.number)}</span>`;
@@ -7789,7 +7792,7 @@ function openSectionDetail(seriesId, sectionId) {
   const html = `
     <div class="crumb-bar">
       <button type="button" class="btn btn-sm" id="backToSeriesBtn">← ${esc(s.title.slice(0, 24))}</button>
-      <div style="display:flex; gap:5px;">
+      <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;">
         <button type="button" class="btn btn-sm" id="editSecBtn">Sửa mục</button>
         <button type="button" class="btn btn-sm btn-danger" id="delSecBtn">Xoá mục</button>
       </div>
@@ -7824,7 +7827,7 @@ function openSectionDetail(seriesId, sectionId) {
       </div>
       <div style="display:flex; gap:5px; flex-wrap:wrap;">
         <button type="button" class="btn btn-sm btn-accent mono" id="quickAddNextVolBtn" title="Thêm nhanh 1 chạm theo giá tập trước">+ T.${nextQuickNum}</button>
-        <button type="button" class="btn btn-sm" id="batchAttachImgBtn" title="Gắn nhiều ảnh theo thứ tự hoặc để AI tự đọc số tập">Gắn ảnh / AI</button>
+        <button type="button" class="btn btn-sm" id="batchAttachImgBtn" title="Chọn nhiều ảnh cùng lúc để gắn nhanh theo thứ tự tập">Gắn nhiều ảnh</button>
         <button type="button" class="btn btn-sm" id="addBulkVolBtn">+ Nhiều tập</button>
         <button type="button" class="btn btn-sm btn-primary" id="addOneVolBtn">+ 1 tập</button>
       </div>
@@ -8118,7 +8121,7 @@ function openVolumeForm(seriesId, sectionId, volId = null, prefillVolNum = null)
       const file = e.target.files?.[0];
       e.target.value = "";
       if (!file) return;
-      const cropped = await openImageCropper(file, { ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.76, title: `Cắt ảnh tập ${defaultNum}` });
+      const cropped = await openImageCropper(file, { ratio: 2 / 3, maxW: 1400, maxH: 2100, quality: 1.0, title: `Cắt ảnh tập ${defaultNum}` });
       if (cropped) {
         setVolPreview(cropped);
         if (undoVolImgBtn) undoVolImgBtn.style.display = "none";
@@ -8399,7 +8402,7 @@ function openBulkVolumeForm(seriesId, sectionId) {
       const file = e.target.files?.[0];
       e.target.value = "";
       if (!file) return;
-      const cropped = await openImageCropper(file, { ratio: looksLikeBox ? 4 / 3 : 2 / 3, maxW: 400, maxH: 520, quality: 0.74, title: "Cắt ảnh đợt tập / Boxset" });
+      const cropped = await openImageCropper(file, { ratio: looksLikeBox ? 4 / 3 : 2 / 3, maxW: 1600, maxH: 2100, quality: 1.0, title: "Cắt ảnh đợt tập / Boxset" });
       if (cropped) {
         sharedImg = cropped;
         imgPrev.innerHTML = `<img src="${esc(sharedImg)}" alt="" />`;
@@ -8450,25 +8453,8 @@ function openBulkVolumeForm(seriesId, sectionId) {
   });
 }
 
-// Đọc nhanh số tập (và tên tập nếu có) từ 1 ảnh bìa khi đã biết sẵn Bộ & Mục (siêu nhanh, cực chuẩn)
-async function callGeminiReadVolInSection(apiKey, imgObj, seriesTitle, sectionName) {
-  const promptText = `Đây là ảnh bìa 1 tập thuộc bộ "${seriesTitle}" (mục "${sectionName}").
-Đọc số tập trên bìa và trả về JSON gọn (không markdown):
-{"volumeNumber": 1, "volTitle": "", "coverPrice": 0}
-Quy tắc:
-- volumeNumber: số tập đọc được trên bìa (số nguyên hoặc .5 như 1, 2, 14, 10.5). Nếu bìa KHÔNG có số tập mà có tên riêng thì đặt volumeNumber=0 và điền tên đó vào volTitle.
-- volTitle: để rỗng "" nếu cuốn đặt theo số tập bình thường; chỉ điền nếu là tập đặc biệt / ngoại truyện / tên riêng (VD: "Journal 3", "Quyển Thượng", "Ngoại truyện").
-- coverPrice: giá bìa VNĐ nếu nhìn thấy trên ảnh (0 nếu không thấy).`;
-  const parts = [
-    { text: promptText },
-    { inline_data: { mime_type: imgObj.mimeType || "image/jpeg", data: imgObj.base64 } },
-  ];
-  const res = await callGeminiFastJson(apiKey, parts, 140);
-  return { ...(res.data || {}), _model: res.model };
-}
-
-// Gắn nhiều ảnh vào Mục: Tab 1 (Theo thứ tự — 0 tốn AI) & Tab 2 (AI tự đọc số tập khớp vào mục này)
-function openBatchAttachImagesModal(seriesId, sectionId, initialMode = "order") {
+// Gắn nhiều ảnh cùng lúc vào các tập trong Mục theo thứ tự (giữ 100% chất lượng ảnh gốc)
+function openBatchAttachImagesModal(seriesId, sectionId) {
   const s = state.series.find((x) => x.id === seriesId);
   const sec = s ? (s.sections || []).find((x) => x.id === sectionId) : null;
   if (!s || !sec) return;
@@ -8476,12 +8462,9 @@ function openBatchAttachImagesModal(seriesId, sectionId, initialMode = "order") 
   const sortedVols = [...(sec.volumes || [])].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0));
   const noImgVols = sortedVols.filter((v) => !v.image);
   const firstNum = sortedVols.length ? sortedVols[0].number : 1;
-  const hasKey = Boolean((state.geminiApiKey || "").trim());
 
-  let activeTab = initialMode === "ai" ? "ai" : "order"; // "order" | "ai"
   let pickedItems = []; // [{ file, url }]
   let isBusy = false;
-  let cancelAi = false;
 
   const revokeAllUrls = () => {
     pickedItems.forEach((it) => {
@@ -8492,61 +8475,28 @@ function openBatchAttachImagesModal(seriesId, sectionId, initialMode = "order") 
 
   const html = `
     <div class="form-grid">
-      <div class="scope-switch" id="baiTabSwitch" style="margin-bottom:2px;">
-        <button type="button" class="${activeTab === "order" ? "active" : ""}" data-baitab="order">Theo thứ tự (nhanh)</button>
-        <button type="button" class="${activeTab === "ai" ? "active" : ""}" data-baitab="ai">AI đọc số tập</button>
+      <div class="small-muted">
+        Chọn cùng lúc nhiều ảnh bìa trong thư viện → gắn lần lượt theo thứ tự vào mục <strong>${esc(sec.name)}</strong> (giữ 100% chất lượng gốc).
       </div>
 
-      <!-- TAB 1: THEO THỨ TỰ -->
-      <div id="baiOrderOpts" class="form-grid" style="${activeTab === "order" ? "" : "display:none;"} gap:9px;">
-        <div class="small-muted">
-          Chọn nhiều ảnh theo đúng thứ tự tập → app tự nén và rải lần lượt vào mục <strong>${esc(sec.name)}</strong> (0 tốn AI).
-        </div>
+      <div class="field">
+        <label>Cách gắn ảnh</label>
+        <select id="baiModeSel">
+          <option value="missing" ${noImgVols.length ? "selected" : ""}>Gắn vào các tập CHƯA CÓ ẢNH (${noImgVols.length} tập trống)</option>
+          <option value="fromNum" ${!noImgVols.length ? "selected" : ""}>Gắn từ tập số X trở đi (ghi đè ảnh cũ nếu có)</option>
+        </select>
+      </div>
+
+      <div id="baiFromWrap" class="form-grid" style="${noImgVols.length ? "display:none;" : ""} gap:8px;">
         <div class="field">
-          <label>Cách gắn ảnh</label>
-          <select id="baiModeSel">
-            <option value="missing" ${noImgVols.length ? "selected" : ""}>Gắn vào các tập CHƯA CÓ ẢNH (${noImgVols.length} tập trống)</option>
-            <option value="fromNum" ${!noImgVols.length ? "selected" : ""}>Gắn từ tập số X trở đi (ghi đè ảnh cũ nếu có)</option>
-          </select>
-        </div>
-        <div id="baiFromWrap" class="form-grid" style="${noImgVols.length ? "display:none;" : ""} gap:8px;">
-          <div class="field">
-            <label>Bắt đầu từ tập số</label>
-            <input id="baiStartNumIn" type="number" min="1" value="${esc(firstNum)}" />
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 2: AI ĐỌC SỐ TẬP -->
-      <div id="baiAiOpts" class="form-grid" style="${activeTab === "ai" ? "" : "display:none;"} gap:9px;">
-        <div class="small-muted">
-          Chọn cả đống ảnh bìa <strong>lộn xộn không cần xếp thứ tự</strong> → AI tự đọc số tập trên từng ảnh rồi gắn đúng vào Tập 1, Tập 2... của mục <strong>${esc(sec.name)}</strong> (${esc(s.title)}).
-        </div>
-        ${
-          !hasKey
-            ? `<div class="missing-strip" id="baiNoKeyBox">
-                 <strong>Cần Gemini API Key miễn phí để AI đọc số tập</strong>
-                 <div style="display:flex; gap:6px; margin-top:6px;">
-                   <input type="text" id="baiQuickKeyIn" placeholder="Dán AIzaSy..." style="flex:1; padding:6px 8px; border:1px solid var(--line-strong); border-radius:2px; background:var(--surface);" />
-                   <button type="button" class="btn btn-sm btn-primary" id="baiSaveKeyBtn">Lưu Key</button>
-                 </div>
-               </div>`
-            : ""
-        }
-        <div id="baiAiProgWrap" style="display:none;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; font-size:12px;">
-            <span class="mono" id="baiAiProgText">Đang đọc 0/0...</span>
-            <button type="button" class="btn btn-sm btn-danger" id="baiAiStopBtn" style="height:24px; font-size:11px;">Dừng & Xem kết quả</button>
-          </div>
-          <div class="progress-track">
-            <div class="progress-fill" id="baiAiProgBar" style="width:0%"></div>
-          </div>
+          <label>Bắt đầu từ tập số</label>
+          <input id="baiStartNumIn" type="number" min="1" value="${esc(firstNum)}" />
         </div>
       </div>
 
       <label class="check-inline">
         <input type="checkbox" id="baiAutoCreateChk" checked />
-        <span>Tự tạo thêm tập mới nếu số tập chưa có trong mục này</span>
+        <span>Tự tạo thêm tập mới nếu số ảnh chọn nhiều hơn số tập hiện có</span>
       </label>
 
       <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
@@ -8568,12 +8518,9 @@ function openBatchAttachImagesModal(seriesId, sectionId, initialMode = "order") 
     </div>`;
 
   openModal(
-    `${s.title} / ${sec.name} — Gắn ảnh`,
+    `${s.title} / ${sec.name} — Gắn nhiều ảnh`,
     html,
     (body) => {
-      const tabSwitch = body.querySelector("#baiTabSwitch");
-      const orderOpts = body.querySelector("#baiOrderOpts");
-      const aiOpts = body.querySelector("#baiAiOpts");
       const modeSel = body.querySelector("#baiModeSel");
       const fromWrap = body.querySelector("#baiFromWrap");
       const startNumIn = body.querySelector("#baiStartNumIn");
@@ -8584,30 +8531,6 @@ function openBatchAttachImagesModal(seriesId, sectionId, initialMode = "order") 
       const summaryBox = body.querySelector("#baiSummaryBox");
       const gridEl = body.querySelector("#baiPreviewGrid");
       const applyBtn = body.querySelector("#baiApplyBtn");
-
-      const aiProgWrap = body.querySelector("#baiAiProgWrap");
-      const aiProgText = body.querySelector("#baiAiProgText");
-      const aiProgBar = body.querySelector("#baiAiProgBar");
-      const aiStopBtn = body.querySelector("#baiAiStopBtn");
-
-      const saveKeyBtn = body.querySelector("#baiSaveKeyBtn");
-      if (saveKeyBtn) {
-        saveKeyBtn.addEventListener("click", () => {
-          const val = (body.querySelector("#baiQuickKeyIn")?.value || "").trim();
-          if (!val) {
-            SFX.error();
-            showToast("Hãy dán API Key vào ô trống trước nhé.");
-            return;
-          }
-          state.geminiApiKey = val;
-          state.geminiModel = "";
-          saveState();
-          SFX.success();
-          const box = body.querySelector("#baiNoKeyBox");
-          if (box) box.style.display = "none";
-          showToast("Đã lưu Gemini API Key!");
-        });
-      }
 
       const computePlan = () => {
         const mode = modeSel.value;
@@ -8637,20 +8560,11 @@ function openBatchAttachImagesModal(seriesId, sectionId, initialMode = "order") 
       };
 
       const renderPreview = () => {
-        orderOpts.style.display = activeTab === "order" ? "grid" : "none";
-        aiOpts.style.display = activeTab === "ai" ? "grid" : "none";
         fromWrap.style.display = modeSel.value === "fromNum" ? "grid" : "none";
-
         const has = pickedItems.length > 0;
-        revBtn.style.display = activeTab === "order" && pickedItems.length > 1 && !isBusy ? "" : "none";
+        revBtn.style.display = pickedItems.length > 1 && !isBusy ? "" : "none";
         clearBtn.style.display = has && !isBusy ? "" : "none";
         applyBtn.disabled = !has || isBusy;
-
-        if (activeTab === "ai") {
-          applyBtn.textContent = has ? `AI đọc ${pickedItems.length} ảnh` : "AI đọc số tập";
-        } else {
-          applyBtn.textContent = "Gắn ảnh vào tập";
-        }
 
         if (!has) {
           summaryBox.textContent = "Chưa chọn ảnh nào. Bấm '+ Chọn nhiều ảnh' để chọn từ thư viện.";
@@ -8659,44 +8573,29 @@ function openBatchAttachImagesModal(seriesId, sectionId, initialMode = "order") 
           return;
         }
 
-        if (activeTab === "ai") {
-          summaryBox.textContent = `Đã chọn ${pickedItems.length} ảnh → AI sẽ đọc số tập từng ảnh để khớp vào "${sec.name}".`;
-          gridEl.style.display = "grid";
-          gridEl.innerHTML = pickedItems
-            .map(
-              (it, idx) => `
+        const plan = computePlan();
+        const assignCount = Math.min(pickedItems.length, plan.length);
+        const newCount = plan.slice(0, assignCount).filter((x) => x.isNew).length;
+        const skipCount = Math.max(0, pickedItems.length - assignCount);
+
+        summaryBox.textContent =
+          `Đã chọn ${pickedItems.length} ảnh → Sẽ gắn ${assignCount} tập` +
+          (newCount ? ` (tạo mới ${newCount} tập)` : "") +
+          (skipCount ? ` · Bỏ qua ${skipCount} ảnh dư` : "");
+
+        gridEl.style.display = "grid";
+        gridEl.innerHTML = pickedItems
+          .map((it, idx) => {
+            const tgt = plan[idx];
+            const lbl = tgt ? (tgt.isNew ? `+T.${tgt.number}` : `T.${tgt.number}`) : "Dư";
+            return `
               <div class="bai-item">
                 <img class="bai-thumb" src="${esc(it.url)}" alt="" />
                 ${!isBusy ? `<button type="button" class="bai-rm" data-bai-rm="${idx}" title="Bỏ ảnh này">×</button>` : ""}
-                <div class="bai-tag mono">#${idx + 1}</div>
-              </div>`
-            )
-            .join("");
-        } else {
-          const plan = computePlan();
-          const assignCount = Math.min(pickedItems.length, plan.length);
-          const newCount = plan.slice(0, assignCount).filter((x) => x.isNew).length;
-          const skipCount = Math.max(0, pickedItems.length - assignCount);
-
-          summaryBox.textContent =
-            `Đã chọn ${pickedItems.length} ảnh → Sẽ gắn ${assignCount} tập` +
-            (newCount ? ` (tạo mới ${newCount} tập)` : "") +
-            (skipCount ? ` · Bỏ qua ${skipCount} ảnh dư` : "");
-
-          gridEl.style.display = "grid";
-          gridEl.innerHTML = pickedItems
-            .map((it, idx) => {
-              const tgt = plan[idx];
-              const lbl = tgt ? (tgt.isNew ? `+T.${tgt.number}` : `T.${tgt.number}`) : "Dư";
-              return `
-                <div class="bai-item">
-                  <img class="bai-thumb" src="${esc(it.url)}" alt="" />
-                  ${!isBusy ? `<button type="button" class="bai-rm" data-bai-rm="${idx}" title="Bỏ ảnh này">×</button>` : ""}
-                  <div class="bai-tag mono" style="${tgt ? (tgt.isNew ? "color:var(--accent);" : "") : "opacity:0.45;"}">${esc(lbl)}</div>
-                </div>`;
-            })
-            .join("");
-        }
+                <div class="bai-tag mono" style="${tgt ? (tgt.isNew ? "color:var(--accent);" : "") : "opacity:0.45;"}">${esc(lbl)}</div>
+              </div>`;
+          })
+          .join("");
 
         gridEl.querySelectorAll("[data-bai-rm]").forEach((btn) => {
           btn.addEventListener("click", () => {
@@ -8709,15 +8608,6 @@ function openBatchAttachImagesModal(seriesId, sectionId, initialMode = "order") 
           });
         });
       };
-
-      tabSwitch.addEventListener("click", (e) => {
-        if (isBusy) return;
-        const btn = e.target.closest("button[data-baitab]");
-        if (!btn) return;
-        activeTab = btn.dataset.baitab;
-        tabSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
-        renderPreview();
-      });
 
       modeSel.addEventListener("change", renderPreview);
       startNumIn.addEventListener("input", renderPreview);
@@ -8745,115 +8635,10 @@ function openBatchAttachImagesModal(seriesId, sectionId, initialMode = "order") 
         renderPreview();
       });
 
-      aiStopBtn.addEventListener("click", () => {
-        cancelAi = true;
-        aiStopBtn.disabled = true;
-        aiStopBtn.textContent = "Đang dừng...";
-      });
-
       body.querySelector("#baiBackBtn").addEventListener("click", () => openSectionDetail(seriesId, sectionId));
 
       applyBtn.addEventListener("click", async () => {
         if (isBusy || !pickedItems.length) return;
-
-        // MODE AI: Đọc số tập cho từng ảnh rồi mở bảng xác nhận gắn thẳng vào mục này
-        if (activeTab === "ai") {
-          const key = (state.geminiApiKey || "").trim();
-          if (!key) {
-            SFX.error();
-            showToast("Chưa có Gemini API Key — dán Key miễn phí ở trên hoặc trong Cài đặt nhé.");
-            return;
-          }
-          isBusy = true;
-          cancelAi = false;
-          applyBtn.disabled = true;
-          clearBtn.style.display = "none";
-          aiProgWrap.style.display = "block";
-          aiStopBtn.disabled = false;
-          aiStopBtn.textContent = "Dừng & Xem kết quả";
-          renderPreview();
-
-          const total = pickedItems.length;
-          const byNum = new Map();
-          sortedVols.forEach((v) => byNum.set(Number(v.number), v));
-          const results = [];
-          let matchedCount = 0;
-
-          for (let i = 0; i < total; i++) {
-            if (cancelAi) break;
-            aiProgText.textContent = `Đang đọc ảnh ${i + 1}/${total}... (khớp ${matchedCount})`;
-            aiProgBar.style.width = `${Math.round((i / total) * 100)}%`;
-            summaryBox.textContent = `AI đang đọc số tập ảnh #${i + 1}/${total}...`;
-
-            try {
-              const [coverData, aiObj] = await Promise.all([
-                compressImageFile(pickedItems[i].file, 360, 540, 0.76),
-                prepareImageForAI(pickedItems[i].file, 560, 0.68),
-              ]);
-
-              let info = null;
-              for (let attempt = 0; attempt < 2; attempt++) {
-                try {
-                  info = await callGeminiReadVolInSection(key, aiObj, s.title, sec.name);
-                  break;
-                } catch (err) {
-                  if (attempt === 0 && /429|giới hạn/i.test(err?.message || "")) {
-                    summaryBox.textContent = `Chạm giới hạn 429, tự chờ 4 giây rồi đọc tiếp ảnh #${i + 1}...`;
-                    await new Promise((r) => setTimeout(r, 4000));
-                    continue;
-                  }
-                  throw err;
-                }
-              }
-
-              const volNum = Number(info?.volumeNumber) > 0 ? Number(info.volumeNumber) : 0;
-              const volTitle = String(info?.volTitle || "").trim();
-              const coverPrice = Math.max(0, Math.round(Number(info?.coverPrice) || 0));
-              const existingVol = volNum > 0 ? byNum.get(volNum) || null : null;
-              if (existingVol) matchedCount++;
-
-              results.push({
-                coverData,
-                volumeNumber: volNum,
-                volTitle,
-                coverPrice,
-                existingVolId: existingVol ? existingVol.id : "",
-                errMsg: "",
-              });
-            } catch (err) {
-              let fallbackThumb = "";
-              try { fallbackThumb = await compressImageFile(pickedItems[i].file, 360, 540, 0.76); } catch {}
-              results.push({
-                coverData: fallbackThumb,
-                volumeNumber: 0,
-                volTitle: "",
-                coverPrice: 0,
-                existingVolId: "",
-                errMsg: err?.message || "Lỗi đọc ảnh",
-              });
-              if (/API Key không hợp lệ/i.test(err?.message || "")) break;
-            }
-
-            if (i < total - 1 && !cancelAi) {
-              await new Promise((r) => setTimeout(r, 280));
-            }
-          }
-
-          aiProgBar.style.width = "100%";
-          isBusy = false;
-          if (!results.length) {
-            renderPreview();
-            showToast("Chưa đọc được ảnh nào.");
-            return;
-          }
-          SFX.success();
-          openSectionAiConfirmModal(seriesId, sectionId, results, {
-            autoCreate: autoCreateChk.checked,
-          });
-          return;
-        }
-
-        // MODE THỨ TỰ: Gắn trực tiếp không tốn AI
         const plan = computePlan();
         const count = Math.min(pickedItems.length, plan.length);
         if (!count) {
@@ -8876,9 +8661,9 @@ function openBatchAttachImagesModal(seriesId, sectionId, initialMode = "order") 
         let okCount = 0;
 
         for (let i = 0; i < count; i++) {
-          applyBtn.textContent = `Đang nén ${i + 1}/${count}...`;
+          applyBtn.textContent = `Đang nạp ${i + 1}/${count}...`;
           try {
-            const dataUrl = await compressImageFile(pickedItems[i].file, 360, 540, 0.76);
+            const dataUrl = await compressImageFile(pickedItems[i].file, 0, 0, 1.0);
             const tgt = plan[i];
             if (tgt.existingVol) {
               tgt.existingVol.image = dataUrl;
@@ -8911,154 +8696,13 @@ function openBatchAttachImagesModal(seriesId, sectionId, initialMode = "order") 
         openSectionDetail(seriesId, sectionId);
         SFX.success();
         spawnCelebration(undefined, undefined, 18);
-        showToast(`Đã gắn ${okCount} ảnh vào "${sec.name}"!`, { undoable: true });
+        showToast(`Đã gắn ${okCount} ảnh (100% chất lượng gốc) vào "${sec.name}"!`, { undoable: true });
       });
 
       renderPreview();
     },
-    () => {
-      cancelAi = true;
-      revokeAllUrls();
-    }
+    revokeAllUrls
   );
-}
-
-// Bảng duyệt & gắn hàng loạt kết quả AI đọc số tập trong 1 Mục cụ thể (VD: Dragonball / Super)
-function openSectionAiConfirmModal(seriesId, sectionId, results, opts = {}) {
-  const s = state.series.find((x) => x.id === seriesId);
-  const sec = s ? (s.sections || []).find((x) => x.id === sectionId) : null;
-  if (!s || !sec) return;
-
-  const autoCreate = opts.autoCreate !== false;
-  const sortedVols = [...(sec.volumes || [])].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0));
-  const byNum = new Map();
-  sortedVols.forEach((v) => byNum.set(Number(v.number), v));
-  const matchedCnt = results.filter((r) => r.existingVolId).length;
-  const maxExisting = sortedVols.reduce((m, x) => Math.max(m, Math.floor(Number(x.number) || 0)), 0);
-  let nextFallbackNum = maxExisting + 1;
-
-  const html = `
-    <form id="secAiConfirmForm" class="form-grid">
-      <div class="qc-status-box ok">
-        Đọc xong <strong>${results.length} ảnh</strong> cho mục <strong>${esc(sec.name)}</strong> · Khớp sẵn <strong>${matchedCnt}</strong> tập! Kiểm tra nhanh số tập rồi bấm gắn 1 phát:
-      </div>
-
-      <div class="qc-batch-list">
-        ${results
-          .map((r, i) => {
-            const hasNum = r.volumeNumber > 0;
-            const displayNum = hasNum ? r.volumeNumber : nextFallbackNum++;
-            const isMatched = Boolean(r.existingVolId);
-            const checked = Boolean(r.coverData && (isMatched || (autoCreate && (hasNum || r.volTitle))));
-            const badge = isMatched
-              ? `<span class="tag tag-forest">Khớp T.${esc(r.volumeNumber)}</span>`
-              : hasNum || r.volTitle
-              ? `<span class="tag tag-amber">Tạo mới</span>`
-              : `<span class="tag">${esc(r.errMsg ? "Lỗi đọc" : "Chưa rõ")}</span>`;
-            return `
-              <div class="qc-multi-row">
-                <input type="checkbox" name="spick_${i}" ${checked ? "checked" : ""} />
-                <img class="qc-multi-thumb" src="${esc(r.coverData)}" alt="" />
-                <div style="min-width:0; display:flex; flex-direction:column; gap:4px;">
-                  <div style="display:flex; gap:5px; align-items:center;">
-                    <span class="small-muted" style="font-size:11.5px;">Tập</span>
-                    <input type="number" step="0.5" name="snum_${i}" value="${esc(displayNum)}" style="width:62px; padding:3px 5px; border:1px solid var(--line); border-radius:2px; font-size:12.5px; font-weight:600;" class="mono" />
-                    ${badge}
-                  </div>
-                  <input type="text" name="stitle_${i}" value="${esc(r.volTitle || "")}" placeholder="Tên tập riêng (để trống nếu là Tập X)" style="width:100%; padding:3px 5px; border:1px solid var(--line); border-radius:2px; background:var(--surface-2); font-size:11.5px;" />
-                </div>
-              </div>`;
-          })
-          .join("")}
-      </div>
-
-      <div class="modal-actions" style="justify-content:space-between;">
-        <button type="button" class="btn btn-sm" id="sacBackBtn">Chọn lại ảnh</button>
-        <button type="submit" class="btn btn-sm btn-primary">Gắn tất cả vào "${esc(sec.name)}"</button>
-      </div>
-    </form>`;
-
-  openModal(`${s.title} / ${sec.name} — Duyệt ảnh AI`, html, (body) => {
-    body.querySelector("#sacBackBtn").addEventListener("click", () =>
-      openBatchAttachImagesModal(seriesId, sectionId, "ai")
-    );
-
-    body.querySelector("#secAiConfirmForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const fd = new FormData(e.target);
-
-      const picked = [];
-      for (let i = 0; i < results.length; i++) {
-        if (!fd.get(`spick_${i}`)) continue;
-        const r = results[i];
-        if (!r.coverData) continue;
-        const num = Number(fd.get(`snum_${i}`)) || 0;
-        const vTitle = String(fd.get(`stitle_${i}`) || "").trim();
-        if (num <= 0 && !vTitle) continue;
-        picked.push({ r, num: num > 0 ? num : 1, vTitle });
-      }
-
-      if (!picked.length) {
-        SFX.error();
-        showToast("Chọn ít nhất 1 ảnh để gắn nhé.");
-        return;
-      }
-
-      pushUndo(`AI gắn ${picked.length} ảnh vào "${sec.name}"`);
-      const lastVol = sortedVols[sortedVols.length - 1];
-      const last = { ...DEFAULT_STATE.lastEntry, ...(state.lastEntry || {}) };
-      const defCp = lastVol ? Number(lastVol.coverPrice) || 0 : Number(last.coverPrice) || 35000;
-      const defPp = lastVol
-        ? Number(lastVol.paidPrice) || 0
-        : Math.round(defCp * (1 - (Number(last.discount) || 0) / 100));
-
-      sec.volumes = sec.volumes || [];
-      let updatedCnt = 0;
-      let createdCnt = 0;
-
-      picked.forEach(({ r, num, vTitle }, idx) => {
-        const hit = sec.volumes.find((v) => Number(v.number) === num);
-        if (hit) {
-          hit.image = r.coverData;
-          if (vTitle && !hit.title) hit.title = vTitle;
-          updatedCnt++;
-        } else {
-          const cp = r.coverPrice > 0 ? r.coverPrice : defCp;
-          const pp = r.coverPrice > 0 ? Math.round(cp * (1 - (Number(last.discount) || 0) / 100)) : defPp;
-          sec.volumes.push({
-            id: uid(),
-            number: num,
-            title: vTitle,
-            coverPrice: cp,
-            paidPrice: pp,
-            date: todayISO(),
-            isLegacy: false,
-            image: r.coverData,
-            readState: "Chưa đọc",
-            lentTo: "",
-            note: "",
-            groupId: "",
-            groupLabel: "",
-          });
-          createdCnt++;
-        }
-        if (!s.cover && idx === 0) s.cover = r.coverData;
-      });
-
-      saveState();
-      renderBooks();
-      renderSpending();
-      openSectionDetail(seriesId, sectionId);
-      SFX.success();
-      spawnCelebration(undefined, undefined, 20);
-      showToast(
-        `Đã gắn ${updatedCnt + createdCnt} ảnh vào "${sec.name}"` +
-          (createdCnt ? ` (tạo mới ${createdCnt} tập)` : "") +
-          "!",
-        { undoable: true }
-      );
-    });
-  });
 }
 
 // Lightbox xem ảnh to chung cho Tập & Quà
@@ -9807,7 +9451,7 @@ function openQuickCoverModal(initialTab = "single") {
       cropFrontBtn.addEventListener("click", async () => {
         if (!frontFile) return;
         const cropped = await openImageCropper(frontFile, {
-          ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.78, title: "Cắt ảnh bìa lưu vào Tủ",
+          ratio: 2 / 3, maxW: 1400, maxH: 2100, quality: 1.0, title: "Cắt ảnh bìa lưu vào Tủ",
         });
         if (cropped) {
           frontCoverData = cropped;
@@ -10504,7 +10148,7 @@ function openQuickCoverConfirmModal(info, initialCoverData = "", initialCoverFil
     if (cropBtn && currentFile) {
       cropBtn.addEventListener("click", async () => {
         const cropped = await openImageCropper(currentFile, {
-          ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.78, title: "Cắt ảnh bìa",
+          ratio: 2 / 3, maxW: 1400, maxH: 2100, quality: 1.0, title: "Cắt ảnh bìa",
         });
         if (cropped) {
           currentCoverData = cropped;
@@ -10527,7 +10171,7 @@ function openQuickCoverConfirmModal(info, initialCoverData = "", initialCoverFil
       if (!f) return;
       currentFile = f;
       const cropped = await openImageCropper(f, {
-        ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.78, title: "Cắt ảnh bìa",
+        ratio: 2 / 3, maxW: 1400, maxH: 2100, quality: 1.0, title: "Cắt ảnh bìa",
       });
       if (cropped) {
         currentCoverData = cropped;
@@ -11985,7 +11629,7 @@ function openGiftGroupForm(groupId = null) {
       const file = e.target.files?.[0];
       e.target.value = "";
       if (!file) return;
-      const cropped = await openImageCropper(file, { ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.76, title: "Cắt ảnh đại diện bộ quà" });
+      const cropped = await openImageCropper(file, { ratio: 2 / 3, maxW: 1400, maxH: 2100, quality: 1.0, title: "Cắt ảnh đại diện bộ quà" });
       if (cropped) {
         setGgPreview(cropped);
         if (undoGgCoverBtn) undoGgCoverBtn.style.display = "none";
@@ -12322,7 +11966,7 @@ function openGiftItemForm(groupId, giftId = null) {
       const file = e.target.files?.[0];
       e.target.value = "";
       if (!file) return;
-      const cropped = await openImageCropper(file, { ratio: 1, maxW: 440, maxH: 440, quality: 0.76, title: "Cắt ảnh quà" });
+      const cropped = await openImageCropper(file, { ratio: 1, maxW: 1400, maxH: 1400, quality: 1.0, title: "Cắt ảnh quà" });
       if (cropped) {
         setGiftPreview(cropped);
         if (undoGiftImgBtn) undoGiftImgBtn.style.display = "none";
@@ -16605,7 +16249,7 @@ function openVolumeBookFlip(seriesId, sectionId, volId) {
   const frontHtml = coverImg
     ? `<img src="${esc(coverImg)}" alt="Tập ${esc(v.number)}" />
        ${holo ? `<span class="holo-pill mono">ĐB</span>` : ""}
-       <span class="cover-badge mono">${esc(v.title ? v.title.slice(0, 16) : `Tập ${v.number}`)}</span>`
+       `
     : `<div class="typo-cover" style="border-left-color:${pubColorVar(s.publisher)}; height:100%;">
          <div class="typo-pub mono">${esc(s.publisher)}</div>
          <div class="typo-title" style="font-size:15px;">${esc(s.title)}<br/><span class="mono" style="font-size:13px; color:var(--accent);">Tập ${esc(v.number)}</span></div>
