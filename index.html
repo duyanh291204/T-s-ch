@@ -3463,32 +3463,6 @@ body {
 .cabinet-door-left .cabinet-handle { right: 8px; }
 .cabinet-door-right .cabinet-handle { left: 8px; }
 
-/* Nhãn nhắc "Chạm mở · Kéo xoay 3D" khi tủ đang đóng */
-.cabinet-open-hint {
-  position: absolute;
-  left: 50%;
-  bottom: 42px;
-  transform: translateX(-50%);
-  z-index: 210;
-  padding: 5px 11px;
-  border-radius: 99px;
-  background: rgba(20, 19, 18, 0.84);
-  border: 1px solid rgba(255, 240, 210, 0.26);
-  color: #F6F5F1;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  pointer-events: none;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.38);
-  transition: opacity 0.28s ease, transform 0.28s ease;
-}
-
-.cabinet-frame.is-open .cabinet-open-hint {
-  opacity: 0;
-  transform: translate(-50%, 8px);
-}
-
 /* Mèo Capoo quản gia đứng & đi ngay trên thanh gỗ đáy tủ kính */
 .cabinet-cat-canvas {
   position: absolute;
@@ -3496,7 +3470,7 @@ body {
   right: 11px;
   bottom: 9px;
   width: calc(100% - 22px);
-  height: 52px;
+  height: 42px;
   z-index: 250;
   pointer-events: none;
   display: block;
@@ -3505,9 +3479,9 @@ body {
 .cabinet-cat-hit {
   position: absolute;
   left: 11px;
-  bottom: 4px;
-  width: 68px;
-  height: 56px;
+  bottom: 2px;
+  width: 64px;
+  height: 50px;
   z-index: 260;
   cursor: pointer;
   background: transparent;
@@ -9123,10 +9097,10 @@ const cabCat = {
   canvas: null,
   ctx: null,
   hitEl: null,
-  w: 320,
-  h: 52,
+  w: 0,
+  h: 42,
   dpr: 1,
-  x: 286,
+  x: 0,
   dir: -1,
   phase: "sit", // "sit" | "toCenter" | "act" | "return"
   action: "open", // "open" | "close"
@@ -9141,23 +9115,33 @@ const cabCat = {
 };
 
 function syncCabinetCatSize() {
-  if (!cabCat.canvas) return;
-  const parent = cabCat.canvas.parentElement;
-  const cw = Math.max(200, Math.round((parent ? parent.clientWidth - 22 : cabCat.canvas.clientWidth) || 320));
-  if (cw === cabCat.w && cabCat.canvas.width === Math.round(cw * cabCat.dpr)) return;
-  const wasHome = cabCat.phase === "sit";
+  if (!cabCat.canvas) return false;
+  const cw = Math.round(cabCat.canvas.clientWidth || 0);
+  if (cw < 40) return false; // Tab đang ẩn (display:none) -> chưa đo, tránh bị kéo ngang 1.7x!
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if (cw === cabCat.w && cabCat.dpr === dpr && cabCat.canvas.width === Math.round(cw * dpr)) {
+    return true;
+  }
+  const prevW = cabCat.w;
+  const wasHome = cabCat.phase === "sit" || prevW < 40;
   cabCat.w = cw;
-  cabCat.h = 52;
-  cabCat.dpr = Math.min(window.devicePixelRatio || 1, 2);
-  cabCat.canvas.width = Math.round(cabCat.w * cabCat.dpr);
-  cabCat.canvas.height = Math.round(cabCat.h * cabCat.dpr);
-  if (wasHome) cabCat.x = cabCat.w - 28;
+  cabCat.h = 42;
+  cabCat.dpr = dpr;
+  cabCat.canvas.width = Math.round(cw * dpr);
+  cabCat.canvas.height = Math.round(42 * dpr);
+  if (wasHome) {
+    cabCat.x = cw - 24;
+  } else {
+    cabCat.x = Math.max(22, Math.min(cw - 22, (cabCat.x / prevW) * cw));
+  }
+  cabCat._lastHitX = -1;
   syncCabinetCatHit();
+  return true;
 }
 
 function syncCabinetCatHit() {
-  if (!cabCat.hitEl) return;
-  const hx = Math.max(0, Math.min(cabCat.w - 68, Math.round(cabCat.x - 34)));
+  if (!cabCat.hitEl || cabCat.w < 40) return;
+  const hx = Math.max(0, Math.min(cabCat.w - 64, Math.round(cabCat.x - 32)));
   if (cabCat._lastHitX !== hx) {
     cabCat._lastHitX = hx;
     cabCat.hitEl.style.transform = `translate3d(${hx}px, 0, 0)`;
@@ -9174,15 +9158,18 @@ function initCabinetCat(canvasEl, hitEl) {
   cabCat.onActionCb = null;
   cabCat._lastHitX = -1;
   cabCat.w = 0;
-  if (!canvasEl) return;
-  syncCabinetCatSize();
-  cabCat.x = cabCat.w - 28;
+  cabCat.x = 0;
   cabCat.dir = -1;
-  syncCabinetCatHit();
+  if (canvasEl) syncCabinetCatSize();
 }
 
 function triggerCabinetCatAction(actionType, onAct) {
   if (!cabCat.canvas || state.catEnabled === false) {
+    if (typeof onAct === "function") onAct();
+    return;
+  }
+  syncCabinetCatSize();
+  if (cabCat.w < 40) {
     if (typeof onAct === "function") onAct();
     return;
   }
@@ -9199,6 +9186,7 @@ function updateAndDrawCabinetCat(dt) {
   const canvas = cabCat.canvas;
   const ctx = cabCat.ctx;
   if (!canvas || !ctx || !canvas.isConnected) return;
+  if (!syncCabinetCatSize()) return;
   if (state.catEnabled === false) {
     ctx.setTransform(cabCat.dpr, 0, 0, cabCat.dpr, 0, 0);
     ctx.clearRect(0, 0, cabCat.w, cabCat.h);
@@ -9213,7 +9201,7 @@ function updateAndDrawCabinetCat(dt) {
   }
   if (cabCat.blinkDur > 0) cabCat.blinkDur -= dt;
 
-  const homeX = cabCat.w - 28;
+  const homeX = cabCat.w - 24;
   const midX = cabCat.w * 0.5;
   const speed = 185;
 
@@ -9282,16 +9270,16 @@ function updateAndDrawCabinetCat(dt) {
   const isOpening = cabCat.phase === "act" && cabCat.action === "open";
   const isClosing = cabCat.phase === "act" && cabCat.action === "close";
 
-  const pullShake = isClosing ? Math.sin(cabCat.timer * 42) * 1.0 : 0;
-  const pullLean = isClosing ? 0.19 : 0;
+  const pullShake = isClosing ? Math.sin(cabCat.timer * 42) * 0.9 : 0;
+  const pullLean = isClosing ? 0.18 : 0;
   const bounce = isMoving
-    ? Math.abs(Math.sin(cabCat.gait)) * 2.4
+    ? Math.abs(Math.sin(cabCat.gait)) * 2.0
     : isOpening
-    ? Math.sin(Math.min(1, cabCat.timer / 0.35) * Math.PI) * 2.2
+    ? Math.sin(Math.min(1, cabCat.timer / 0.35) * Math.PI) * 1.9
     : isClosing
-    ? 0.4
-    : Math.sin(cabCat.clock * 2.8) * 0.45;
-  const tilt = isMoving ? cabCat.dir * 0.08 : pullLean;
+    ? 0.3
+    : Math.sin(cabCat.clock * 2.8) * 0.35;
+  const tilt = isMoving ? cabCat.dir * 0.07 : pullLean;
 
   ctx.save();
   ctx.translate(cabCat.x + pullShake, groundY - bounce);
@@ -9299,22 +9287,23 @@ function updateAndDrawCabinetCat(dt) {
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
-  // Bóng mờ trên thanh gỗ đáy tủ
+  // Bóng mờ dưới chân trên thanh gỗ
   ctx.fillStyle = "rgba(0,0,0,0.34)";
   ctx.beginPath();
-  ctx.ellipse(0, 1.5 + bounce * 0.4, isMoving ? 14 : 15, 2.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 1.3 + bounce * 0.35, isMoving ? 13.5 : 14.5, 2.2, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  const rx = isMoving ? 15.2 : isClosing ? 15.0 : 14.4;
-  const ry = isOpening ? 12.0 : isClosing ? 10.6 : 11.2;
+  // Tỷ lệ chuẩn gọn xinh giống hệt bé mèo ở Tủ sách (khung 42px)
+  const rx = isMoving ? 14.8 : isClosing ? 14.5 : 14.0;
+  const ry = isOpening ? 10.2 : isClosing ? 9.2 : 9.6;
 
   const traceBody = () => {
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.bezierCurveTo(rx * 0.92, 0, rx * 1.08, -ry * 0.35, rx * 0.98, -ry * 0.96);
-    ctx.bezierCurveTo(rx * 0.88, -ry * 1.66, rx * 0.52, -ry * 1.88, 0, -ry * 1.88);
-    ctx.bezierCurveTo(-rx * 0.52, -ry * 1.88, -rx * 0.88, -ry * 1.66, -rx * 0.98, -ry * 0.96);
-    ctx.bezierCurveTo(-rx * 1.08, -ry * 0.35, -rx * 0.92, 0, 0, 0);
+    ctx.bezierCurveTo(rx * 0.92, 0, rx * 1.06, -ry * 0.35, rx * 0.97, -ry * 0.96);
+    ctx.bezierCurveTo(rx * 0.87, -ry * 1.66, rx * 0.52, -ry * 1.88, 0, -ry * 1.88);
+    ctx.bezierCurveTo(-rx * 0.52, -ry * 1.88, -rx * 0.87, -ry * 1.66, -rx * 0.97, -ry * 0.96);
+    ctx.bezierCurveTo(-rx * 1.06, -ry * 0.35, -rx * 0.92, 0, 0, 0);
     ctx.closePath();
   };
 
@@ -9331,7 +9320,7 @@ function updateAndDrawCabinetCat(dt) {
       if (mode === "outline") {
         ctx.fillStyle = outlineCol;
         ctx.strokeStyle = outlineCol;
-        ctx.lineWidth = 3.6;
+        ctx.lineWidth = 3.2;
         ctx.stroke();
         ctx.fill();
       } else {
@@ -9346,50 +9335,50 @@ function updateAndDrawCabinetCat(dt) {
     apply();
 
     if (isMoving) {
-      const s1 = Math.sin(cabCat.gait) * 2.2;
-      const s2 = Math.sin(cabCat.gait + Math.PI) * 2.2;
+      const s1 = Math.sin(cabCat.gait) * 2.0;
+      const s2 = Math.sin(cabCat.gait + Math.PI) * 2.0;
       [
-        { x: -8.5 + s1 * 0.6, y: -1.2 - Math.max(0, s1) * 0.8 },
-        { x: -4.2 + s2 * 0.6, y: -1.2 - Math.max(0, s2) * 0.8 },
-        { x: 4.2 + s1 * 0.6, y: -1.2 - Math.max(0, s1) * 0.8 },
-        { x: 8.5 + s2 * 0.6, y: -1.2 - Math.max(0, s2) * 0.8 },
+        { x: -8.0 + s1 * 0.55, y: -1.0 - Math.max(0, s1) * 0.75 },
+        { x: -3.8 + s2 * 0.55, y: -1.0 - Math.max(0, s2) * 0.75 },
+        { x: 3.8 + s1 * 0.55, y: -1.0 - Math.max(0, s1) * 0.75 },
+        { x: 8.0 + s2 * 0.55, y: -1.0 - Math.max(0, s2) * 0.75 },
       ].forEach((p) => {
         ctx.beginPath();
-        ctx.ellipse(p.x, p.y, 2.1, 2.7, 0, 0, Math.PI * 2);
+        ctx.ellipse(p.x, p.y, 1.9, 2.4, 0, 0, Math.PI * 2);
         apply();
       });
     } else if (isOpening) {
-      const reach = Math.sin(Math.min(1, cabCat.timer / 0.3) * Math.PI) * 4.0;
+      const reach = Math.sin(Math.min(1, cabCat.timer / 0.3) * Math.PI) * 3.4;
       [-1, 1].forEach((side) => {
         ctx.save();
-        ctx.translate(side * (rx * 0.82 + reach * 0.6), -ry * 1.35 - reach * 0.5);
+        ctx.translate(side * (rx * 0.8 + reach * 0.55), -ry * 1.35 - reach * 0.45);
         ctx.rotate(side * 0.6);
         ctx.beginPath();
-        ctx.ellipse(0, 0, 2.3, 3.8, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, 2.0, 3.4, 0, 0, Math.PI * 2);
         apply();
         ctx.restore();
       });
     } else if (isClosing) {
-      const tug = Math.sin(cabCat.timer * 18) * 1.4;
+      const tug = Math.sin(cabCat.timer * 18) * 1.2;
       ctx.save();
-      ctx.translate(-rx * 0.92, -ry * 1.32 + tug);
+      ctx.translate(-rx * 0.9, -ry * 1.3 + tug);
       ctx.rotate(-0.85);
       ctx.beginPath();
-      ctx.ellipse(0, 0, 2.5, 4.6, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, 2.2, 4.1, 0, 0, Math.PI * 2);
       apply();
       ctx.restore();
       ctx.beginPath();
-      ctx.ellipse(-5.5, -1.0, 2.4, 2.9, 0, 0, Math.PI * 2);
+      ctx.ellipse(-5.2, -0.9, 2.1, 2.6, 0, 0, Math.PI * 2);
       apply();
       ctx.beginPath();
-      ctx.ellipse(5.8, -1.0, 2.4, 2.9, 0, 0, Math.PI * 2);
+      ctx.ellipse(5.4, -0.9, 2.1, 2.6, 0, 0, Math.PI * 2);
       apply();
     } else {
       ctx.beginPath();
-      ctx.ellipse(-4.6, -1.0, 2.4, 3.0, 0, 0, Math.PI * 2);
+      ctx.ellipse(-4.2, -0.9, 2.1, 2.6, 0, 0, Math.PI * 2);
       apply();
       ctx.beginPath();
-      ctx.ellipse(4.6, -1.0, 2.4, 3.0, 0, 0, Math.PI * 2);
+      ctx.ellipse(4.2, -0.9, 2.1, 2.6, 0, 0, Math.PI * 2);
       apply();
     }
 
@@ -9404,13 +9393,13 @@ function updateAndDrawCabinetCat(dt) {
     // QUAY LƯNG MỞ TỦ: vẫy đuôi phía sau
     const wag = Math.sin(cabCat.timer * 24) * 0.38;
     ctx.save();
-    ctx.translate(0, -3.2);
+    ctx.translate(0, -2.8);
     ctx.rotate(wag);
     ctx.fillStyle = pal.body;
     ctx.strokeStyle = outlineCol;
-    ctx.lineWidth = 2.0;
+    ctx.lineWidth = 1.8;
     ctx.beginPath();
-    ctx.ellipse(0, 1.5, 2.4, 4.2, 0.25, 0, Math.PI * 2);
+    ctx.ellipse(0, 1.3, 2.1, 3.6, 0.25, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.restore();
@@ -9419,15 +9408,15 @@ function updateAndDrawCabinetCat(dt) {
       const a = Math.max(0, 1 - (cabCat.timer - 0.16) / 0.3);
       ctx.strokeStyle = "#FFE8A3";
       ctx.globalAlpha = a;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1.4;
       [-1, 1].forEach((side) => {
-        const sx = side * 19;
-        const sy = -ry * 1.8;
+        const sx = side * 17;
+        const sy = -ry * 1.75;
         ctx.beginPath();
-        ctx.moveTo(sx, sy - 4);
-        ctx.lineTo(sx, sy + 4);
-        ctx.moveTo(sx - 4, sy);
-        ctx.lineTo(sx + 4, sy);
+        ctx.moveTo(sx, sy - 3.5);
+        ctx.lineTo(sx, sy + 3.5);
+        ctx.moveTo(sx - 3.5, sy);
+        ctx.lineTo(sx + 3.5, sy);
         ctx.stroke();
       });
     }
@@ -9438,94 +9427,94 @@ function updateAndDrawCabinetCat(dt) {
     ctx.clip();
     ctx.fillStyle = pal.belly;
     ctx.beginPath();
-    ctx.ellipse(0, -ry * 0.35, rx * 0.52, ry * 0.55, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, -ry * 0.32, rx * 0.52, ry * 0.55, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
     // Khuôn mặt
-    const lookX = isMoving ? cabCat.dir * 3.4 : isClosing ? 1.8 : 0;
+    const lookX = isMoving ? cabCat.dir * 3.0 : isClosing ? 1.6 : 0;
     ctx.save();
-    ctx.translate(lookX, -ry * 1.05);
+    ctx.translate(lookX, -ry * 1.02);
 
     // Má hồng
     ctx.fillStyle = pal.cheek;
     ctx.globalAlpha = isClosing ? 0.9 : 0.78;
     ctx.beginPath();
-    ctx.ellipse(-7.0, 1.9, 2.1, 1.2, 0, 0, Math.PI * 2);
-    ctx.ellipse(7.0, 1.9, 2.1, 1.2, 0, 0, Math.PI * 2);
+    ctx.ellipse(-6.4, 1.7, 1.9, 1.1, 0, 0, Math.PI * 2);
+    ctx.ellipse(6.4, 1.7, 1.9, 1.1, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
 
     ctx.strokeStyle = pal.mouthLine;
     ctx.fillStyle = pal.eye;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.45;
 
     if (isClosing) {
       // BIỂU CẢM GỒNG KÉO NẶNG: mắt nhắm nghiền > < + miệng mím gồng + giọt mồ hôi
       ctx.beginPath();
-      ctx.moveTo(-6.6, -2.0);
-      ctx.lineTo(-3.8, -0.5);
-      ctx.lineTo(-6.6, 1.0);
-      ctx.moveTo(6.6, -2.0);
-      ctx.lineTo(3.8, -0.5);
-      ctx.lineTo(6.6, 1.0);
+      ctx.moveTo(-6.2, -1.8);
+      ctx.lineTo(-3.6, -0.4);
+      ctx.lineTo(-6.2, 1.0);
+      ctx.moveTo(6.2, -1.8);
+      ctx.lineTo(3.6, -0.4);
+      ctx.lineTo(6.2, 1.0);
       ctx.stroke();
 
-      ctx.lineWidth = 1.35;
+      ctx.lineWidth = 1.25;
       ctx.beginPath();
-      ctx.moveTo(-2.6, 2.3);
-      ctx.quadraticCurveTo(-1.2, 1.1, 0, 2.2);
-      ctx.quadraticCurveTo(1.2, 3.2, 2.6, 2.0);
+      ctx.moveTo(-2.4, 2.0);
+      ctx.quadraticCurveTo(-1.1, 0.9, 0, 1.9);
+      ctx.quadraticCurveTo(1.1, 2.9, 2.4, 1.8);
       ctx.stroke();
 
-      const swY = -5.5 + (cabCat.timer * 7) % 4;
+      const swY = -5.0 + (cabCat.timer * 7) % 3.6;
       ctx.fillStyle = "#6EC9FF";
       ctx.strokeStyle = "#2E6F9E";
-      ctx.lineWidth = 0.9;
+      ctx.lineWidth = 0.85;
       ctx.beginPath();
-      ctx.moveTo(10.5, swY - 2.6);
-      ctx.quadraticCurveTo(12.6, swY + 1.2, 10.5, swY + 2.2);
-      ctx.quadraticCurveTo(8.4, swY + 1.2, 10.5, swY - 2.6);
+      ctx.moveTo(9.8, swY - 2.3);
+      ctx.quadraticCurveTo(11.7, swY + 1.0, 9.8, swY + 2.0);
+      ctx.quadraticCurveTo(7.9, swY + 1.0, 9.8, swY - 2.3);
       ctx.fill();
       ctx.stroke();
     } else if (cabCat.blinkDur > 0) {
       ctx.beginPath();
-      ctx.moveTo(-6.4, -0.4);
-      ctx.lineTo(-3.2, -0.4);
-      ctx.moveTo(3.2, -0.4);
-      ctx.lineTo(6.4, -0.4);
+      ctx.moveTo(-6.0, -0.4);
+      ctx.lineTo(-3.0, -0.4);
+      ctx.moveTo(3.0, -0.4);
+      ctx.lineTo(6.0, -0.4);
       ctx.stroke();
-      ctx.lineWidth = 1.3;
+      ctx.lineWidth = 1.25;
       ctx.beginPath();
-      ctx.moveTo(-2.5, 1.7);
-      ctx.quadraticCurveTo(-1.25, 3.1, 0, 1.9);
-      ctx.quadraticCurveTo(1.25, 3.1, 2.5, 1.7);
+      ctx.moveTo(-2.3, 1.5);
+      ctx.quadraticCurveTo(-1.15, 2.8, 0, 1.7);
+      ctx.quadraticCurveTo(1.15, 2.8, 2.3, 1.5);
       ctx.stroke();
     } else {
-      // MẮT LẤP LÁNH GIỐNG MÈO TỦ SÁCH (2 chấm sáng trắng trong mỗi mắt!)
-      const rX = 2.05;
-      const rY = 2.25;
+      // MẮT LẤP LÁNH GIỐNG MÈO TỦ SÁCH
+      const rX = 1.9;
+      const rY = 2.05;
       const shineCol = pal.eyeShine || "#FFFFFF";
-      [-4.8, 4.8].forEach((ex) => {
-        const ey = -0.7;
+      [-4.5, 4.5].forEach((ex) => {
+        const ey = -0.65;
         ctx.fillStyle = pal.eye;
         ctx.beginPath();
         ctx.ellipse(ex, ey, rX, rY, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = shineCol;
         ctx.beginPath();
-        ctx.arc(ex - rX * 0.32, ey - rY * 0.34, 0.92, 0, Math.PI * 2);
+        ctx.arc(ex - rX * 0.32, ey - rY * 0.34, 0.85, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(ex + rX * 0.3, ey + rY * 0.32, 0.48, 0, Math.PI * 2);
+        ctx.arc(ex + rX * 0.3, ey + rY * 0.32, 0.44, 0, Math.PI * 2);
         ctx.fill();
       });
       ctx.strokeStyle = pal.mouthLine;
-      ctx.lineWidth = 1.35;
+      ctx.lineWidth = 1.25;
       ctx.beginPath();
-      ctx.moveTo(-2.5, 1.7);
-      ctx.quadraticCurveTo(-1.25, 3.1, 0, 1.9);
-      ctx.quadraticCurveTo(1.25, 3.1, 2.5, 1.7);
+      ctx.moveTo(-2.3, 1.5);
+      ctx.quadraticCurveTo(-1.15, 2.8, 0, 1.7);
+      ctx.quadraticCurveTo(1.15, 2.8, 2.3, 1.5);
       ctx.stroke();
     }
     ctx.restore();
@@ -9545,6 +9534,7 @@ function resumeCabinetOrbitIfVisible() {
   cabinetStageW = stageEl.clientWidth || 320;
   cabinetStageH = stageEl.clientHeight || 376;
   cabinetNeedsLayout = true;
+  syncCabinetCatSize();
   let lastTs = performance.now();
 
   const tick = (now) => {
@@ -9779,7 +9769,6 @@ function renderMerch() {
               <div class="cabinet-door cabinet-door-left"><span class="cabinet-handle"></span></div>
               <div class="cabinet-door cabinet-door-right"><span class="cabinet-handle"></span></div>
             </div>
-            <div class="cabinet-open-hint">Chạm mở tủ · Kéo tay xoay 3D · ${allCards.length} món</div>
           </div>
           <canvas class="cabinet-cat-canvas" id="cabinetCatCanvas" aria-hidden="true"></canvas>
           <button type="button" class="cabinet-cat-hit" id="cabinetCatHit" aria-label="Chạm mèo để mở hoặc đóng tủ kính"></button>
