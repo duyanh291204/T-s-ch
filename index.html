@@ -3661,7 +3661,9 @@ body {
   width: 100%;
   height: 48px;
   margin-bottom: 0;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 .budget-cat-canvas {
   width: 100%;
@@ -7780,6 +7782,7 @@ function openSectionDetail(seriesId, sectionId) {
     <div class="crumb-bar">
       <button type="button" class="btn btn-sm" id="backToSeriesBtn">← ${esc(s.title.slice(0, 24))}</button>
       <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;">
+        <button type="button" class="btn btn-sm" id="batchAttachImgBtn" title="Chọn nhiều ảnh cùng lúc để gắn nhanh theo thứ tự tập">Gắn ảnh</button>
         <button type="button" class="btn btn-sm" id="editSecBtn">Sửa mục</button>
         <button type="button" class="btn btn-sm btn-danger" id="delSecBtn">Xoá mục</button>
       </div>
@@ -7813,8 +7816,8 @@ function openSectionDetail(seriesId, sectionId) {
         <button type="button" class="${viewMode === "compact" ? "active" : ""}" data-vmode="compact">Ô gọn</button>
       </div>
       <div style="display:flex; gap:5px; flex-wrap:wrap;">
+        ${typeof undoStack !== "undefined" && undoStack.length ? `<button type="button" class="btn btn-sm" id="secUndoBtn" style="border-color:var(--accent); color:var(--accent); background:var(--accent-soft);" title="Hoàn tác: ${esc(undoStack[undoStack.length - 1].label)}">↺ Hoàn tác</button>` : ""}
         <button type="button" class="btn btn-sm btn-accent mono" id="quickAddNextVolBtn" title="Thêm nhanh 1 chạm theo giá tập trước">+ T.${nextQuickNum}</button>
-        <button type="button" class="btn btn-sm" id="batchAttachImgBtn" title="Chọn nhiều ảnh cùng lúc để gắn nhanh theo thứ tự tập">Gắn nhiều ảnh</button>
         <button type="button" class="btn btn-sm" id="addBulkVolBtn">+ Nhiều tập</button>
         <button type="button" class="btn btn-sm btn-primary" id="addOneVolBtn">+ 1 tập</button>
       </div>
@@ -7884,6 +7887,16 @@ function openSectionDetail(seriesId, sectionId) {
       showToast(`Đã thêm nhanh Tập ${nextQuickNum} (${fmtMoney(pp)}).`);
     });
 
+    const secUndoBtn = body.querySelector("#secUndoBtn");
+    if (secUndoBtn) {
+      secUndoBtn.addEventListener("click", () => {
+        performUndo();
+        const stillS = state.series.find((x) => x.id === seriesId);
+        const stillSec = stillS && (stillS.sections || []).find((x) => x.id === sectionId);
+        if (stillSec) openSectionDetail(seriesId, sectionId);
+        else if (stillS) openSeriesDetail(seriesId);
+      });
+    }
     body.querySelector("#batchAttachImgBtn").addEventListener("click", () => openBatchAttachImagesModal(seriesId, sectionId));
     body.querySelector("#addOneVolBtn").addEventListener("click", () => openVolumeForm(seriesId, sectionId));
     body.querySelector("#addBulkVolBtn").addEventListener("click", () => openBulkVolumeForm(seriesId, sectionId));
@@ -8157,6 +8170,7 @@ function openVolumeForm(seriesId, sectionId, volId = null, prefillVolNum = null)
         const idx = sec.volumes.findIndex((x) => x.id === volId);
         sec.volumes[idx] = rec;
       } else {
+        pushUndo(`thêm tập ${rec.number} (${s.title})`);
         sec.volumes.push(rec);
       }
       saveState();
@@ -15391,12 +15405,27 @@ const budgetCat = {
   clock: 0,
   rafId: null,
   lastTs: 0,
+  wakeTimer: 0,
+  hopTimer: 0,
+  clickBound: false,
 };
 
 function updateBudgetVaultCat(ratio) {
   budgetCat.ratio = Math.max(0, Number(ratio) || 0);
   const wrap = document.getElementById("budgetCatWrap");
-  if (wrap) wrap.style.display = state.catEnabled === false ? "none" : "block";
+  if (wrap) {
+    wrap.style.display = state.catEnabled === false ? "none" : "block";
+    if (!budgetCat.clickBound) {
+      budgetCat.clickBound = true;
+      wrap.addEventListener("click", () => {
+        if (state.catEnabled === false) return;
+        budgetCat.wakeTimer = 8.0; // Đánh thức bé mèo 8 giây
+        budgetCat.hopTimer = 0.34;
+        SFX.catWake();
+        ensureBudgetCatLoop();
+      });
+    }
+  }
   ensureBudgetCatLoop();
 }
 
@@ -15432,8 +15461,11 @@ function ensureBudgetCatLoop() {
       const r = budgetCat.ratio;
       const pctClamped = Math.min(1, r);
       const rawEdgeX = cw * pctClamped;
-      const groundY = 45.2; // Đáy 4 chân chạm khít mép trên thanh hạn mức, không bị bay!
-      const isNightSleep = typeof isLateNightHour === "function" && isLateNightHour();
+      if (budgetCat.wakeTimer > 0) budgetCat.wakeTimer = Math.max(0, budgetCat.wakeTimer - dt);
+      if (budgetCat.hopTimer > 0) budgetCat.hopTimer = Math.max(0, budgetCat.hopTimer - dt);
+      const wakeHop = budgetCat.hopTimer > 0 ? Math.sin((budgetCat.hopTimer / 0.34) * Math.PI) * 5.5 : 0;
+      const groundY = 45.2 - wakeHop; // Đáy 4 chân chạm khít mép trên thanh hạn mức, chạm vào mới nhảy dậy!
+      const isNightSleep = typeof isLateNightHour === "function" && isLateNightHour() && budgetCat.wakeTimer <= 0;
 
       if (isNightSleep) {
         // Sau 23h: Bé mèo nằm ngủ dẹt đội mũ ngủ y hệt tab Tủ sách ngay trên thanh hạn mức!
