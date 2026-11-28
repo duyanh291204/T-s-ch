@@ -2904,6 +2904,90 @@ body {
   color: var(--bg);
 }
 
+/* Batch attach images grid & multi-AI progress */
+.bai-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  max-height: 40dvh;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.bai-item {
+  position: relative;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+}
+
+.bai-thumb {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.bai-tag {
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  padding: 2px 3px;
+  background: var(--surface);
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: 1px solid var(--line);
+}
+
+.bai-rm {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: rgba(18, 17, 16, 0.8);
+  color: #FFF;
+  font-size: 11px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qc-multi-row {
+  display: grid;
+  grid-template-columns: 18px 40px 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.qc-multi-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.qc-multi-thumb {
+  width: 40px;
+  height: 58px;
+  border-radius: 3px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  display: block;
+}
+
 /* Batch shelf scan checklist */
 .qc-batch-list {
   display: flex;
@@ -7740,6 +7824,7 @@ function openSectionDetail(seriesId, sectionId) {
       </div>
       <div style="display:flex; gap:5px; flex-wrap:wrap;">
         <button type="button" class="btn btn-sm btn-accent mono" id="quickAddNextVolBtn" title="Thêm nhanh 1 chạm theo giá tập trước">+ T.${nextQuickNum}</button>
+        <button type="button" class="btn btn-sm" id="batchAttachImgBtn" title="Gắn nhiều ảnh theo thứ tự hoặc để AI tự đọc số tập">Gắn ảnh / AI</button>
         <button type="button" class="btn btn-sm" id="addBulkVolBtn">+ Nhiều tập</button>
         <button type="button" class="btn btn-sm btn-primary" id="addOneVolBtn">+ 1 tập</button>
       </div>
@@ -7809,6 +7894,7 @@ function openSectionDetail(seriesId, sectionId) {
       showToast(`Đã thêm nhanh Tập ${nextQuickNum} (${fmtMoney(pp)}).`);
     });
 
+    body.querySelector("#batchAttachImgBtn").addEventListener("click", () => openBatchAttachImagesModal(seriesId, sectionId));
     body.querySelector("#addOneVolBtn").addEventListener("click", () => openVolumeForm(seriesId, sectionId));
     body.querySelector("#addBulkVolBtn").addEventListener("click", () => openBulkVolumeForm(seriesId, sectionId));
     body.querySelectorAll("[data-vol-id]").forEach((btn) => {
@@ -8364,6 +8450,617 @@ function openBulkVolumeForm(seriesId, sectionId) {
   });
 }
 
+// Đọc nhanh số tập (và tên tập nếu có) từ 1 ảnh bìa khi đã biết sẵn Bộ & Mục (siêu nhanh, cực chuẩn)
+async function callGeminiReadVolInSection(apiKey, imgObj, seriesTitle, sectionName) {
+  const promptText = `Đây là ảnh bìa 1 tập thuộc bộ "${seriesTitle}" (mục "${sectionName}").
+Đọc số tập trên bìa và trả về JSON gọn (không markdown):
+{"volumeNumber": 1, "volTitle": "", "coverPrice": 0}
+Quy tắc:
+- volumeNumber: số tập đọc được trên bìa (số nguyên hoặc .5 như 1, 2, 14, 10.5). Nếu bìa KHÔNG có số tập mà có tên riêng thì đặt volumeNumber=0 và điền tên đó vào volTitle.
+- volTitle: để rỗng "" nếu cuốn đặt theo số tập bình thường; chỉ điền nếu là tập đặc biệt / ngoại truyện / tên riêng (VD: "Journal 3", "Quyển Thượng", "Ngoại truyện").
+- coverPrice: giá bìa VNĐ nếu nhìn thấy trên ảnh (0 nếu không thấy).`;
+  const parts = [
+    { text: promptText },
+    { inline_data: { mime_type: imgObj.mimeType || "image/jpeg", data: imgObj.base64 } },
+  ];
+  const res = await callGeminiFastJson(apiKey, parts, 140);
+  return { ...(res.data || {}), _model: res.model };
+}
+
+// Gắn nhiều ảnh vào Mục: Tab 1 (Theo thứ tự — 0 tốn AI) & Tab 2 (AI tự đọc số tập khớp vào mục này)
+function openBatchAttachImagesModal(seriesId, sectionId, initialMode = "order") {
+  const s = state.series.find((x) => x.id === seriesId);
+  const sec = s ? (s.sections || []).find((x) => x.id === sectionId) : null;
+  if (!s || !sec) return;
+
+  const sortedVols = [...(sec.volumes || [])].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0));
+  const noImgVols = sortedVols.filter((v) => !v.image);
+  const firstNum = sortedVols.length ? sortedVols[0].number : 1;
+  const hasKey = Boolean((state.geminiApiKey || "").trim());
+
+  let activeTab = initialMode === "ai" ? "ai" : "order"; // "order" | "ai"
+  let pickedItems = []; // [{ file, url }]
+  let isBusy = false;
+  let cancelAi = false;
+
+  const revokeAllUrls = () => {
+    pickedItems.forEach((it) => {
+      try { URL.revokeObjectURL(it.url); } catch {}
+    });
+    pickedItems = [];
+  };
+
+  const html = `
+    <div class="form-grid">
+      <div class="scope-switch" id="baiTabSwitch" style="margin-bottom:2px;">
+        <button type="button" class="${activeTab === "order" ? "active" : ""}" data-baitab="order">Theo thứ tự (nhanh)</button>
+        <button type="button" class="${activeTab === "ai" ? "active" : ""}" data-baitab="ai">AI đọc số tập</button>
+      </div>
+
+      <!-- TAB 1: THEO THỨ TỰ -->
+      <div id="baiOrderOpts" class="form-grid" style="${activeTab === "order" ? "" : "display:none;"} gap:9px;">
+        <div class="small-muted">
+          Chọn nhiều ảnh theo đúng thứ tự tập → app tự nén và rải lần lượt vào mục <strong>${esc(sec.name)}</strong> (0 tốn AI).
+        </div>
+        <div class="field">
+          <label>Cách gắn ảnh</label>
+          <select id="baiModeSel">
+            <option value="missing" ${noImgVols.length ? "selected" : ""}>Gắn vào các tập CHƯA CÓ ẢNH (${noImgVols.length} tập trống)</option>
+            <option value="fromNum" ${!noImgVols.length ? "selected" : ""}>Gắn từ tập số X trở đi (ghi đè ảnh cũ nếu có)</option>
+          </select>
+        </div>
+        <div id="baiFromWrap" class="form-grid" style="${noImgVols.length ? "display:none;" : ""} gap:8px;">
+          <div class="field">
+            <label>Bắt đầu từ tập số</label>
+            <input id="baiStartNumIn" type="number" min="1" value="${esc(firstNum)}" />
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: AI ĐỌC SỐ TẬP -->
+      <div id="baiAiOpts" class="form-grid" style="${activeTab === "ai" ? "" : "display:none;"} gap:9px;">
+        <div class="small-muted">
+          Chọn cả đống ảnh bìa <strong>lộn xộn không cần xếp thứ tự</strong> → AI tự đọc số tập trên từng ảnh rồi gắn đúng vào Tập 1, Tập 2... của mục <strong>${esc(sec.name)}</strong> (${esc(s.title)}).
+        </div>
+        ${
+          !hasKey
+            ? `<div class="missing-strip" id="baiNoKeyBox">
+                 <strong>Cần Gemini API Key miễn phí để AI đọc số tập</strong>
+                 <div style="display:flex; gap:6px; margin-top:6px;">
+                   <input type="text" id="baiQuickKeyIn" placeholder="Dán AIzaSy..." style="flex:1; padding:6px 8px; border:1px solid var(--line-strong); border-radius:2px; background:var(--surface);" />
+                   <button type="button" class="btn btn-sm btn-primary" id="baiSaveKeyBtn">Lưu Key</button>
+                 </div>
+               </div>`
+            : ""
+        }
+        <div id="baiAiProgWrap" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; font-size:12px;">
+            <span class="mono" id="baiAiProgText">Đang đọc 0/0...</span>
+            <button type="button" class="btn btn-sm btn-danger" id="baiAiStopBtn" style="height:24px; font-size:11px;">Dừng & Xem kết quả</button>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="baiAiProgBar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <label class="check-inline">
+        <input type="checkbox" id="baiAutoCreateChk" checked />
+        <span>Tự tạo thêm tập mới nếu số tập chưa có trong mục này</span>
+      </label>
+
+      <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+        <label class="btn btn-sm btn-primary" style="margin:0;">
+          + Chọn nhiều ảnh
+          <input type="file" id="baiFileInput" accept="image/*" multiple style="display:none;" />
+        </label>
+        <button type="button" class="btn btn-sm" id="baiReverseBtn" style="display:none;">Đảo ngược thứ tự</button>
+        <button type="button" class="btn btn-sm btn-danger" id="baiClearAllBtn" style="display:none;">Xoá hết</button>
+      </div>
+
+      <div class="boxset-hint mono" id="baiSummaryBox">Chưa chọn ảnh nào.</div>
+      <div class="bai-grid" id="baiPreviewGrid" style="display:none;"></div>
+
+      <div class="modal-actions" style="justify-content:space-between;">
+        <button type="button" class="btn btn-sm" id="baiBackBtn">Quay lại</button>
+        <button type="button" class="btn btn-sm btn-primary" id="baiApplyBtn" disabled>Gắn ảnh vào tập</button>
+      </div>
+    </div>`;
+
+  openModal(
+    `${s.title} / ${sec.name} — Gắn ảnh`,
+    html,
+    (body) => {
+      const tabSwitch = body.querySelector("#baiTabSwitch");
+      const orderOpts = body.querySelector("#baiOrderOpts");
+      const aiOpts = body.querySelector("#baiAiOpts");
+      const modeSel = body.querySelector("#baiModeSel");
+      const fromWrap = body.querySelector("#baiFromWrap");
+      const startNumIn = body.querySelector("#baiStartNumIn");
+      const autoCreateChk = body.querySelector("#baiAutoCreateChk");
+      const fileIn = body.querySelector("#baiFileInput");
+      const revBtn = body.querySelector("#baiReverseBtn");
+      const clearBtn = body.querySelector("#baiClearAllBtn");
+      const summaryBox = body.querySelector("#baiSummaryBox");
+      const gridEl = body.querySelector("#baiPreviewGrid");
+      const applyBtn = body.querySelector("#baiApplyBtn");
+
+      const aiProgWrap = body.querySelector("#baiAiProgWrap");
+      const aiProgText = body.querySelector("#baiAiProgText");
+      const aiProgBar = body.querySelector("#baiAiProgBar");
+      const aiStopBtn = body.querySelector("#baiAiStopBtn");
+
+      const saveKeyBtn = body.querySelector("#baiSaveKeyBtn");
+      if (saveKeyBtn) {
+        saveKeyBtn.addEventListener("click", () => {
+          const val = (body.querySelector("#baiQuickKeyIn")?.value || "").trim();
+          if (!val) {
+            SFX.error();
+            showToast("Hãy dán API Key vào ô trống trước nhé.");
+            return;
+          }
+          state.geminiApiKey = val;
+          state.geminiModel = "";
+          saveState();
+          SFX.success();
+          const box = body.querySelector("#baiNoKeyBox");
+          if (box) box.style.display = "none";
+          showToast("Đã lưu Gemini API Key!");
+        });
+      }
+
+      const computePlan = () => {
+        const mode = modeSel.value;
+        const autoCreate = autoCreateChk.checked;
+        const targets = [];
+
+        if (mode === "missing") {
+          noImgVols.forEach((v) => targets.push({ existingVol: v, number: v.number, isNew: false }));
+          if (autoCreate && pickedItems.length > targets.length) {
+            let nextN = sortedVols.reduce((m, x) => Math.max(m, Math.floor(Number(x.number) || 0)), 0) + 1;
+            while (targets.length < pickedItems.length) {
+              targets.push({ existingVol: null, number: nextN++, isNew: true });
+            }
+          }
+        } else {
+          const startN = Math.max(1, Math.round(Number(startNumIn.value) || 1));
+          const byNum = new Map();
+          sortedVols.forEach((v) => byNum.set(Number(v.number), v));
+          for (let i = 0; i < pickedItems.length; i++) {
+            const n = startN + i;
+            const ex = byNum.get(n) || null;
+            if (ex) targets.push({ existingVol: ex, number: n, isNew: false });
+            else if (autoCreate) targets.push({ existingVol: null, number: n, isNew: true });
+          }
+        }
+        return targets;
+      };
+
+      const renderPreview = () => {
+        orderOpts.style.display = activeTab === "order" ? "grid" : "none";
+        aiOpts.style.display = activeTab === "ai" ? "grid" : "none";
+        fromWrap.style.display = modeSel.value === "fromNum" ? "grid" : "none";
+
+        const has = pickedItems.length > 0;
+        revBtn.style.display = activeTab === "order" && pickedItems.length > 1 && !isBusy ? "" : "none";
+        clearBtn.style.display = has && !isBusy ? "" : "none";
+        applyBtn.disabled = !has || isBusy;
+
+        if (activeTab === "ai") {
+          applyBtn.textContent = has ? `AI đọc ${pickedItems.length} ảnh` : "AI đọc số tập";
+        } else {
+          applyBtn.textContent = "Gắn ảnh vào tập";
+        }
+
+        if (!has) {
+          summaryBox.textContent = "Chưa chọn ảnh nào. Bấm '+ Chọn nhiều ảnh' để chọn từ thư viện.";
+          gridEl.style.display = "none";
+          gridEl.innerHTML = "";
+          return;
+        }
+
+        if (activeTab === "ai") {
+          summaryBox.textContent = `Đã chọn ${pickedItems.length} ảnh → AI sẽ đọc số tập từng ảnh để khớp vào "${sec.name}".`;
+          gridEl.style.display = "grid";
+          gridEl.innerHTML = pickedItems
+            .map(
+              (it, idx) => `
+              <div class="bai-item">
+                <img class="bai-thumb" src="${esc(it.url)}" alt="" />
+                ${!isBusy ? `<button type="button" class="bai-rm" data-bai-rm="${idx}" title="Bỏ ảnh này">×</button>` : ""}
+                <div class="bai-tag mono">#${idx + 1}</div>
+              </div>`
+            )
+            .join("");
+        } else {
+          const plan = computePlan();
+          const assignCount = Math.min(pickedItems.length, plan.length);
+          const newCount = plan.slice(0, assignCount).filter((x) => x.isNew).length;
+          const skipCount = Math.max(0, pickedItems.length - assignCount);
+
+          summaryBox.textContent =
+            `Đã chọn ${pickedItems.length} ảnh → Sẽ gắn ${assignCount} tập` +
+            (newCount ? ` (tạo mới ${newCount} tập)` : "") +
+            (skipCount ? ` · Bỏ qua ${skipCount} ảnh dư` : "");
+
+          gridEl.style.display = "grid";
+          gridEl.innerHTML = pickedItems
+            .map((it, idx) => {
+              const tgt = plan[idx];
+              const lbl = tgt ? (tgt.isNew ? `+T.${tgt.number}` : `T.${tgt.number}`) : "Dư";
+              return `
+                <div class="bai-item">
+                  <img class="bai-thumb" src="${esc(it.url)}" alt="" />
+                  ${!isBusy ? `<button type="button" class="bai-rm" data-bai-rm="${idx}" title="Bỏ ảnh này">×</button>` : ""}
+                  <div class="bai-tag mono" style="${tgt ? (tgt.isNew ? "color:var(--accent);" : "") : "opacity:0.45;"}">${esc(lbl)}</div>
+                </div>`;
+            })
+            .join("");
+        }
+
+        gridEl.querySelectorAll("[data-bai-rm]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const idx = Number(btn.dataset.baiRm);
+            const removed = pickedItems.splice(idx, 1);
+            if (removed[0]) {
+              try { URL.revokeObjectURL(removed[0].url); } catch {}
+            }
+            renderPreview();
+          });
+        });
+      };
+
+      tabSwitch.addEventListener("click", (e) => {
+        if (isBusy) return;
+        const btn = e.target.closest("button[data-baitab]");
+        if (!btn) return;
+        activeTab = btn.dataset.baitab;
+        tabSwitch.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+        renderPreview();
+      });
+
+      modeSel.addEventListener("change", renderPreview);
+      startNumIn.addEventListener("input", renderPreview);
+      autoCreateChk.addEventListener("change", renderPreview);
+
+      fileIn.addEventListener("change", (e) => {
+        const files = [...(e.target.files || [])];
+        e.target.value = "";
+        if (!files.length) return;
+        files.forEach((f) => {
+          pickedItems.push({ file: f, url: URL.createObjectURL(f) });
+        });
+        SFX.pop();
+        renderPreview();
+      });
+
+      revBtn.addEventListener("click", () => {
+        pickedItems.reverse();
+        SFX.filter();
+        renderPreview();
+      });
+
+      clearBtn.addEventListener("click", () => {
+        revokeAllUrls();
+        renderPreview();
+      });
+
+      aiStopBtn.addEventListener("click", () => {
+        cancelAi = true;
+        aiStopBtn.disabled = true;
+        aiStopBtn.textContent = "Đang dừng...";
+      });
+
+      body.querySelector("#baiBackBtn").addEventListener("click", () => openSectionDetail(seriesId, sectionId));
+
+      applyBtn.addEventListener("click", async () => {
+        if (isBusy || !pickedItems.length) return;
+
+        // MODE AI: Đọc số tập cho từng ảnh rồi mở bảng xác nhận gắn thẳng vào mục này
+        if (activeTab === "ai") {
+          const key = (state.geminiApiKey || "").trim();
+          if (!key) {
+            SFX.error();
+            showToast("Chưa có Gemini API Key — dán Key miễn phí ở trên hoặc trong Cài đặt nhé.");
+            return;
+          }
+          isBusy = true;
+          cancelAi = false;
+          applyBtn.disabled = true;
+          clearBtn.style.display = "none";
+          aiProgWrap.style.display = "block";
+          aiStopBtn.disabled = false;
+          aiStopBtn.textContent = "Dừng & Xem kết quả";
+          renderPreview();
+
+          const total = pickedItems.length;
+          const byNum = new Map();
+          sortedVols.forEach((v) => byNum.set(Number(v.number), v));
+          const results = [];
+          let matchedCount = 0;
+
+          for (let i = 0; i < total; i++) {
+            if (cancelAi) break;
+            aiProgText.textContent = `Đang đọc ảnh ${i + 1}/${total}... (khớp ${matchedCount})`;
+            aiProgBar.style.width = `${Math.round((i / total) * 100)}%`;
+            summaryBox.textContent = `AI đang đọc số tập ảnh #${i + 1}/${total}...`;
+
+            try {
+              const [coverData, aiObj] = await Promise.all([
+                compressImageFile(pickedItems[i].file, 360, 540, 0.76),
+                prepareImageForAI(pickedItems[i].file, 560, 0.68),
+              ]);
+
+              let info = null;
+              for (let attempt = 0; attempt < 2; attempt++) {
+                try {
+                  info = await callGeminiReadVolInSection(key, aiObj, s.title, sec.name);
+                  break;
+                } catch (err) {
+                  if (attempt === 0 && /429|giới hạn/i.test(err?.message || "")) {
+                    summaryBox.textContent = `Chạm giới hạn 429, tự chờ 4 giây rồi đọc tiếp ảnh #${i + 1}...`;
+                    await new Promise((r) => setTimeout(r, 4000));
+                    continue;
+                  }
+                  throw err;
+                }
+              }
+
+              const volNum = Number(info?.volumeNumber) > 0 ? Number(info.volumeNumber) : 0;
+              const volTitle = String(info?.volTitle || "").trim();
+              const coverPrice = Math.max(0, Math.round(Number(info?.coverPrice) || 0));
+              const existingVol = volNum > 0 ? byNum.get(volNum) || null : null;
+              if (existingVol) matchedCount++;
+
+              results.push({
+                coverData,
+                volumeNumber: volNum,
+                volTitle,
+                coverPrice,
+                existingVolId: existingVol ? existingVol.id : "",
+                errMsg: "",
+              });
+            } catch (err) {
+              let fallbackThumb = "";
+              try { fallbackThumb = await compressImageFile(pickedItems[i].file, 360, 540, 0.76); } catch {}
+              results.push({
+                coverData: fallbackThumb,
+                volumeNumber: 0,
+                volTitle: "",
+                coverPrice: 0,
+                existingVolId: "",
+                errMsg: err?.message || "Lỗi đọc ảnh",
+              });
+              if (/API Key không hợp lệ/i.test(err?.message || "")) break;
+            }
+
+            if (i < total - 1 && !cancelAi) {
+              await new Promise((r) => setTimeout(r, 280));
+            }
+          }
+
+          aiProgBar.style.width = "100%";
+          isBusy = false;
+          if (!results.length) {
+            renderPreview();
+            showToast("Chưa đọc được ảnh nào.");
+            return;
+          }
+          SFX.success();
+          openSectionAiConfirmModal(seriesId, sectionId, results, {
+            autoCreate: autoCreateChk.checked,
+          });
+          return;
+        }
+
+        // MODE THỨ TỰ: Gắn trực tiếp không tốn AI
+        const plan = computePlan();
+        const count = Math.min(pickedItems.length, plan.length);
+        if (!count) {
+          SFX.error();
+          showToast("Không có tập nào khớp để gắn (hãy bật 'Tự tạo thêm tập mới' hoặc đổi chế độ).");
+          return;
+        }
+        isBusy = true;
+        applyBtn.disabled = true;
+        pushUndo(`gắn ${count} ảnh vào "${sec.name}"`);
+
+        const lastVol = sortedVols[sortedVols.length - 1];
+        const last = { ...DEFAULT_STATE.lastEntry, ...(state.lastEntry || {}) };
+        const defCp = lastVol ? Number(lastVol.coverPrice) || 0 : Number(last.coverPrice) || 35000;
+        const defPp = lastVol
+          ? Number(lastVol.paidPrice) || 0
+          : Math.round(defCp * (1 - (Number(last.discount) || 0) / 100));
+
+        sec.volumes = sec.volumes || [];
+        let okCount = 0;
+
+        for (let i = 0; i < count; i++) {
+          applyBtn.textContent = `Đang nén ${i + 1}/${count}...`;
+          try {
+            const dataUrl = await compressImageFile(pickedItems[i].file, 360, 540, 0.76);
+            const tgt = plan[i];
+            if (tgt.existingVol) {
+              tgt.existingVol.image = dataUrl;
+            } else {
+              sec.volumes.push({
+                id: uid(),
+                number: tgt.number,
+                title: "",
+                coverPrice: defCp,
+                paidPrice: defPp,
+                date: todayISO(),
+                isLegacy: false,
+                image: dataUrl,
+                readState: "Chưa đọc",
+                lentTo: "",
+                note: "",
+                groupId: "",
+                groupLabel: "",
+              });
+            }
+            if (!s.cover && i === 0) s.cover = dataUrl;
+            okCount++;
+          } catch {}
+        }
+
+        isBusy = false;
+        saveState();
+        renderBooks();
+        renderSpending();
+        openSectionDetail(seriesId, sectionId);
+        SFX.success();
+        spawnCelebration(undefined, undefined, 18);
+        showToast(`Đã gắn ${okCount} ảnh vào "${sec.name}"!`, { undoable: true });
+      });
+
+      renderPreview();
+    },
+    () => {
+      cancelAi = true;
+      revokeAllUrls();
+    }
+  );
+}
+
+// Bảng duyệt & gắn hàng loạt kết quả AI đọc số tập trong 1 Mục cụ thể (VD: Dragonball / Super)
+function openSectionAiConfirmModal(seriesId, sectionId, results, opts = {}) {
+  const s = state.series.find((x) => x.id === seriesId);
+  const sec = s ? (s.sections || []).find((x) => x.id === sectionId) : null;
+  if (!s || !sec) return;
+
+  const autoCreate = opts.autoCreate !== false;
+  const sortedVols = [...(sec.volumes || [])].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0));
+  const byNum = new Map();
+  sortedVols.forEach((v) => byNum.set(Number(v.number), v));
+  const matchedCnt = results.filter((r) => r.existingVolId).length;
+  const maxExisting = sortedVols.reduce((m, x) => Math.max(m, Math.floor(Number(x.number) || 0)), 0);
+  let nextFallbackNum = maxExisting + 1;
+
+  const html = `
+    <form id="secAiConfirmForm" class="form-grid">
+      <div class="qc-status-box ok">
+        Đọc xong <strong>${results.length} ảnh</strong> cho mục <strong>${esc(sec.name)}</strong> · Khớp sẵn <strong>${matchedCnt}</strong> tập! Kiểm tra nhanh số tập rồi bấm gắn 1 phát:
+      </div>
+
+      <div class="qc-batch-list">
+        ${results
+          .map((r, i) => {
+            const hasNum = r.volumeNumber > 0;
+            const displayNum = hasNum ? r.volumeNumber : nextFallbackNum++;
+            const isMatched = Boolean(r.existingVolId);
+            const checked = Boolean(r.coverData && (isMatched || (autoCreate && (hasNum || r.volTitle))));
+            const badge = isMatched
+              ? `<span class="tag tag-forest">Khớp T.${esc(r.volumeNumber)}</span>`
+              : hasNum || r.volTitle
+              ? `<span class="tag tag-amber">Tạo mới</span>`
+              : `<span class="tag">${esc(r.errMsg ? "Lỗi đọc" : "Chưa rõ")}</span>`;
+            return `
+              <div class="qc-multi-row">
+                <input type="checkbox" name="spick_${i}" ${checked ? "checked" : ""} />
+                <img class="qc-multi-thumb" src="${esc(r.coverData)}" alt="" />
+                <div style="min-width:0; display:flex; flex-direction:column; gap:4px;">
+                  <div style="display:flex; gap:5px; align-items:center;">
+                    <span class="small-muted" style="font-size:11.5px;">Tập</span>
+                    <input type="number" step="0.5" name="snum_${i}" value="${esc(displayNum)}" style="width:62px; padding:3px 5px; border:1px solid var(--line); border-radius:2px; font-size:12.5px; font-weight:600;" class="mono" />
+                    ${badge}
+                  </div>
+                  <input type="text" name="stitle_${i}" value="${esc(r.volTitle || "")}" placeholder="Tên tập riêng (để trống nếu là Tập X)" style="width:100%; padding:3px 5px; border:1px solid var(--line); border-radius:2px; background:var(--surface-2); font-size:11.5px;" />
+                </div>
+              </div>`;
+          })
+          .join("")}
+      </div>
+
+      <div class="modal-actions" style="justify-content:space-between;">
+        <button type="button" class="btn btn-sm" id="sacBackBtn">Chọn lại ảnh</button>
+        <button type="submit" class="btn btn-sm btn-primary">Gắn tất cả vào "${esc(sec.name)}"</button>
+      </div>
+    </form>`;
+
+  openModal(`${s.title} / ${sec.name} — Duyệt ảnh AI`, html, (body) => {
+    body.querySelector("#sacBackBtn").addEventListener("click", () =>
+      openBatchAttachImagesModal(seriesId, sectionId, "ai")
+    );
+
+    body.querySelector("#secAiConfirmForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+
+      const picked = [];
+      for (let i = 0; i < results.length; i++) {
+        if (!fd.get(`spick_${i}`)) continue;
+        const r = results[i];
+        if (!r.coverData) continue;
+        const num = Number(fd.get(`snum_${i}`)) || 0;
+        const vTitle = String(fd.get(`stitle_${i}`) || "").trim();
+        if (num <= 0 && !vTitle) continue;
+        picked.push({ r, num: num > 0 ? num : 1, vTitle });
+      }
+
+      if (!picked.length) {
+        SFX.error();
+        showToast("Chọn ít nhất 1 ảnh để gắn nhé.");
+        return;
+      }
+
+      pushUndo(`AI gắn ${picked.length} ảnh vào "${sec.name}"`);
+      const lastVol = sortedVols[sortedVols.length - 1];
+      const last = { ...DEFAULT_STATE.lastEntry, ...(state.lastEntry || {}) };
+      const defCp = lastVol ? Number(lastVol.coverPrice) || 0 : Number(last.coverPrice) || 35000;
+      const defPp = lastVol
+        ? Number(lastVol.paidPrice) || 0
+        : Math.round(defCp * (1 - (Number(last.discount) || 0) / 100));
+
+      sec.volumes = sec.volumes || [];
+      let updatedCnt = 0;
+      let createdCnt = 0;
+
+      picked.forEach(({ r, num, vTitle }, idx) => {
+        const hit = sec.volumes.find((v) => Number(v.number) === num);
+        if (hit) {
+          hit.image = r.coverData;
+          if (vTitle && !hit.title) hit.title = vTitle;
+          updatedCnt++;
+        } else {
+          const cp = r.coverPrice > 0 ? r.coverPrice : defCp;
+          const pp = r.coverPrice > 0 ? Math.round(cp * (1 - (Number(last.discount) || 0) / 100)) : defPp;
+          sec.volumes.push({
+            id: uid(),
+            number: num,
+            title: vTitle,
+            coverPrice: cp,
+            paidPrice: pp,
+            date: todayISO(),
+            isLegacy: false,
+            image: r.coverData,
+            readState: "Chưa đọc",
+            lentTo: "",
+            note: "",
+            groupId: "",
+            groupLabel: "",
+          });
+          createdCnt++;
+        }
+        if (!s.cover && idx === 0) s.cover = r.coverData;
+      });
+
+      saveState();
+      renderBooks();
+      renderSpending();
+      openSectionDetail(seriesId, sectionId);
+      SFX.success();
+      spawnCelebration(undefined, undefined, 20);
+      showToast(
+        `Đã gắn ${updatedCnt + createdCnt} ảnh vào "${sec.name}"` +
+          (createdCnt ? ` (tạo mới ${createdCnt} tập)` : "") +
+          "!",
+        { undoable: true }
+      );
+    });
+  });
+}
+
 // Lightbox xem ảnh to chung cho Tập & Quà
 function openImageLightbox(imgSrc, caption, onBack = null) {
   const html = `
@@ -8681,8 +9378,46 @@ async function testGeminiApiKey(apiKey) {
   throw new Error(firstMeaningfulErr || lastErr);
 }
 
+// Đọc nhanh 1 ảnh bìa trong chế độ Nhiều ảnh AI (truyền kèm danh sách tên bộ đang có trong tủ để khớp 99%)
+async function callGeminiIdentifyCoverQuick(apiKey, imgObj, existingTitlesList) {
+  const listStr = existingTitlesList.length
+    ? `\nDanh sách bộ đang có trong tủ của người dùng (nếu bìa thuộc bộ nào trong này thì trả về ĐÚNG Y HỆT tên đó): ${existingTitlesList.join(" | ")}`
+    : "";
+  const promptText = `Nhìn ảnh bìa manga/sách Việt Nam này, trả về JSON gọn (không markdown):
+{"seriesTitle":"Tên bộ (bỏ số tập)","volumeNumber":1,"publisher":"Kim Đồng|Trẻ|IPM|Nhã Nam|Khác","category":"Manga|Light Novel|Sách|Artbook","coverPrice":0}${listStr}`;
+  const parts = [
+    { text: promptText },
+    { inline_data: { mime_type: imgObj.mimeType || "image/jpeg", data: imgObj.base64 } },
+  ];
+  const res = await callGeminiFastJson(apiKey, parts, 180);
+  return { ...(res.data || {}), _model: res.model };
+}
+
+function findMatchingSeriesByTitle(rawTitle) {
+  const clean = normVN(rawTitle || "");
+  if (!clean) return null;
+  let exact = state.series.find((s) => normVN(s.title) === clean);
+  if (exact) return exact;
+  // Khớp theo aliases
+  exact = state.series.find((s) => {
+    const aliases = (s.aliases || "").split(",").map((a) => normVN(a)).filter(Boolean);
+    return aliases.includes(clean);
+  });
+  if (exact) return exact;
+  // Khớp gần đúng (contains với chuỗi >= 4 ký tự)
+  if (clean.length >= 4) {
+    return (
+      state.series.find((s) => {
+        const st = normVN(s.title);
+        return st.length >= 4 && (st.includes(clean) || clean.includes(st));
+      }) || null
+    );
+  }
+  return null;
+}
+
 function openQuickCoverModal(initialTab = "single") {
-  let mode = initialTab === "shelf" ? "shelf" : "single"; // "single" | "shelf"
+  let mode = initialTab === "shelf" ? "shelf" : initialTab === "multi" ? "multi" : "single"; // "single" | "shelf" | "multi"
   let frontFile = null;
   let frontCoverData = "";
   let frontAiObj = null;
@@ -8690,7 +9425,16 @@ function openQuickCoverModal(initialTab = "single") {
   let backThumbData = "";
   let shelfAiObj = null;
   let shelfThumbData = "";
+  let multiFiles = []; // [{ file, url }]
   let isReading = false;
+  let cancelMultiScan = false;
+
+  const revokeMultiUrls = () => {
+    multiFiles.forEach((x) => {
+      try { URL.revokeObjectURL(x.url); } catch {}
+    });
+    multiFiles = [];
+  };
 
   const hasKey = Boolean((state.geminiApiKey || "").trim());
 
@@ -8713,9 +9457,10 @@ function openQuickCoverModal(initialTab = "single") {
           : ""
       }
 
-      <div class="scope-switch" id="qcModeSwitch" style="margin-bottom:2px;">
-        <button type="button" class="${mode === "single" ? "active" : ""}" data-qcm="single">1 cuốn (Lấy bìa + giá)</button>
-        <button type="button" class="${mode === "shelf" ? "active" : ""}" data-qcm="shelf">Cả kệ / Nhiều cuốn (1 ảnh)</button>
+      <div class="scope-switch-3" id="qcModeSwitch" style="margin-bottom:2px;">
+        <button type="button" class="${mode === "single" ? "active" : ""}" data-qcm="single">1 cuốn</button>
+        <button type="button" class="${mode === "shelf" ? "active" : ""}" data-qcm="shelf">Cả kệ</button>
+        <button type="button" class="${mode === "multi" ? "active" : ""}" data-qcm="multi">Nhiều ảnh AI</button>
       </div>
 
       <!-- MODE 1: SINGLE BOOK -->
@@ -8791,6 +9536,39 @@ function openQuickCoverModal(initialTab = "single") {
         </div>
       </div>
 
+      <!-- MODE 3: MULTI COVERS AI AUTO-MATCH -->
+      <div id="qcMultiPane" class="form-grid" style="${mode === "multi" ? "" : "display:none;"}">
+        <div class="small-muted">
+          Chọn <strong>nhiều ảnh bìa lộn xộn cùng lúc</strong> (khuyên 10–30 ảnh/lần) → AI tự đọc tên bộ + số tập từng ảnh rồi tự khớp vào đúng bộ & tập trong Tủ của bạn!
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          <label class="btn btn-sm btn-primary" style="margin:0;">
+            + Chọn nhiều ảnh bìa
+            <input type="file" id="qcMultiLibIn" accept="image/*" multiple style="display:none;" />
+          </label>
+          <button type="button" class="btn btn-sm btn-danger" id="qcMultiClearBtn" style="display:none;">Xoá danh sách</button>
+          <span class="small-muted mono" id="qcMultiCountLbl">Chưa chọn ảnh nào</span>
+        </div>
+        <div class="bai-grid" id="qcMultiPreviewGrid" style="display:none; max-height:28dvh;"></div>
+        <label class="check-inline">
+          <input type="checkbox" id="qcMultiSetSeriesCoverChk" checked />
+          <span>Tự đặt làm ảnh bìa đại diện bộ nếu bộ đó chưa có ảnh</span>
+        </label>
+        <label class="check-inline">
+          <input type="checkbox" id="qcMultiCreateMissingChk" checked />
+          <span>Tự tạo bộ / tập mới nếu chưa có trong tủ</span>
+        </label>
+        <div id="qcMultiProgWrap" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; font-size:12px;">
+            <span class="mono" id="qcMultiProgText">Đang đọc 0/0...</span>
+            <button type="button" class="btn btn-sm btn-danger" id="qcMultiStopBtn" style="height:24px; font-size:11px;">Dừng & Xem kết quả</button>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="qcMultiProgBar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="qc-status-box" id="qcStatusBox" style="display:none;"></div>
 
       <div class="modal-actions" style="justify-content:space-between; flex-wrap:wrap; margin-top:4px;">
@@ -8802,228 +9580,592 @@ function openQuickCoverModal(initialTab = "single") {
       </div>
     </div>`;
 
-  openModal("Tạo bìa nhanh (AI siêu tốc)", html, (body) => {
-    const singlePane = body.querySelector("#qcSinglePane");
-    const shelfPane = body.querySelector("#qcShelfPane");
-    const frontPrev = body.querySelector("#qcFrontPrev");
-    const backPrev = body.querySelector("#qcBackPrev");
-    const shelfPrev = body.querySelector("#qcShelfPrev");
-    const cropFrontBtn = body.querySelector("#qcCropFrontBtn");
-    const statusBox = body.querySelector("#qcStatusBox");
-    const analyzeBtn = body.querySelector("#qcAnalyzeBtn");
-    const skipAiBtn = body.querySelector("#qcSkipAiBtn");
+  openModal(
+    "Tạo bìa nhanh (AI siêu tốc)",
+    html,
+    (body) => {
+      const singlePane = body.querySelector("#qcSinglePane");
+      const shelfPane = body.querySelector("#qcShelfPane");
+      const multiPane = body.querySelector("#qcMultiPane");
+      const frontPrev = body.querySelector("#qcFrontPrev");
+      const backPrev = body.querySelector("#qcBackPrev");
+      const shelfPrev = body.querySelector("#qcShelfPrev");
+      const cropFrontBtn = body.querySelector("#qcCropFrontBtn");
+      const statusBox = body.querySelector("#qcStatusBox");
+      const analyzeBtn = body.querySelector("#qcAnalyzeBtn");
+      const skipAiBtn = body.querySelector("#qcSkipAiBtn");
 
-    const setStatus = (msg, cls = "", loading = false) => {
-      if (!msg) {
-        statusBox.style.display = "none";
-        return;
-      }
-      statusBox.className = "qc-status-box" + (cls ? " " + cls : "");
-      statusBox.innerHTML = (loading ? '<span class="qc-spinner"></span>' : "") + msg;
-      statusBox.style.display = "block";
-    };
+      const multiGrid = body.querySelector("#qcMultiPreviewGrid");
+      const multiClearBtn = body.querySelector("#qcMultiClearBtn");
+      const multiCountLbl = body.querySelector("#qcMultiCountLbl");
+      const multiProgWrap = body.querySelector("#qcMultiProgWrap");
+      const multiProgText = body.querySelector("#qcMultiProgText");
+      const multiProgBar = body.querySelector("#qcMultiProgBar");
+      const multiStopBtn = body.querySelector("#qcMultiStopBtn");
 
-    const updateButtons = () => {
-      if (mode === "shelf") {
-        analyzeBtn.disabled = !shelfAiObj || isReading;
-        analyzeBtn.textContent = "Quét cả kệ bằng AI";
-        skipAiBtn.style.display = "none";
-        return;
-      }
-      const hasAnyImg = Boolean(frontAiObj || backAiObj);
-      analyzeBtn.disabled = !hasAnyImg || isReading;
-      skipAiBtn.style.display = frontCoverData ? "" : "none";
-      if (frontAiObj && backAiObj) analyzeBtn.textContent = "Đọc nhanh 2 bìa";
-      else if (frontAiObj) analyzeBtn.textContent = "Đọc nhanh bìa trước";
-      else if (backAiObj) analyzeBtn.textContent = "Đọc nhanh bìa sau";
-      else analyzeBtn.textContent = "Đọc nhanh bằng AI";
-    };
-
-    body.querySelector("#qcModeSwitch").addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-qcm]");
-      if (!btn) return;
-      mode = btn.dataset.qcm;
-      body.querySelectorAll("#qcModeSwitch button").forEach((b) => b.classList.toggle("active", b === btn));
-      singlePane.style.display = mode === "single" ? "grid" : "none";
-      shelfPane.style.display = mode === "shelf" ? "grid" : "none";
-      setStatus("");
-      updateButtons();
-    });
-
-    const saveKeyBtn = body.querySelector("#qcQuickSaveKeyBtn");
-    if (saveKeyBtn) {
-      saveKeyBtn.addEventListener("click", () => {
-        const val = (body.querySelector("#qcQuickKeyInput")?.value || "").trim();
-        if (!val) {
-          SFX.error();
-          showToast("Hãy dán API Key vào ô trống trước nhé.");
+      const setStatus = (msg, cls = "", loading = false) => {
+        if (!msg) {
+          statusBox.style.display = "none";
           return;
         }
-        state.geminiApiKey = val;
-        state.geminiModel = "";
-        saveState();
-        SFX.success();
-        const noKeyBox = body.querySelector("#qcNoKeyBox");
-        if (noKeyBox) noKeyBox.style.display = "none";
-        showToast("Đã lưu Gemini API Key!");
+        statusBox.className = "qc-status-box" + (cls ? " " + cls : "");
+        statusBox.innerHTML = (loading ? '<span class="qc-spinner"></span>' : "") + msg;
+        statusBox.style.display = "block";
+      };
+
+      const renderMultiPreview = () => {
+        const n = multiFiles.length;
+        multiCountLbl.textContent = n ? `Đã chọn ${n} ảnh` : "Chưa chọn ảnh nào";
+        multiClearBtn.style.display = n && !isReading ? "" : "none";
+        if (!n) {
+          multiGrid.style.display = "none";
+          multiGrid.innerHTML = "";
+        } else {
+          multiGrid.style.display = "grid";
+          multiGrid.innerHTML = multiFiles
+            .map(
+              (it, idx) => `
+              <div class="bai-item">
+                <img class="bai-thumb" src="${esc(it.url)}" alt="" />
+                ${!isReading ? `<button type="button" class="bai-rm" data-qcm-rm="${idx}">×</button>` : ""}
+                <div class="bai-tag mono">#${idx + 1}</div>
+              </div>`
+            )
+            .join("");
+          multiGrid.querySelectorAll("[data-qcm-rm]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const idx = Number(btn.dataset.qcmRm);
+              const rm = multiFiles.splice(idx, 1);
+              if (rm[0]) {
+                try { URL.revokeObjectURL(rm[0].url); } catch {}
+              }
+              renderMultiPreview();
+              updateButtons();
+            });
+          });
+        }
+      };
+
+      const updateButtons = () => {
+        if (mode === "shelf") {
+          analyzeBtn.disabled = !shelfAiObj || isReading;
+          analyzeBtn.textContent = "Quét cả kệ bằng AI";
+          skipAiBtn.style.display = "none";
+          return;
+        }
+        if (mode === "multi") {
+          analyzeBtn.disabled = !multiFiles.length || isReading;
+          analyzeBtn.textContent = multiFiles.length ? `Đọc ${multiFiles.length} ảnh bằng AI` : "Đọc nhiều ảnh bằng AI";
+          skipAiBtn.style.display = "none";
+          return;
+        }
+        const hasAnyImg = Boolean(frontAiObj || backAiObj);
+        analyzeBtn.disabled = !hasAnyImg || isReading;
+        skipAiBtn.style.display = frontCoverData ? "" : "none";
+        if (frontAiObj && backAiObj) analyzeBtn.textContent = "Đọc nhanh 2 bìa";
+        else if (frontAiObj) analyzeBtn.textContent = "Đọc nhanh bìa trước";
+        else if (backAiObj) analyzeBtn.textContent = "Đọc nhanh bìa sau";
+        else analyzeBtn.textContent = "Đọc nhanh bằng AI";
+      };
+
+      body.querySelector("#qcModeSwitch").addEventListener("click", (e) => {
+        if (isReading) return;
+        const btn = e.target.closest("button[data-qcm]");
+        if (!btn) return;
+        mode = btn.dataset.qcm;
+        body.querySelectorAll("#qcModeSwitch button").forEach((b) => b.classList.toggle("active", b === btn));
+        singlePane.style.display = mode === "single" ? "grid" : "none";
+        shelfPane.style.display = mode === "shelf" ? "grid" : "none";
+        multiPane.style.display = mode === "multi" ? "grid" : "none";
+        setStatus("");
+        updateButtons();
       });
-    }
 
-    body.querySelector("#qcOpenSettingsBtn").addEventListener("click", openSettingsModal);
-
-    const onPickFront = async (e) => {
-      const f = e.target.files?.[0];
-      e.target.value = "";
-      if (!f) return;
-      SFX.shutter();
-      frontFile = f;
-      setStatus("Đang nén ảnh siêu nhẹ...", "", true);
-      try {
-        const [coverUrl, aiObj] = await Promise.all([
-          compressImageFile(f, 360, 540, 0.78),
-          prepareImageForAI(f, 720, 0.72),
-        ]);
-        frontCoverData = coverUrl;
-        frontAiObj = aiObj;
-        frontPrev.classList.add("has-img");
-        frontPrev.innerHTML = `<img src="${esc(frontCoverData)}" alt="Bìa trước" />`;
-        cropFrontBtn.style.display = "";
-        setStatus("Đã nạp <strong>bìa trước</strong> — chụp thêm bìa sau (để lấy giá) hoặc bấm <strong>Đọc nhanh</strong>!", "ok");
-        updateButtons();
-      } catch {
-        SFX.error();
-        setStatus("Không đọc được tệp ảnh này, thử chọn lại nhé.", "err");
-      }
-    };
-
-    const onPickBack = async (e) => {
-      const f = e.target.files?.[0];
-      e.target.value = "";
-      if (!f) return;
-      SFX.shutter();
-      setStatus("Đang nén ảnh bìa sau...", "", true);
-      try {
-        const [thumbUrl, aiObj] = await Promise.all([
-          compressImageFile(f, 300, 450, 0.68),
-          prepareImageForAI(f, 720, 0.72),
-        ]);
-        backThumbData = thumbUrl;
-        backAiObj = aiObj;
-        backPrev.classList.add("has-img");
-        backPrev.innerHTML = `<img src="${esc(backThumbData)}" alt="Bìa sau" />`;
-        setStatus("Đã nạp <strong>bìa sau</strong> — bấm <strong>Đọc nhanh</strong> ngay!", "ok");
-        updateButtons();
-      } catch {
-        SFX.error();
-        setStatus("Không đọc được tệp ảnh bìa sau.", "err");
-      }
-    };
-
-    const onPickShelf = async (e) => {
-      const f = e.target.files?.[0];
-      e.target.value = "";
-      if (!f) return;
-      SFX.shutter();
-      setStatus("Đang nén ảnh tầng kệ...", "", true);
-      try {
-        // Ảnh cả kệ cần nét hơn chút (~1024px) để đọc rõ tên gáy nhiều cuốn
-        const [thumbUrl, aiObj] = await Promise.all([
-          compressImageFile(f, 520, 400, 0.72),
-          prepareImageForAI(f, 1024, 0.76),
-        ]);
-        shelfThumbData = thumbUrl;
-        shelfAiObj = aiObj;
-        shelfPrev.classList.add("has-img");
-        shelfPrev.innerHTML = `<img src="${esc(shelfThumbData)}" alt="Ảnh tầng kệ" />`;
-        setStatus("Đã nạp ảnh tầng kệ — bấm <strong>Quét cả kệ bằng AI</strong>!", "ok");
-        updateButtons();
-      } catch {
-        SFX.error();
-        setStatus("Không đọc được tệp ảnh kệ.", "err");
-      }
-    };
-
-    body.querySelector("#qcFrontCamIn").addEventListener("change", onPickFront);
-    body.querySelector("#qcFrontLibIn").addEventListener("change", onPickFront);
-    body.querySelector("#qcBackCamIn").addEventListener("change", onPickBack);
-    body.querySelector("#qcBackLibIn").addEventListener("change", onPickBack);
-    body.querySelector("#qcShelfCamIn").addEventListener("change", onPickShelf);
-    body.querySelector("#qcShelfLibIn").addEventListener("change", onPickShelf);
-
-    cropFrontBtn.addEventListener("click", async () => {
-      if (!frontFile) return;
-      const cropped = await openImageCropper(frontFile, {
-        ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.78, title: "Cắt ảnh bìa lưu vào Tủ",
-      });
-      if (cropped) {
-        frontCoverData = cropped;
-        frontPrev.innerHTML = `<img src="${esc(frontCoverData)}" alt="Bìa trước" />`;
-        SFX.pop();
-      }
-    });
-
-    skipAiBtn.addEventListener("click", () => {
-      openQuickCoverConfirmModal(
-        {
-          seriesTitle: "", volumeNumber: 1, author: "",
-          publisher: state.lastEntry?.publisher || "Kim Đồng",
-          category: state.lastEntry?.category || "Manga",
-          coverPrice: state.lastEntry?.coverPrice || 35000,
-          editionHint: "Bản thường", aliases: "", note: "", aiSuccess: false,
-        },
-        frontCoverData, frontFile
-      );
-    });
-
-    analyzeBtn.addEventListener("click", async () => {
-      if (isReading) return;
-      const key = (state.geminiApiKey || "").trim();
-      if (!key) {
-        SFX.error();
-        setStatus('Chưa có Gemini API Key. Dán Key miễn phí ở trên hoặc vào <strong>Cài đặt API Key</strong>.', "err");
-        return;
-      }
-      isReading = true;
-      updateButtons();
-
-      if (mode === "shelf") {
-        setStatus("Đang quét nhanh tất cả đầu truyện trong ảnh kệ...", "", true);
-        try {
-          const res = await callGeminiReadShelfBatch(key, shelfAiObj);
-          isReading = false;
-          if (!res.items.length) {
+      const saveKeyBtn = body.querySelector("#qcQuickSaveKeyBtn");
+      if (saveKeyBtn) {
+        saveKeyBtn.addEventListener("click", () => {
+          const val = (body.querySelector("#qcQuickKeyInput")?.value || "").trim();
+          if (!val) {
             SFX.error();
+            showToast("Hãy dán API Key vào ô trống trước nhé.");
+            return;
+          }
+          state.geminiApiKey = val;
+          state.geminiModel = "";
+          saveState();
+          SFX.success();
+          const noKeyBox = body.querySelector("#qcNoKeyBox");
+          if (noKeyBox) noKeyBox.style.display = "none";
+          showToast("Đã lưu Gemini API Key!");
+        });
+      }
+
+      body.querySelector("#qcOpenSettingsBtn").addEventListener("click", openSettingsModal);
+
+      const onPickFront = async (e) => {
+        const f = e.target.files?.[0];
+        e.target.value = "";
+        if (!f) return;
+        SFX.shutter();
+        frontFile = f;
+        setStatus("Đang nén ảnh siêu nhẹ...", "", true);
+        try {
+          const [coverUrl, aiObj] = await Promise.all([
+            compressImageFile(f, 360, 540, 0.78),
+            prepareImageForAI(f, 720, 0.72),
+          ]);
+          frontCoverData = coverUrl;
+          frontAiObj = aiObj;
+          frontPrev.classList.add("has-img");
+          frontPrev.innerHTML = `<img src="${esc(frontCoverData)}" alt="Bìa trước" />`;
+          cropFrontBtn.style.display = "";
+          setStatus("Đã nạp <strong>bìa trước</strong> — chụp thêm bìa sau (để lấy giá) hoặc bấm <strong>Đọc nhanh</strong>!", "ok");
+          updateButtons();
+        } catch {
+          SFX.error();
+          setStatus("Không đọc được tệp ảnh này, thử chọn lại nhé.", "err");
+        }
+      };
+
+      const onPickBack = async (e) => {
+        const f = e.target.files?.[0];
+        e.target.value = "";
+        if (!f) return;
+        SFX.shutter();
+        setStatus("Đang nén ảnh bìa sau...", "", true);
+        try {
+          const [thumbUrl, aiObj] = await Promise.all([
+            compressImageFile(f, 300, 450, 0.68),
+            prepareImageForAI(f, 720, 0.72),
+          ]);
+          backThumbData = thumbUrl;
+          backAiObj = aiObj;
+          backPrev.classList.add("has-img");
+          backPrev.innerHTML = `<img src="${esc(backThumbData)}" alt="Bìa sau" />`;
+          setStatus("Đã nạp <strong>bìa sau</strong> — bấm <strong>Đọc nhanh</strong> ngay!", "ok");
+          updateButtons();
+        } catch {
+          SFX.error();
+          setStatus("Không đọc được tệp ảnh bìa sau.", "err");
+        }
+      };
+
+      const onPickShelf = async (e) => {
+        const f = e.target.files?.[0];
+        e.target.value = "";
+        if (!f) return;
+        SFX.shutter();
+        setStatus("Đang nén ảnh tầng kệ...", "", true);
+        try {
+          const [thumbUrl, aiObj] = await Promise.all([
+            compressImageFile(f, 520, 400, 0.72),
+            prepareImageForAI(f, 1024, 0.76),
+          ]);
+          shelfThumbData = thumbUrl;
+          shelfAiObj = aiObj;
+          shelfPrev.classList.add("has-img");
+          shelfPrev.innerHTML = `<img src="${esc(shelfThumbData)}" alt="Ảnh tầng kệ" />`;
+          setStatus("Đã nạp ảnh tầng kệ — bấm <strong>Quét cả kệ bằng AI</strong>!", "ok");
+          updateButtons();
+        } catch {
+          SFX.error();
+          setStatus("Không đọc được tệp ảnh kệ.", "err");
+        }
+      };
+
+      body.querySelector("#qcMultiLibIn").addEventListener("change", (e) => {
+        const files = [...(e.target.files || [])];
+        e.target.value = "";
+        if (!files.length) return;
+        files.forEach((f) => multiFiles.push({ file: f, url: URL.createObjectURL(f) }));
+        SFX.pop();
+        renderMultiPreview();
+        updateButtons();
+        setStatus(`Đã chọn <strong>${multiFiles.length} ảnh</strong> — bấm nút bên dưới để AI tự đọc và ghép vào Tủ!`, "ok");
+      });
+
+      multiClearBtn.addEventListener("click", () => {
+        revokeMultiUrls();
+        renderMultiPreview();
+        updateButtons();
+        setStatus("");
+      });
+
+      multiStopBtn.addEventListener("click", () => {
+        cancelMultiScan = true;
+        multiStopBtn.disabled = true;
+        multiStopBtn.textContent = "Đang dừng...";
+      });
+
+      body.querySelector("#qcFrontCamIn").addEventListener("change", onPickFront);
+      body.querySelector("#qcFrontLibIn").addEventListener("change", onPickFront);
+      body.querySelector("#qcBackCamIn").addEventListener("change", onPickBack);
+      body.querySelector("#qcBackLibIn").addEventListener("change", onPickBack);
+      body.querySelector("#qcShelfCamIn").addEventListener("change", onPickShelf);
+      body.querySelector("#qcShelfLibIn").addEventListener("change", onPickShelf);
+
+      cropFrontBtn.addEventListener("click", async () => {
+        if (!frontFile) return;
+        const cropped = await openImageCropper(frontFile, {
+          ratio: 2 / 3, maxW: 360, maxH: 540, quality: 0.78, title: "Cắt ảnh bìa lưu vào Tủ",
+        });
+        if (cropped) {
+          frontCoverData = cropped;
+          frontPrev.innerHTML = `<img src="${esc(frontCoverData)}" alt="Bìa trước" />`;
+          SFX.pop();
+        }
+      });
+
+      skipAiBtn.addEventListener("click", () => {
+        openQuickCoverConfirmModal(
+          {
+            seriesTitle: "", volumeNumber: 1, author: "",
+            publisher: state.lastEntry?.publisher || "Kim Đồng",
+            category: state.lastEntry?.category || "Manga",
+            coverPrice: state.lastEntry?.coverPrice || 35000,
+            editionHint: "Bản thường", aliases: "", note: "", aiSuccess: false,
+          },
+          frontCoverData, frontFile
+        );
+      });
+
+      analyzeBtn.addEventListener("click", async () => {
+        if (isReading) return;
+        const key = (state.geminiApiKey || "").trim();
+        if (!key) {
+          SFX.error();
+          setStatus('Chưa có Gemini API Key. Dán Key miễn phí ở trên hoặc vào <strong>Cài đặt API Key</strong>.', "err");
+          return;
+        }
+        isReading = true;
+        updateButtons();
+
+        if (mode === "multi") {
+          cancelMultiScan = false;
+          const total = multiFiles.length;
+          const setSeriesCover = Boolean(body.querySelector("#qcMultiSetSeriesCoverChk")?.checked);
+          const createMissing = Boolean(body.querySelector("#qcMultiCreateMissingChk")?.checked);
+          const existingTitles = state.series.slice(0, 120).map((s) => s.title);
+
+          multiClearBtn.style.display = "none";
+          multiProgWrap.style.display = "block";
+          multiStopBtn.disabled = false;
+          multiStopBtn.textContent = "Dừng & Xem kết quả";
+          renderMultiPreview();
+
+          const results = [];
+          let matchedOk = 0;
+
+          for (let i = 0; i < total; i++) {
+            if (cancelMultiScan) break;
+            const fObj = multiFiles[i];
+            multiProgText.textContent = `Đang đọc ảnh ${i + 1}/${total}... (khớp ${matchedOk})`;
+            multiProgBar.style.width = `${Math.round((i / total) * 100)}%`;
+            setStatus(`AI đang đọc ảnh #${i + 1}/${total}...`, "", true);
+
+            try {
+              const [coverData, aiObj] = await Promise.all([
+                compressImageFile(fObj.file, 360, 540, 0.76),
+                prepareImageForAI(fObj.file, 560, 0.68),
+              ]);
+
+              let info = null;
+              for (let attempt = 0; attempt < 2; attempt++) {
+                try {
+                  info = await callGeminiIdentifyCoverQuick(key, aiObj, existingTitles);
+                  break;
+                } catch (err) {
+                  if (attempt === 0 && /429|giới hạn/i.test(err?.message || "")) {
+                    setStatus(`Chạm giới hạn phút (429), tự chờ 4 giây rồi đọc tiếp ảnh #${i + 1}...`, "", true);
+                    await new Promise((r) => setTimeout(r, 4000));
+                    continue;
+                  }
+                  throw err;
+                }
+              }
+
+              const seriesTitle = String(info?.seriesTitle || "").trim();
+              const volNum = Number(info?.volumeNumber) > 0 ? Number(info.volumeNumber) : 1;
+              const matchedS = findMatchingSeriesByTitle(seriesTitle);
+              if (matchedS || seriesTitle) matchedOk++;
+
+              results.push({
+                coverData,
+                seriesTitle: matchedS ? matchedS.title : seriesTitle,
+                matchedSeriesId: matchedS ? matchedS.id : "",
+                volumeNumber: volNum,
+                publisher: info?.publisher || matchedS?.publisher || "Khác",
+                category: info?.category || matchedS?.category || "Manga",
+                coverPrice: Math.max(0, Math.round(Number(info?.coverPrice) || 0)),
+                ok: Boolean(matchedS || seriesTitle),
+                errMsg: "",
+              });
+            } catch (err) {
+              let fallbackThumb = "";
+              try { fallbackThumb = await compressImageFile(fObj.file, 360, 540, 0.76); } catch {}
+              results.push({
+                coverData: fallbackThumb,
+                seriesTitle: "",
+                matchedSeriesId: "",
+                volumeNumber: 1,
+                publisher: "Khác",
+                category: "Manga",
+                coverPrice: 0,
+                ok: false,
+                errMsg: err?.message || "Lỗi đọc ảnh",
+              });
+              if (/API Key không hợp lệ/i.test(err?.message || "")) {
+                break;
+              }
+            }
+
+            // Nghỉ ngắn 300ms để giữ nhịp mượt với free tier
+            if (i < total - 1 && !cancelMultiScan) {
+              await new Promise((r) => setTimeout(r, 300));
+            }
+          }
+
+          multiProgBar.style.width = "100%";
+          isReading = false;
+          if (!results.length) {
             updateButtons();
-            setStatus("Chưa đọc rõ chữ trên gáy sách — thử chụp gần hơn một chút nhé.", "err");
+            setStatus("Chưa đọc được ảnh nào.", "err");
             return;
           }
           SFX.success();
-          openShelfBatchConfirmModal(res.items, res.model, res.elapsedSec);
+          openMultiCoverConfirmModal(results, { setSeriesCover, createMissing });
+          return;
+        }
+
+        if (mode === "shelf") {
+          setStatus("Đang quét nhanh tất cả đầu truyện trong ảnh kệ...", "", true);
+          try {
+            const res = await callGeminiReadShelfBatch(key, shelfAiObj);
+            isReading = false;
+            if (!res.items.length) {
+              SFX.error();
+              updateButtons();
+              setStatus("Chưa đọc rõ chữ trên gáy sách — thử chụp gần hơn một chút nhé.", "err");
+              return;
+            }
+            SFX.success();
+            openShelfBatchConfirmModal(res.items, res.model, res.elapsedSec);
+          } catch (err) {
+            isReading = false;
+            updateButtons();
+            SFX.error();
+            setStatus(`Lỗi quét kệ: ${esc(err?.message || "Thử lại sau vài giây.")}`, "err");
+          }
+          return;
+        }
+
+        const imgs = [];
+        if (frontAiObj) imgs.push(frontAiObj);
+        if (backAiObj) imgs.push(backAiObj);
+        if (!imgs.length) return;
+        setStatus("Đang đọc bìa siêu tốc...", "", true);
+        try {
+          const info = await callGeminiReadCovers(key, imgs);
+          isReading = false;
+          SFX.success();
+          openQuickCoverConfirmModal({ ...info, aiSuccess: true }, frontCoverData, frontFile);
         } catch (err) {
           isReading = false;
           updateButtons();
           SFX.error();
-          setStatus(`Lỗi quét kệ: ${esc(err?.message || "Thử lại sau vài giây.")}`, "err");
+          setStatus(`Lỗi đọc ảnh: ${esc(err?.message || "Thử lại sau vài giây.")}`, "err");
         }
+      });
+    },
+    () => {
+      cancelMultiScan = true;
+      revokeMultiUrls();
+    }
+  );
+}
+
+// Bảng duyệt & gắn hàng loạt kết quả từ chế độ Nhiều ảnh AI
+function openMultiCoverConfirmModal(results, opts = {}) {
+  const setSeriesCover = opts.setSeriesCover !== false;
+  const createMissing = opts.createMissing !== false;
+  const last = { ...DEFAULT_STATE.lastEntry, ...(state.lastEntry || {}) };
+  const validPubs = ["Trẻ", "Kim Đồng", "IPM", "Nhã Nam", "Khác"];
+
+  const matchedCount = results.filter((r) => r.matchedSeriesId).length;
+  const newCount = results.filter((r) => !r.matchedSeriesId && r.seriesTitle).length;
+
+  const seriesOptsHtml = (selectedId) =>
+    `<option value="__new__" ${!selectedId ? "selected" : ""}>+ Tạo bộ mới (theo tên bên dưới)</option>` +
+    state.series
+      .map((s) => `<option value="${s.id}" ${s.id === selectedId ? "selected" : ""}>${esc(s.title)}</option>`)
+      .join("");
+
+  const html = `
+    <form id="multiCoverConfirmForm" class="form-grid">
+      <div class="qc-status-box ok">
+        Đọc xong <strong>${results.length} ảnh</strong> · Khớp sẵn <strong>${matchedCount}</strong> ảnh với tủ${newCount ? ` · Đề xuất tạo mới <strong>${newCount}</strong>` : ""}. Kiểm tra nhanh rồi bấm gắn 1 phát:
+      </div>
+
+      <div class="qc-batch-list">
+        ${results
+          .map((r, i) => {
+            const shouldCheck = Boolean(r.coverData && (r.matchedSeriesId || (createMissing && r.seriesTitle)));
+            const badge = r.matchedSeriesId
+              ? `<span class="tag tag-forest">Khớp bộ sẵn</span>`
+              : r.seriesTitle
+              ? `<span class="tag tag-amber">Bộ mới</span>`
+              : `<span class="tag">${esc(r.errMsg ? "Lỗi đọc" : "Chưa rõ")}</span>`;
+            return `
+              <div class="qc-multi-row">
+                <input type="checkbox" name="mpick_${i}" ${shouldCheck ? "checked" : ""} />
+                <img class="qc-multi-thumb" src="${esc(r.coverData)}" alt="" />
+                <div style="min-width:0; display:flex; flex-direction:column; gap:4px;">
+                  <div style="display:flex; gap:5px; align-items:center;">
+                    <select name="mser_${i}" data-mser-idx="${i}" style="flex:1; min-width:0; padding:3px 5px; border:1px solid var(--line); border-radius:2px; background:var(--surface-2); font-size:12px;">
+                      ${seriesOptsHtml(r.matchedSeriesId)}
+                    </select>
+                    ${badge}
+                  </div>
+                  <div style="display:flex; gap:5px; align-items:center;">
+                    <input type="text" name="mtitle_${i}" id="mtitle_${i}" value="${esc(r.seriesTitle)}" placeholder="Tên bộ mới..." style="flex:1; min-width:0; padding:3px 5px; border:1px solid var(--line); border-radius:2px; background:var(--surface); font-size:12px; ${r.matchedSeriesId ? "display:none;" : ""}" />
+                    <span class="small-muted" style="font-size:11px;">Tập</span>
+                    <input type="number" step="0.5" name="mvol_${i}" value="${esc(r.volumeNumber)}" style="width:56px; padding:3px 5px; border:1px solid var(--line); border-radius:2px; font-size:12px;" class="mono" />
+                  </div>
+                </div>
+              </div>`;
+          })
+          .join("")}
+      </div>
+
+      <label class="check-inline">
+        <input type="checkbox" id="mcSetCoverChk" ${setSeriesCover ? "checked" : ""} />
+        <span>Tự đặt làm ảnh bìa đại diện bộ nếu bộ đó chưa có bìa</span>
+      </label>
+
+      <div class="modal-actions" style="justify-content:space-between;">
+        <button type="button" class="btn btn-sm" id="mcBackMultiBtn">Chọn thêm ảnh</button>
+        <button type="submit" class="btn btn-sm btn-primary">Gắn tất cả vào Tủ</button>
+      </div>
+    </form>`;
+
+  openModal(`Kết quả đọc ${results.length} ảnh bìa`, html, (body) => {
+    body.querySelectorAll("[data-mser-idx]").forEach((sel) => {
+      sel.addEventListener("change", () => {
+        const idx = sel.dataset.mserIdx;
+        const inp = body.querySelector(`#mtitle_${idx}`);
+        if (inp) inp.style.display = sel.value === "__new__" ? "" : "none";
+      });
+    });
+
+    body.querySelector("#mcBackMultiBtn").addEventListener("click", () => openQuickCoverModal("multi"));
+
+    body.querySelector("#multiCoverConfirmForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const doSetCover = Boolean(body.querySelector("#mcSetCoverChk")?.checked);
+
+      const picked = [];
+      for (let i = 0; i < results.length; i++) {
+        if (!fd.get(`mpick_${i}`)) continue;
+        const r = results[i];
+        if (!r.coverData) continue;
+        const serId = String(fd.get(`mser_${i}`) || "__new__");
+        const title = String(fd.get(`mtitle_${i}`) || r.seriesTitle || "").trim();
+        const volNum = Number(fd.get(`mvol_${i}`)) || 1;
+        if (serId === "__new__" && !title) continue;
+        picked.push({ r, serId, title, volNum });
+      }
+
+      if (!picked.length) {
+        SFX.error();
+        showToast("Chọn ít nhất 1 ảnh hợp lệ để gắn vào Tủ nhé.");
         return;
       }
 
-      const imgs = [];
-      if (frontAiObj) imgs.push(frontAiObj);
-      if (backAiObj) imgs.push(backAiObj);
-      if (!imgs.length) return;
-      setStatus("Đang đọc bìa siêu tốc...", "", true);
-      try {
-        const info = await callGeminiReadCovers(key, imgs);
-        isReading = false;
-        SFX.success();
-        openQuickCoverConfirmModal({ ...info, aiSuccess: true }, frontCoverData, frontFile);
-      } catch (err) {
-        isReading = false;
-        updateButtons();
-        SFX.error();
-        setStatus(`Lỗi đọc ảnh: ${esc(err?.message || "Thử lại sau vài giây.")}`, "err");
-      }
+      pushUndo(`gắn ${picked.length} ảnh bìa bằng AI`);
+      let attached = 0;
+      let createdSeries = 0;
+      let createdVols = 0;
+
+      picked.forEach(({ r, serId, title, volNum }) => {
+        let s = serId !== "__new__" ? state.series.find((x) => x.id === serId) : findMatchingSeriesByTitle(title);
+        if (!s) {
+          s = {
+            id: uid(),
+            title,
+            author: "",
+            publisher: validPubs.includes(r.publisher) ? r.publisher : last.publisher || "Khác",
+            category: ["Manga", "Light Novel", "Sách", "Artbook"].includes(r.category) ? r.category : "Manga",
+            status: "Đang theo",
+            aliases: "",
+            note: "",
+            cover: r.coverData,
+            createdAt: todayISO(),
+            sections: [],
+          };
+          state.series.unshift(s);
+          createdSeries++;
+        } else if (doSetCover && !s.cover) {
+          s.cover = r.coverData;
+        }
+
+        s.sections = s.sections || [];
+        // Tìm tập trùng số trong bất kỳ mục nào của bộ này trước
+        let foundVol = null;
+        for (const sec of s.sections) {
+          const hit = (sec.volumes || []).find((v) => Number(v.number) === volNum);
+          if (hit) {
+            foundVol = hit;
+            break;
+          }
+        }
+
+        if (foundVol) {
+          foundVol.image = r.coverData;
+        } else {
+          let sec = s.sections[0];
+          if (!sec) {
+            sec = { id: uid(), name: "Bản thường", image: "", note: "", volumes: [] };
+            s.sections.push(sec);
+          }
+          const cp = r.coverPrice > 0 ? r.coverPrice : last.coverPrice || 35000;
+          const pp = Math.round(cp * (1 - (Number(last.discount) || 0) / 100));
+          sec.volumes = sec.volumes || [];
+          sec.volumes.push({
+            id: uid(),
+            number: volNum,
+            title: "",
+            coverPrice: cp,
+            paidPrice: pp,
+            date: todayISO(),
+            isLegacy: false,
+            image: r.coverData,
+            readState: "Chưa đọc",
+            lentTo: "",
+            note: "",
+            groupId: "",
+            groupLabel: "",
+          });
+          createdVols++;
+        }
+        attached++;
+      });
+
+      saveState();
+      renderBooks();
+      renderNews();
+      renderSpending();
+      closeModal();
+      SFX.success();
+      spawnCelebration(undefined, undefined, 22);
+      notifyCapooEvent("added");
+      showToast(
+        `Đã gắn ${attached} ảnh bìa` +
+          (createdSeries ? ` (tạo ${createdSeries} bộ mới)` : "") +
+          (createdVols ? ` (+${createdVols} tập mới)` : "") +
+          "!",
+        { undoable: true }
+      );
     });
   });
 }
