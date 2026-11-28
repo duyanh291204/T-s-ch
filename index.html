@@ -11035,6 +11035,32 @@ function updateAndDrawCabinetCat(dt) {
       ctx.quadraticCurveTo(-8.8, swY + 1.2, -11.2, swY - 3.0);
       ctx.fill();
       ctx.stroke();
+    } else if (cabCat.phase === "sit" && typeof isLateNightHour === "function" && isLateNightHour()) {
+      // Sau 23h: Bé mèo quản gia ngủ gật trên thanh gỗ tủ kính (mắt nhắm + Zzz)
+      ctx.strokeStyle = pal.mouthLine;
+      ctx.lineWidth = 1.7;
+      ctx.beginPath();
+      ctx.moveTo(-7.4, 0.4);
+      ctx.quadraticCurveTo(-5.8, 1.5, -4.2, 0.4);
+      ctx.moveTo(4.2, 0.4);
+      ctx.quadraticCurveTo(5.8, 1.5, 7.4, 0.4);
+      ctx.stroke();
+      // Bong bóng mũi nhỏ phồng xẹp
+      const bR = 1.5 + Math.sin(cabCat.clock * 2.4) * 0.55;
+      ctx.fillStyle = "rgba(220, 244, 255, 0.85)";
+      ctx.strokeStyle = "rgba(110, 160, 200, 0.85)";
+      ctx.lineWidth = 0.9;
+      ctx.beginPath();
+      ctx.arc(3.2, 2.2, bR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      // Chữ Z bay lên nhẹ
+      const zP = (cabCat.clock * 0.65) % 1;
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 245, 220, " + ((1 - zP) * 0.85).toFixed(2) + ")";
+      ctx.font = "700 8px sans-serif";
+      ctx.fillText("z", 10 + zP * 5, -9 - zP * 8);
+      ctx.restore();
     } else if (cabCat.blinkDur > 0) {
       ctx.strokeStyle = pal.mouthLine;
       ctx.lineWidth = 1.7;
@@ -15286,287 +15312,297 @@ function ensureBudgetCatLoop() {
       const r = budgetCat.ratio;
       const pctClamped = Math.min(1, r);
       const rawEdgeX = cw * pctClamped;
-      const groundY = 42.8; // Khớp chuẩn từng pixel: đáy 4 chân (y + 5.2 = 48.0) chạm vừa khít mép trên thanh hạn mức!
+      const groundY = 45.2; // Đáy 4 chân chạm khít mép trên thanh hạn mức, không bị bay!
+      const isNightSleep = typeof isLateNightHour === "function" && isLateNightHour();
+
+      const drawNightSleepFace = (c, pal) => {
+        c.strokeStyle = pal.mouthLine;
+        c.lineWidth = 1.7;
+        c.beginPath();
+        c.moveTo(-7.4, 0.4);
+        c.quadraticCurveTo(-5.8, 1.5, -4.2, 0.4);
+        c.moveTo(4.2, 0.4);
+        c.quadraticCurveTo(5.8, 1.5, 7.4, 0.4);
+        c.stroke();
+        const bR = 1.45 + Math.sin(budgetCat.clock * 2.3) * 0.5;
+        c.fillStyle = "rgba(220, 244, 255, 0.85)";
+        c.strokeStyle = "rgba(110, 160, 200, 0.85)";
+        c.lineWidth = 0.9;
+        c.beginPath();
+        c.arc(3.2, 2.2, bR, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+      };
+
+      const drawFloatingZzz = (xPos, yPos) => {
+        const zP = (budgetCat.clock * 0.6) % 1;
+        ctx.save();
+        ctx.fillStyle = isDarkTheme()
+          ? `rgba(240, 232, 214, ${((1 - zP) * 0.85).toFixed(2)})`
+          : `rgba(80, 58, 38, ${((1 - zP) * 0.8).toFixed(2)})`;
+        ctx.font = "700 9px sans-serif";
+        ctx.fillText("z", xPos + zP * 5, yPos - zP * 9);
+        ctx.restore();
+      };
 
       if (r < 0.5) {
-        // DƯỚI 50%: Đứng 4 chân đúng giữa vạch hạn mức, đội đồng xu vàng trên đầu!
+        // DƯỚI 50%: Đứng yên chắc 4 chân trên vạch hạn mức, đội đồng xu vàng (không bay!)
         const cx = Math.max(22, Math.min(cw - 22, rawEdgeX));
-        const bob = Math.abs(Math.sin(budgetCat.clock * 3.4)) * 1.4;
-        const catY = groundY - bob;
+        const catY = groundY;
 
         drawExactCapooBase(ctx, {
           x: cx,
           y: catY,
           faceDir: 0,
+          earDroop: isNightSleep ? 0.38 : 0,
           showShadow: false,
-          faceDraw: (c, pal) => {
-            c.fillStyle = pal.cheek;
-            c.globalAlpha = 0.78;
-            c.beginPath();
-            c.ellipse(-8.4, 1.6, 2.2, 1.3, 0, 0, Math.PI * 2);
-            c.ellipse(8.4, 1.6, 2.2, 1.3, 0, 0, Math.PI * 2);
-            c.fill();
-            c.globalAlpha = 1;
-            // Mắt cười tít vui vẻ ^ ^
-            c.strokeStyle = pal.mouthLine;
-            c.lineWidth = 1.75;
-            c.beginPath();
-            c.arc(-5.6, 0.5, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
-            c.stroke();
-            c.beginPath();
-            c.arc(5.6, 0.5, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
-            c.stroke();
-            // Miệng cười w
-            c.lineWidth = 1.55;
-            c.beginPath();
-            c.moveTo(-2.85, 0.8);
-            c.quadraticCurveTo(-1.425, 2.8, 0, 1.1);
-            c.quadraticCurveTo(1.425, 2.8, 2.85, 0.8);
-            c.stroke();
-          },
+          faceDraw: isNightSleep
+            ? drawNightSleepFace
+            : (c, pal) => {
+                c.fillStyle = pal.cheek;
+                c.globalAlpha = 0.78;
+                c.beginPath();
+                c.ellipse(-8.4, 1.6, 2.2, 1.3, 0, 0, Math.PI * 2);
+                c.ellipse(8.4, 1.6, 2.2, 1.3, 0, 0, Math.PI * 2);
+                c.fill();
+                c.globalAlpha = 1;
+                c.strokeStyle = pal.mouthLine;
+                c.lineWidth = 1.75;
+                c.beginPath();
+                c.arc(-5.6, 0.5, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
+                c.stroke();
+                c.beginPath();
+                c.arc(5.6, 0.5, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
+                c.stroke();
+                c.lineWidth = 1.55;
+                c.beginPath();
+                c.moveTo(-2.85, 0.8);
+                c.quadraticCurveTo(-1.425, 2.8, 0, 1.1);
+                c.quadraticCurveTo(1.425, 2.8, 2.85, 0.8);
+                c.stroke();
+              },
         });
 
-        // Đồng xu vàng 3D bóng bẩy phong cách hoạt hình (viền khớp nét mèo + ngôi sao 4 cánh lấp lánh)
-        const coinY = catY - 27.5;
-        const coinTilt = Math.sin(budgetCat.clock * 3.0) * 0.1;
+        // Đồng xu vàng đặt gọn trên đỉnh đầu
+        const coinY = catY - 26.5;
         const { outlineCol: coinInk } = getExactCapooPalette();
         ctx.save();
         ctx.translate(cx, coinY);
-        ctx.rotate(coinTilt);
 
-        // Độ dày cạnh dưới đồng xu (tạo khối 3D nổi)
         ctx.fillStyle = "#C78A1A";
         ctx.strokeStyle = coinInk;
-        ctx.lineWidth = 2.0;
+        ctx.lineWidth = 1.9;
         ctx.beginPath();
-        ctx.ellipse(0, 1.4, 7.6, 7.2, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 1.3, 7.2, 6.8, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        // Mặt đồng xu gradient vàng óng ánh
         const cGrad = ctx.createLinearGradient(-6, -6, 6, 6);
         cGrad.addColorStop(0, "#FFF2A6");
         cGrad.addColorStop(0.42, "#FFD24C");
         cGrad.addColorStop(1, "#E59D1E");
         ctx.fillStyle = cGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, 7.2, 0, Math.PI * 2);
+        ctx.arc(0, 0, 6.8, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        // Vòng viền khắc chìm bên trong
-        ctx.strokeStyle = "rgba(168, 102, 12, 0.45)";
-        ctx.lineWidth = 1.0;
-        ctx.beginPath();
-        ctx.arc(0, 0, 5.0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Ngôi sao 4 cánh nổi ở giữa đồng xu (cute & sang, không bị quê)
         ctx.fillStyle = "#FFFBE0";
         ctx.beginPath();
-        ctx.moveTo(0, -3.6);
-        ctx.quadraticCurveTo(0.8, -0.8, 3.6, 0);
-        ctx.quadraticCurveTo(0.8, 0.8, 0, 3.6);
-        ctx.quadraticCurveTo(-0.8, 0.8, -3.6, 0);
-        ctx.quadraticCurveTo(-0.8, -0.8, 0, -3.6);
+        ctx.moveTo(0, -3.4);
+        ctx.quadraticCurveTo(0.8, -0.8, 3.4, 0);
+        ctx.quadraticCurveTo(0.8, 0.8, 0, 3.4);
+        ctx.quadraticCurveTo(-0.8, 0.8, -3.4, 0);
+        ctx.quadraticCurveTo(-0.8, -0.8, 0, -3.4);
         ctx.closePath();
-        ctx.fill();
-
-        // Vệt bóng sáng góc trên trái
-        ctx.fillStyle = "rgba(255, 255, 255, 0.72)";
-        ctx.beginPath();
-        ctx.ellipse(-2.8, -3.0, 2.0, 1.0, -0.65, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
 
-        // Tia sáng lấp lánh 2 bên đồng xu
-        const spA = 0.35 + 0.65 * Math.abs(Math.sin(budgetCat.clock * 4.2));
-        ctx.strokeStyle = `rgba(246, 200, 76, ${spA.toFixed(2)})`;
-        ctx.lineWidth = 1.3;
-        [[-12.5, -2.0], [12.5, -1.0]].forEach(([dx, dy]) => {
-          const sx = cx + dx;
-          const sy = coinY + dy;
-          ctx.beginPath();
-          ctx.moveTo(sx - 2.6, sy);
-          ctx.lineTo(sx + 2.6, sy);
-          ctx.moveTo(sx, sy - 2.6);
-          ctx.lineTo(sx, sy + 2.6);
-          ctx.stroke();
-        });
+        if (isNightSleep) {
+          drawFloatingZzz(cx + 12, catY - 22);
+        }
       } else if (r < 1.0) {
-        // 50%–99%: Đổ mồ hôi hột, mép tay trái chạm vừa khít vạch hạn mức để ĐẨY NGƯỢC!
-        const shake = Math.sin(budgetCat.clock * 38) * 0.7;
-        const cx = Math.min(cw - 22, Math.max(24, rawEdgeX + 22));
-        drawExactCapooBase(ctx, {
-          x: cx + shake,
-          y: groundY,
-          earDroop: 0.35,
-          showShadow: false,
-          gait: budgetCat.clock * 11,
-          moveMix: 0.5,
-          faceDir: -0.9,
-          tilt: -0.16,
-          extraPass: (mode, pal, outlineCol, rx, ry) => {
-            ctx.save();
-            ctx.translate(-rx * 0.96, -ry * 0.85);
-            ctx.rotate(-1.25);
-            ctx.beginPath();
-            ctx.ellipse(0, 0, 2.4, 5.0, 0, 0, Math.PI * 2);
-            if (mode === "outline") {
-              ctx.fillStyle = outlineCol;
-              ctx.strokeStyle = outlineCol;
-              ctx.lineWidth = 4.2;
-              ctx.stroke();
-              ctx.fill();
-            } else {
-              ctx.fillStyle = pal.body;
-              ctx.fill();
-            }
-            ctx.restore();
-          },
-          faceDraw: (c, pal) => {
-            c.strokeStyle = pal.mouthLine;
-            c.lineWidth = 1.65;
-            c.beginPath();
-            c.moveTo(-7.2, -1.8);
-            c.lineTo(-4.2, -0.2);
-            c.lineTo(-7.2, 1.4);
-            c.moveTo(7.2, -1.8);
-            c.lineTo(4.2, -0.2);
-            c.lineTo(7.2, 1.4);
-            c.stroke();
-            c.beginPath();
-            c.moveTo(-2.8, 2.0);
-            c.quadraticCurveTo(0, 0.5, 2.8, 2.0);
-            c.stroke();
-            const swY = -5.5 + ((budgetCat.clock * 9) % 4.5);
-            c.fillStyle = "#6ED0FF";
-            c.strokeStyle = "#266899";
-            c.lineWidth = 1.0;
-            c.beginPath();
-            c.moveTo(10.5, swY - 2.6);
-            c.quadraticCurveTo(12.6, swY + 1.0, 10.5, swY + 2.2);
-            c.quadraticCurveTo(8.4, swY + 1.0, 10.5, swY - 2.6);
-            c.fill();
-            c.stroke();
-          },
-        });
+        // 50%–99%: Sau 23h đi ngủ trên vạch, ban ngày đẩy ngược vạch hạn mức!
+        if (isNightSleep) {
+          const cx = Math.min(cw - 22, Math.max(24, rawEdgeX));
+          drawExactCapooBase(ctx, {
+            x: cx,
+            y: groundY,
+            earDroop: 0.4,
+            showShadow: false,
+            faceDraw: drawNightSleepFace,
+          });
+          drawFloatingZzz(cx + 12, groundY - 20);
+        } else {
+          const shake = Math.sin(budgetCat.clock * 38) * 0.7;
+          const cx = Math.min(cw - 22, Math.max(24, rawEdgeX + 22));
+          drawExactCapooBase(ctx, {
+            x: cx + shake,
+            y: groundY,
+            earDroop: 0.35,
+            showShadow: false,
+            gait: budgetCat.clock * 11,
+            moveMix: 0.5,
+            faceDir: -0.9,
+            tilt: -0.16,
+            extraPass: (mode, pal, outlineCol, rx, ry) => {
+              ctx.save();
+              ctx.translate(-rx * 0.96, -ry * 0.85);
+              ctx.rotate(-1.25);
+              ctx.beginPath();
+              ctx.ellipse(0, 0, 2.4, 5.0, 0, 0, Math.PI * 2);
+              if (mode === "outline") {
+                ctx.fillStyle = outlineCol;
+                ctx.strokeStyle = outlineCol;
+                ctx.lineWidth = 4.2;
+                ctx.stroke();
+                ctx.fill();
+              } else {
+                ctx.fillStyle = pal.body;
+                ctx.fill();
+              }
+              ctx.restore();
+            },
+            faceDraw: (c, pal) => {
+              c.strokeStyle = pal.mouthLine;
+              c.lineWidth = 1.65;
+              c.beginPath();
+              c.moveTo(-7.2, -1.8);
+              c.lineTo(-4.2, -0.2);
+              c.lineTo(-7.2, 1.4);
+              c.moveTo(7.2, -1.8);
+              c.lineTo(4.2, -0.2);
+              c.lineTo(7.2, 1.4);
+              c.stroke();
+              c.beginPath();
+              c.moveTo(-2.8, 2.0);
+              c.quadraticCurveTo(0, 0.5, 2.8, 2.0);
+              c.stroke();
+              const swY = -5.5 + ((budgetCat.clock * 9) % 4.5);
+              c.fillStyle = "#6ED0FF";
+              c.strokeStyle = "#266899";
+              c.lineWidth = 1.0;
+              c.beginPath();
+              c.moveTo(10.5, swY - 2.6);
+              c.quadraticCurveTo(12.6, swY + 1.0, 10.5, swY + 2.2);
+              c.quadraticCurveTo(8.4, swY + 1.0, 10.5, swY - 2.6);
+              c.fill();
+              c.stroke();
+            },
+          });
+        }
       } else {
-        // >= 100% (FULL HẠN MỨC): Bé mèo mắt rưng rưng dốc ngược chiếc ví xu Gamaguchi rỗng tuếch!
+        // >= 100% (FULL HẠN MỨC): Đứng yên chắc trên vạch (không bay!), đội ví da hình chữ nhật mở nắp rỗng + con ruồi bay
         const cx = Math.max(30, cw - 28);
-        const sighY = Math.sin(budgetCat.clock * 3.0) * 0.6;
         drawExactCapooBase(ctx, {
           x: cx,
-          y: groundY + sighY,
+          y: groundY,
           earDroop: 0.45,
           showShadow: false,
-          faceDraw: (c, pal) => {
-            // Má hồng nhẹ
-            c.fillStyle = pal.cheek;
-            c.globalAlpha = 0.55;
-            c.beginPath();
-            c.ellipse(-8.4, 1.8, 2.0, 1.2, 0, 0, Math.PI * 2);
-            c.ellipse(8.4, 1.8, 2.0, 1.2, 0, 0, Math.PI * 2);
-            c.fill();
-            c.globalAlpha = 1;
-
-            // Mắt to rưng rưng long lanh (sống động, không bị xỉu chết)
-            [-5.6, 5.6].forEach((ex) => {
-              const ey = -0.3;
-              c.fillStyle = pal.isBlack ? "#FFFDF7" : pal.eye;
-              c.beginPath();
-              c.ellipse(ex, ey, 2.15, 2.35, 0, 0, Math.PI * 2);
-              c.fill();
-              // Ánh nước mắt long lanh dưới khóe mắt
-              c.fillStyle = "#8CE2FF";
-              c.beginPath();
-              c.arc(ex + (ex < 0 ? -0.6 : 0.6), ey + 1.4, 0.95, 0, Math.PI * 2);
-              c.fill();
-              c.fillStyle = "#FFFFFF";
-              c.beginPath();
-              c.arc(ex - 0.6, ey - 0.7, 0.75, 0, Math.PI * 2);
-              c.fill();
-            });
-
-            // Miệng mếu nhỏ xinh (n)
-            c.strokeStyle = pal.mouthLine;
-            c.lineWidth = 1.5;
-            c.beginPath();
-            c.arc(0, 3.0, 2.3, 1.15 * Math.PI, 1.85 * Math.PI);
-            c.stroke();
-          },
+          faceDraw: isNightSleep
+            ? drawNightSleepFace
+            : (c, pal) => {
+                c.fillStyle = pal.cheek;
+                c.globalAlpha = 0.55;
+                c.beginPath();
+                c.ellipse(-8.4, 1.8, 2.0, 1.2, 0, 0, Math.PI * 2);
+                c.ellipse(8.4, 1.8, 2.0, 1.2, 0, 0, Math.PI * 2);
+                c.fill();
+                c.globalAlpha = 1;
+                c.fillStyle = pal.eye;
+                c.beginPath();
+                c.ellipse(-5.6, -0.3, 2.0, 2.2, 0, 0, Math.PI * 2);
+                c.ellipse(5.6, -0.3, 2.0, 2.2, 0, 0, Math.PI * 2);
+                c.fill();
+                c.fillStyle = "#7AD8FF";
+                c.beginPath();
+                c.arc(-6.3, 0.8, 1.15, 0, Math.PI * 2);
+                c.arc(4.9, 0.8, 1.15, 0, Math.PI * 2);
+                c.fill();
+                c.fillStyle = "#FFFFFF";
+                c.beginPath();
+                c.arc(-6.2, -1.1, 0.65, 0, Math.PI * 2);
+                c.arc(5.0, -1.1, 0.65, 0, Math.PI * 2);
+                c.fill();
+                c.strokeStyle = pal.mouthLine;
+                c.lineWidth = 1.45;
+                c.beginPath();
+                c.moveTo(-3.2, 2.6);
+                c.quadraticCurveTo(-1.6, 1.4, 0, 2.2);
+                c.quadraticCurveTo(1.6, 1.4, 3.2, 2.6);
+                c.stroke();
+              },
         });
 
-        // Ví xu tròn Gamaguchi đặt ngửa miệng lên trên, dính gọn vào đỉnh đầu bé mèo (đứng yên, chỉ có con ruồi bay)
-        const { outlineCol: pInk } = getExactCapooPalette();
-        const px = cx;
-        const py = groundY - 20.5 + sighY;
+        // Ví da hình chữ nhật mở ngửa miệng lên trên, dính sát đỉnh đầu bé mèo (đứng yên hoàn toàn)
+        const { outlineCol: wInk } = getExactCapooPalette();
+        const wx = cx;
+        const wy = groundY - 21.5;
 
         ctx.save();
-        ctx.translate(px, py);
+        ctx.translate(wx, wy);
 
-        // Thân ví bầu bĩnh dính gọn lên đầu bé mèo
-        const pGrad = ctx.createLinearGradient(-8, -6, 8, 4);
-        pGrad.addColorStop(0, "#E06B58");
-        pGrad.addColorStop(1, "#B24336");
-        ctx.fillStyle = pGrad;
-        ctx.strokeStyle = pInk;
-        ctx.lineWidth = 1.65;
+        // Mặt sau ví da (hình chữ nhật bo góc, mở hé lên trên)
+        ctx.fillStyle = "#5C3522";
+        ctx.strokeStyle = wInk;
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(-6.2, -4.2);
-        ctx.bezierCurveTo(-10.2, 0.2, -8.2, 4.2, 0, 4.2);
-        ctx.bezierCurveTo(8.2, 4.2, 10.2, 0.2, 6.2, -4.2);
-        ctx.closePath();
+        ctx.roundRect(-10.5, -8.5, 21, 9.5, 2);
         ctx.fill();
         ctx.stroke();
 
-        // Nếp gấp vải ví mềm mại
-        ctx.strokeStyle = "rgba(255, 232, 215, 0.35)";
-        ctx.lineWidth = 0.85;
-        ctx.beginPath();
-        ctx.moveTo(-2.5, 2.8);
-        ctx.quadraticCurveTo(-3.2, -0.5, -2.0, -3.2);
-        ctx.moveTo(2.5, 2.8);
-        ctx.quadraticCurveTo(3.2, -0.5, 2.0, -3.2);
-        ctx.stroke();
+        // Khe ví rỗng tối bên trong
+        ctx.fillStyle = "#26140D";
+        ctx.fillRect(-9.0, -6.5, 18, 4.5);
 
-        // Miệng ví mở ngửa lên trên (trống rỗng tối bên trong)
-        ctx.fillStyle = "#2E1714";
-        ctx.strokeStyle = "#E8C36A";
+        // Mặt trước ví da hình chữ nhật màu nâu bò cổ điển
+        const wGrad = ctx.createLinearGradient(-10, -4, 10, 4);
+        wGrad.addColorStop(0, "#A4643E");
+        wGrad.addColorStop(1, "#7B4527");
+        ctx.fillStyle = wGrad;
+        ctx.strokeStyle = wInk;
         ctx.lineWidth = 1.55;
         ctx.beginPath();
-        ctx.ellipse(0, -4.5, 6.4, 2.3, 0, 0, Math.PI * 2);
+        ctx.roundRect(-10.5, -3.2, 21, 7.6, 2);
         ctx.fill();
         ctx.stroke();
 
-        // 2 nút gài tròn vàng đồng ở mép trên miệng ví
-        ctx.fillStyle = "#FFD86B";
-        ctx.strokeStyle = pInk;
-        ctx.lineWidth = 1.15;
-        [-2.2, 2.2].forEach((kx) => {
-          ctx.beginPath();
-          ctx.arc(kx, -7.2, 1.45, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-        });
+        // Đường chỉ khâu nét đứt đặc trưng của ví da
+        ctx.strokeStyle = "rgba(255, 232, 198, 0.55)";
+        ctx.lineWidth = 0.75;
+        ctx.setLineDash([2, 1.8]);
+        ctx.strokeRect(-8.8, -1.8, 17.6, 4.8);
+        ctx.setLineDash([]);
+
+        // Khuy bấm kim loại nhỏ ở giữa mặt ví
+        ctx.fillStyle = "#E8C36A";
+        ctx.strokeStyle = wInk;
+        ctx.lineWidth = 0.9;
+        ctx.beginPath();
+        ctx.arc(0, 0.6, 1.35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
         ctx.restore();
 
-        // Con ruồi nhỏ bay vòng vòng phía trên miệng ví rỗng
-        const fx = px + Math.cos(budgetCat.clock * 4.4) * 9.5;
-        const fy = py - 12.5 + Math.sin(budgetCat.clock * 8.8) * 3.0;
-        ctx.save();
-        ctx.fillStyle = "#2C2D35";
-        ctx.beginPath();
-        ctx.arc(fx, fy, 1.5, 0, Math.PI * 2);
-        ctx.fill();
-        // Cánh ruồi vỗ nhẹ
-        const wingFlap = Math.sin(budgetCat.clock * 42) * 1.1;
-        ctx.fillStyle = "rgba(220, 238, 255, 0.85)";
-        ctx.beginPath();
-        ctx.ellipse(fx - 1.4, fy - 1.3 + wingFlap * 0.4, 1.5, 0.8, -0.5, 0, Math.PI * 2);
-        ctx.ellipse(fx + 1.4, fy - 1.3 - wingFlap * 0.4, 1.5, 0.8, 0.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
+        if (isNightSleep) {
+          drawFloatingZzz(wx + 13, wy - 4);
+        } else {
+          // Con ruồi nhỏ bay vòng vòng phía trên miệng ví rỗng
+          const fx = wx + Math.cos(budgetCat.clock * 4.4) * 9.5;
+          const fy = wy - 12.0 + Math.sin(budgetCat.clock * 8.8) * 2.5;
+          ctx.save();
+          ctx.fillStyle = "#2C2D35";
+          ctx.beginPath();
+          ctx.arc(fx, fy, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+          const wingFlap = Math.sin(budgetCat.clock * 42) * 1.1;
+          ctx.fillStyle = "rgba(220, 238, 255, 0.85)";
+          ctx.beginPath();
+          ctx.ellipse(fx - 1.4, fy - 1.3 + wingFlap * 0.4, 1.5, 0.8, -0.5, 0, Math.PI * 2);
+          ctx.ellipse(fx + 1.4, fy - 1.3 - wingFlap * 0.4, 1.5, 0.8, 0.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
       }
     }
 
