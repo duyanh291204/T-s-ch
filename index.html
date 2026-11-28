@@ -3611,6 +3611,405 @@ body {
   display: block;
   margin: 0 auto 6px;
 }
+
+/* ============================
+   BÀN BÀY MÂM (FLATLAY STUDIO)
+   ============================ */
+.fl-stage-shell {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.fl-canvas-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 310px;
+  aspect-ratio: 9 / 16;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+  touch-action: none;
+  background: #D8C2A2;
+}
+
+.fl-canvas-wrap.is-square {
+  max-width: 340px;
+  aspect-ratio: 1 / 1;
+}
+
+.fl-canvas-wrap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.fl-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.fl-sel-bar {
+  padding: 9px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.fl-slider-row {
+  display: grid;
+  grid-template-columns: 58px 1fr 40px;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+}
+
+.fl-slider-row input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.fl-picker-strip {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 4px 2px 6px;
+  scrollbar-width: none;
+}
+
+.fl-picker-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.fl-pick-card {
+  flex: 0 0 58px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.fl-pick-thumb {
+  width: 58px;
+  height: 78px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--surface-2);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: var(--muted);
+  padding: 3px;
+}
+
+.fl-pick-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.fl-pick-name {
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink);
+}
+
+/* ============================
+   TIME-LAPSE HÀNH TRÌNH PHÌNH TỦ
+   ============================ */
+.tl-hud {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.tl-hud-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 7px 8px;
+  text-align: center;
+}
+
+.tl-hud-lbl {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.tl-hud-val {
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.tl-stage {
+  position: relative;
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 232, 200, 0.2);
+  background: linear-gradient(155deg, #4E3E31 0%, #2D231C 52%, #1B1511 100%);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  margin-bottom: 10px;
+}
+
+.tl-stage canvas {
+  width: 100%;
+  height: 270px;
+  display: block;
+}
+
+.tl-month-pill {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: rgba(18, 15, 13, 0.78);
+  border: 1px solid rgba(255, 235, 200, 0.25);
+  color: #FAF3E6;
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.tl-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tl-controls input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+/* ============================
+   LẬT BÌA 3D NHƯ CẦM SÁCH THẬT
+   ============================ */
+.flip3d-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0 12px;
+  perspective: 1200px;
+  overflow: hidden;
+}
+
+.flip3d-book {
+  position: relative;
+  width: 214px;
+  height: 312px;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+
+.flip3d-book.is-open {
+  transform: translateX(48px) rotateX(4deg);
+}
+
+@media (max-width: 420px) {
+  .flip3d-book {
+    width: 186px;
+    height: 274px;
+  }
+  .flip3d-book.is-open {
+    transform: translateX(42px) rotateX(4deg);
+  }
+}
+
+/* Trang giấy bên phải (mặt trong chứa thông tin tập sách) */
+.flip3d-page {
+  position: absolute;
+  inset: 0;
+  border-radius: 3px 8px 8px 3px;
+  background: linear-gradient(90deg, #E8DCC4 0px, #FBF5E6 14px, #FFFBF0 100%);
+  color: #362516;
+  border: 1px solid rgba(90, 66, 40, 0.28);
+  box-shadow:
+    inset 12px 0 16px -8px rgba(45, 30, 15, 0.28),
+    4px 0 0 #EDE2CC,
+    7px 0 0 #E0D3BA,
+    10px 10px 26px rgba(0, 0, 0, 0.28);
+  padding: 16px 14px 14px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 1;
+}
+
+[data-theme="dark"] .flip3d-page,
+[data-theme="midnight"] .flip3d-page {
+  background: linear-gradient(90deg, #D9CCB3 0px, #F2E7D0 14px, #F8F0DF 100%);
+  color: #2C1E12;
+}
+
+.flip3d-colophon-head {
+  border-bottom: 1.5px double rgba(90, 66, 40, 0.35);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.flip3d-colophon-pub {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #826243;
+}
+
+.flip3d-colophon-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.flip3d-colophon-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11.5px;
+}
+
+.flip3d-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px dashed rgba(90, 66, 40, 0.2);
+  padding-bottom: 3px;
+}
+
+.flip3d-row span:first-child {
+  color: #7A5E42;
+}
+
+.flip3d-row strong {
+  text-align: right;
+  font-weight: 600;
+}
+
+.flip3d-note-box {
+  margin-top: 6px;
+  padding: 5px 7px;
+  background: rgba(156, 78, 36, 0.08);
+  border-left: 2px solid #9C4E24;
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: #4A3320;
+  max-height: 46px;
+  overflow: hidden;
+}
+
+.flip3d-stamp {
+  align-self: flex-end;
+  padding: 2px 7px;
+  border: 1.5px solid #A83528;
+  color: #A83528;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transform: rotate(-4deg);
+  border-radius: 2px;
+  margin-top: 4px;
+}
+
+/* Cánh bìa trước lật 3D sang trái */
+.flip3d-cover {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  transition: transform 0.72s cubic-bezier(0.24, 1, 0.34, 1);
+  z-index: 3;
+}
+
+.flip3d-book.is-open .flip3d-cover {
+  transform: rotateY(-152deg);
+}
+
+.flip3d-front,
+.flip3d-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 3px 8px 8px 3px;
+  overflow: hidden;
+}
+
+.flip3d-front {
+  background: var(--surface-2);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.34);
+}
+
+.flip3d-front img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.flip3d-front::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.34) 0px,
+    rgba(0, 0, 0, 0.1) 4px,
+    rgba(255, 255, 255, 0.28) 6px,
+    rgba(0, 0, 0, 0.16) 9px,
+    transparent 16px
+  );
+}
+
+.flip3d-back {
+  transform: rotateY(180deg);
+  border-radius: 8px 3px 3px 8px;
+  background: linear-gradient(270deg, #DFD2B8 0px, #F5EBD6 18px, #EFE2C8 100%);
+  border: 1px solid rgba(90, 66, 40, 0.25);
+  box-shadow: inset -12px 0 18px -8px rgba(45, 30, 15, 0.25);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #6B5036;
+}
+
+.flip3d-hint {
+  margin-top: 12px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
 </style>
 </head>
 <body>
@@ -3677,8 +4076,11 @@ body {
           <button class="chip" data-pub="Khác">Khác</button>
         </div>
 
-        <div class="subbar">
-          <span class="mono" id="bookCountLabel">0 đầu sách</span>
+        <div class="subbar" style="flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="mono" id="bookCountLabel">0 đầu sách</span>
+            <button type="button" class="btn btn-sm" id="openFlatlayBtn" style="height:24px; padding:0 8px; font-size:11px;">✦ Bày mâm</button>
+          </div>
           <div style="display:flex; align-items:center; gap:6px;">
             <select class="sort-select" id="bookSortSel" title="Sắp xếp">
               <option value="recent">Mới thêm</option>
@@ -3766,6 +4168,10 @@ body {
         <div class="panel">
           <div class="panel-head" style="flex-wrap:wrap;">
             <div class="panel-title">Quy đổi kệ sách vật lý</div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-sm" id="openTimelapseBtn">▶ Time-lapse</button>
+              <button type="button" class="btn btn-sm" id="openFlatlaySpendBtn">✦ Bày mâm</button>
+            </div>
           </div>
           <div class="phys-grid" id="physicalStatsGrid"></div>
           <div class="small-muted" id="physicalStatsNote"></div>
@@ -7389,7 +7795,11 @@ function openSectionDetail(seriesId, sectionId) {
     body.querySelector("#addOneVolBtn").addEventListener("click", () => openVolumeForm(seriesId, sectionId));
     body.querySelector("#addBulkVolBtn").addEventListener("click", () => openBulkVolumeForm(seriesId, sectionId));
     body.querySelectorAll("[data-vol-id]").forEach((btn) => {
-      btn.addEventListener("click", () => { SFX.openBook(); openVolumeForm(seriesId, sectionId, btn.dataset.volId); });
+      btn.addEventListener("click", () => {
+        SFX.openBook();
+        if (typeof openVolumeBookFlip === "function") openVolumeBookFlip(seriesId, sectionId, btn.dataset.volId);
+        else openVolumeForm(seriesId, sectionId, btn.dataset.volId);
+      });
     });
   });
 }
@@ -14518,6 +14928,1112 @@ document.addEventListener("click", (e) => {
     if (tab === "spending") ensureBudgetCatLoop();
     else if (tab === "news") ensureHunterCatLoop();
   }, 40);
+});
+  </script>
+
+
+  <script>
+/* ===== studio-timelapse-flip.js (Bàn Bày Mâm · Time-lapse Phình Tủ · Lật Bìa 3D) ===== */
+"use strict";
+
+/* ============================================================
+   1. BÀN "BÀY MÂM" (FLATLAY STUDIO) — KÉO THẢ, XOAY, THẢ MÈO & LƯU ẢNH STORY
+   ============================================================ */
+const FL_SURFACES = [
+  { id: "oak", label: "Gỗ sồi", base: "#D5B890", grain: "rgba(110, 72, 36, 0.11)", line: "rgba(90, 56, 26, 0.18)", textCol: "#4A321C" },
+  { id: "linen", label: "Vải Linen", base: "#F3ECE0", grain: "rgba(140, 125, 105, 0.09)", line: "rgba(155, 140, 120, 0.12)", textCol: "#5A4A3A" },
+  { id: "walnut", label: "Gỗ trầm", base: "#3E2F25", grain: "rgba(0, 0, 0, 0.18)", line: "rgba(255, 232, 200, 0.08)", textCol: "#EFE2CC" },
+  { id: "kraft", label: "Giấy Kraft", base: "#C9A97E", grain: "rgba(92, 66, 36, 0.1)", line: "rgba(75, 52, 28, 0.12)", textCol: "#3E2914" },
+];
+
+const flImgCache = new Map();
+
+function loadFlImage(src) {
+  if (!src) return Promise.resolve(null);
+  if (flImgCache.has(src)) return Promise.resolve(flImgCache.get(src));
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      flImgCache.set(src, img);
+      resolve(img);
+    };
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+function drawFlatlayBackground(ctx, w, h, surf) {
+  ctx.fillStyle = surf.base;
+  ctx.fillRect(0, 0, w, h);
+
+  if (surf.id === "linen") {
+    // Vân vải dệt ngang dọc nhẹ
+    ctx.strokeStyle = surf.grain;
+    ctx.lineWidth = 1;
+    const step = Math.max(6, Math.round(w / 52));
+    for (let x = 0; x < w; x += step) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+    for (let y = 0; y < h; y += step) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+  } else if (surf.id === "oak" || surf.id === "walnut") {
+    // Đường ghép ván gỗ & vân gỗ dọc
+    const plankCount = 5;
+    const pw = w / plankCount;
+    for (let i = 0; i < plankCount; i++) {
+      ctx.fillStyle = i % 2 === 0 ? "rgba(255,255,255,0.035)" : "rgba(0,0,0,0.04)";
+      ctx.fillRect(i * pw, 0, pw, h);
+      if (i > 0) {
+        ctx.strokeStyle = surf.line;
+        ctx.lineWidth = Math.max(1, w / 360);
+        ctx.beginPath();
+        ctx.moveTo(i * pw, 0);
+        ctx.lineTo(i * pw, h);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = surf.grain;
+      ctx.lineWidth = Math.max(1, w / 420);
+      for (let g = 1; g <= 4; g++) {
+        const gx = i * pw + (pw * g) / 5;
+        ctx.beginPath();
+        ctx.moveTo(gx, 0);
+        ctx.bezierCurveTo(gx + 5, h * 0.33, gx - 5, h * 0.66, gx, h);
+        ctx.stroke();
+      }
+    }
+  } else {
+    // Giấy Kraft với vệt sợi nhẹ
+    ctx.fillStyle = surf.grain;
+    for (let i = 0; i < 65; i++) {
+      const px = ((i * 73) % 97) / 97 * w;
+      const py = ((i * 41) % 89) / 89 * h;
+      ctx.fillRect(px, py, (i % 5) + 2, 1.2);
+    }
+  }
+
+  // Ánh sáng góc trên trái đổ xuống nhẹ tạo chiều sâu studio
+  const light = ctx.createRadialGradient(w * 0.22, h * 0.16, 10, w * 0.5, h * 0.5, Math.max(w, h) * 0.88);
+  light.addColorStop(0, "rgba(255, 250, 238, 0.22)");
+  light.addColorStop(0.55, "rgba(255, 250, 238, 0.0)");
+  light.addColorStop(1, "rgba(0, 0, 0, 0.22)");
+  ctx.fillStyle = light;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function drawFlatlaySleepingCapoo(ctx, scaleFactor) {
+  // Bé mèo Capoo cuộn tròn nằm ngủ cực cưng giữa đống sách
+  const { pal, outlineCol } = getExactCapooPalette();
+  ctx.save();
+  ctx.scale(scaleFactor, scaleFactor);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  const rx = 20;
+  const ry = 11.5;
+
+  // Bóng nằm trên bàn
+  ctx.fillStyle = "rgba(0,0,0,0.22)";
+  ctx.beginPath();
+  ctx.ellipse(2, 4, rx * 1.05, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  const geom = {
+    rx,
+    ry,
+    earDroop: 0.48,
+    legVis: 1,
+    showArms: false,
+    armWave: 0,
+    paws: [
+      { x: -11, y: 0.5, rw: 2.6, rh: 2.8, rot: -0.2 },
+      { x: -4.5, y: 0.8, rw: 2.5, rh: 2.8, rot: 0 },
+      { x: 4.5, y: 0.8, rw: 2.5, rh: 2.8, rot: 0 },
+      { x: 11, y: 0.5, rw: 2.6, rh: 2.8, rot: 0.2 },
+    ],
+  };
+
+  paintCapooUnifiedSilhouette(ctx, geom, "outline", pal, outlineCol);
+  paintCapooUnifiedSilhouette(ctx, geom, "fill", pal, outlineCol);
+
+  // Vòng bụng
+  ctx.save();
+  traceCapooLoaf(ctx, rx, ry);
+  ctx.clip();
+  ctx.fillStyle = pal.belly;
+  ctx.beginPath();
+  ctx.ellipse(0, 2, rx * 0.46, ry * 0.68, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Mặt ngủ nhắm tịt + bong bóng mũi + chữ zZz
+  ctx.save();
+  ctx.translate(0, -ry * 1.08);
+  ctx.fillStyle = pal.cheek;
+  ctx.globalAlpha = 0.65;
+  ctx.beginPath();
+  ctx.ellipse(-9.5, 1.8, 2.4, 1.4, 0, 0, Math.PI * 2);
+  ctx.ellipse(9.5, 1.8, 2.4, 1.4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.strokeStyle = pal.mouthLine;
+  ctx.lineWidth = 1.8;
+  // Mắt ngủ cong u u
+  ctx.beginPath();
+  ctx.arc(-6.4, -0.4, 2.5, 0.15 * Math.PI, 0.85 * Math.PI);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(6.4, -0.4, 2.5, 0.15 * Math.PI, 0.85 * Math.PI);
+  ctx.stroke();
+  // Miệng w nhỏ
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-2.6, 1.4);
+  ctx.quadraticCurveTo(-1.3, 3.0, 0, 1.6);
+  ctx.quadraticCurveTo(1.3, 3.0, 2.6, 1.4);
+  ctx.stroke();
+
+  // Chữ zZz bay lên
+  ctx.fillStyle = outlineCol;
+  ctx.font = '700 8px "Be Vietnam Pro", sans-serif';
+  ctx.fillText("z", 14, -12);
+  ctx.font = '700 10px "Be Vietnam Pro", sans-serif';
+  ctx.fillText("Z", 19, -18);
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function renderFlatlayScene(ctx, w, h, flState, forExport = false) {
+  const surf = FL_SURFACES.find((s) => s.id === flState.surface) || FL_SURFACES[0];
+  drawFlatlayBackground(ctx, w, h, surf);
+
+  const unit = w / 310; // tỷ lệ chuẩn để xuất 1080px nét y hệt preview
+
+  flState.items.forEach((it) => {
+    const px = it.x * w;
+    const py = it.y * h;
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate((it.rot * Math.PI) / 180);
+
+    if (it.kind === "cat") {
+      drawFlatlaySleepingCapoo(ctx, it.scale * unit * 1.15);
+      if (!forExport && flState.selectedId === it.id) {
+        ctx.strokeStyle = "#E06B3E";
+        ctx.lineWidth = 1.8 * unit;
+        ctx.setLineDash([4 * unit, 3 * unit]);
+        ctx.strokeRect(-28 * it.scale * unit, -34 * it.scale * unit, 56 * it.scale * unit, 44 * it.scale * unit);
+      }
+      ctx.restore();
+      return;
+    }
+
+    const baseW = it.kind === "gift" ? 72 : 76;
+    const baseH = it.kind === "gift" ? 72 : 112;
+    const dw = baseW * it.scale * unit;
+    const dh = baseH * it.scale * unit;
+
+    // Bóng đổ dày kiểu cuốn sách/standee đặt trên bàn thật
+    ctx.save();
+    ctx.shadowColor = "rgba(18, 12, 6, 0.38)";
+    ctx.shadowBlur = 16 * unit;
+    ctx.shadowOffsetX = 6 * unit;
+    ctx.shadowOffsetY = 9 * unit;
+    ctx.fillStyle = "#2A2420";
+    ctx.beginPath();
+    const rad = (it.kind === "gift" ? 6 : 4) * unit;
+    if (ctx.roundRect) ctx.roundRect(-dw / 2, -dh / 2, dw, dh, rad);
+    else ctx.rect(-dw / 2, -dh / 2, dw, dh);
+    ctx.fill();
+    ctx.restore();
+
+    // Cạnh trang giấy trắng mỏng bên phải (cho sách/truyện)
+    if (it.kind !== "gift") {
+      ctx.fillStyle = "#F3EADB";
+      ctx.fillRect(dw / 2 - 2.2 * unit, -dh / 2 + 1.5 * unit, 3.6 * unit, dh - 3 * unit);
+    }
+
+    // Vẽ ảnh bìa / ảnh quà
+    ctx.save();
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-dw / 2, -dh / 2, dw, dh, rad);
+    else ctx.rect(-dw / 2, -dh / 2, dw, dh);
+    ctx.clip();
+
+    if (it.imgEl) {
+      // Cover-fit crop
+      const ir = it.imgEl.width / it.imgEl.height;
+      const dr = dw / dh;
+      let sx = 0, sy = 0, sw = it.imgEl.width, sh = it.imgEl.height;
+      if (ir > dr) {
+        sw = it.imgEl.height * dr;
+        sx = (it.imgEl.width - sw) / 2;
+      } else {
+        sh = it.imgEl.width / dr;
+        sy = (it.imgEl.height - sh) / 2;
+      }
+      ctx.drawImage(it.imgEl, sx, sy, sw, sh, -dw / 2, -dh / 2, dw, dh);
+    } else {
+      ctx.fillStyle = "#FAF3E4";
+      ctx.fillRect(-dw / 2, -dh / 2, dw, dh);
+      ctx.fillStyle = it.accent || "#9C4E24";
+      ctx.fillRect(-dw / 2, -dh / 2, 5 * unit, dh);
+      ctx.fillStyle = "#3B2818";
+      ctx.font = `700 ${Math.round(9.5 * it.scale * unit)}px "Be Vietnam Pro", sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const shortTitle = (it.title || "").slice(0, 18);
+      ctx.fillText(shortTitle, 2 * unit, 0);
+    }
+
+    // Rãnh gáy sách bên trái cho giống sách thật
+    if (it.kind !== "gift") {
+      const crease = ctx.createLinearGradient(-dw / 2, 0, -dw / 2 + 10 * unit, 0);
+      crease.addColorStop(0, "rgba(0,0,0,0.32)");
+      crease.addColorStop(0.35, "rgba(255,255,255,0.22)");
+      crease.addColorStop(0.6, "rgba(0,0,0,0.12)");
+      crease.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = crease;
+      ctx.fillRect(-dw / 2, -dh / 2, 10 * unit, dh);
+    }
+    ctx.restore();
+
+    // Viền mảnh tinh tế
+    ctx.strokeStyle = "rgba(255, 250, 240, 0.25)";
+    ctx.lineWidth = 1 * unit;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-dw / 2, -dh / 2, dw, dh, rad);
+    else ctx.rect(-dw / 2, -dh / 2, dw, dh);
+    ctx.stroke();
+
+    // Khung nét đứt khi đang chọn để chỉnh
+    if (!forExport && flState.selectedId === it.id) {
+      ctx.strokeStyle = "#E06B3E";
+      ctx.lineWidth = 2 * unit;
+      ctx.setLineDash([5 * unit, 3 * unit]);
+      ctx.strokeRect(-dw / 2 - 3 * unit, -dh / 2 - 3 * unit, dw + 6 * unit, dh + 6 * unit);
+    }
+
+    ctx.restore();
+  });
+
+  // Dấu chữ nhỏ ở góc đáy nếu bật
+  if (flState.showStamp) {
+    const totalVols = state.series.reduce((a, s) => a + getAllSeriesVolumes(s).length, 0);
+    ctx.save();
+    ctx.fillStyle = surf.textCol;
+    ctx.globalAlpha = 0.72;
+    ctx.font = `600 ${Math.round(9.5 * unit)}px "IBM Plex Mono", monospace`;
+    ctx.textAlign = "right";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(`TỦ SÁCH · ${state.series.length} BỘ · ${totalVols} TẬP`, w - 12 * unit, h - 10 * unit);
+    ctx.restore();
+  }
+}
+
+function openFlatlayStudioModal() {
+  // Gom danh sách bìa sách & quà có sẵn trong tủ
+  const bookChoices = state.series.map((s) => ({
+    key: "s_" + s.id,
+    kind: "book",
+    title: s.title,
+    src: resolveImg(s.cover),
+    accent: pubColorVar(s.publisher),
+  }));
+  const giftChoices = [];
+  state.giftGroups.forEach((g) => {
+    (g.gifts || []).forEach((it) => {
+      const src = resolveImg(it.image) || resolveImg(g.cover);
+      giftChoices.push({
+        key: "g_" + it.id,
+        kind: "gift",
+        title: it.name,
+        src,
+        accent: pubColorVar(g.publisher),
+      });
+    });
+  });
+
+  const flState = {
+    surface: "oak",
+    ratio: "story", // "story" (9:16) | "square" (1:1)
+    showStamp: true,
+    items: [],
+    selectedId: null,
+  };
+
+  const html = `
+    <div class="form-grid" style="gap:9px;">
+      <div class="fl-toolbar-row">
+        <div class="seg" id="flRatioSeg">
+          <button type="button" class="active" data-flr="story">9:16 Story</button>
+          <button type="button" data-flr="square">1:1 Vuông</button>
+        </div>
+        <div style="display:flex; gap:5px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-sm" id="flAutoBtn">Xếp gợi ý</button>
+          <button type="button" class="btn btn-sm" id="flAddCatBtn">+ Thả mèo</button>
+          <button type="button" class="btn btn-sm" id="flClearBtn">Dọn bàn</button>
+        </div>
+      </div>
+
+      <div class="chip-row" id="flSurfChips" style="margin-bottom:2px;">
+        ${FL_SURFACES.map((sf, i) => `<button type="button" class="chip ${i === 0 ? "active" : ""}" data-fls="${sf.id}">${sf.label}</button>`).join("")}
+      </div>
+
+      <div class="fl-stage-shell">
+        <div class="fl-canvas-wrap" id="flCanvasWrap">
+          <canvas id="flCanvas"></canvas>
+        </div>
+      </div>
+
+      <div class="fl-sel-bar" id="flSelBar" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <strong style="font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="flSelTitle">Đang chọn</strong>
+          <div style="display:flex; gap:5px;">
+            <button type="button" class="btn btn-sm" id="flFrontBtn" style="height:24px; font-size:11px;">Lên trên</button>
+            <button type="button" class="btn btn-sm btn-danger" id="flDelItemBtn" style="height:24px; font-size:11px;">Bỏ</button>
+          </div>
+        </div>
+        <div class="fl-slider-row">
+          <span class="small-muted">Xoay góc</span>
+          <input type="range" id="flRotRange" min="-45" max="45" step="1" value="0" />
+          <span class="mono small-muted" id="flRotVal">0°</span>
+        </div>
+        <div class="fl-slider-row">
+          <span class="small-muted">Kích cỡ</span>
+          <input type="range" id="flScaleRange" min="0.65" max="1.65" step="0.05" value="1" />
+          <span class="mono small-muted" id="flScaleVal">1.0x</span>
+        </div>
+      </div>
+
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span class="panel-title">Chạm để bày lên bàn (${bookChoices.length} bộ · ${giftChoices.length} quà)</span>
+          <label style="font-size:11px; display:inline-flex; align-items:center; gap:4px; cursor:pointer;">
+            <input type="checkbox" id="flStampChk" checked style="width:14px; height:14px;" />
+            <span>Kèm chữ ký tủ</span>
+          </label>
+        </div>
+        <div class="fl-picker-strip" id="flPickerStrip">
+          ${[...bookChoices, ...giftChoices]
+            .slice(0, 40)
+            .map(
+              (c, idx) => `
+              <button type="button" class="fl-pick-card" data-flpick="${idx}" title="${esc(c.title)}">
+                <span class="fl-pick-thumb">${c.src ? `<img src="${esc(c.src)}" alt="" loading="lazy" />` : esc(c.title.slice(0, 12))}</span>
+                <span class="fl-pick-name">${esc(c.title)}</span>
+              </button>`
+            )
+            .join("")}
+        </div>
+      </div>
+
+      <div class="modal-actions" style="justify-content:space-between; margin-top:4px;">
+        <span class="small-muted" style="font-size:11px;">Kéo thả trực tiếp trên bàn</span>
+        <button type="button" class="btn btn-sm btn-primary" id="flExportBtn">Lưu ảnh khoe Story</button>
+      </div>
+    </div>`;
+
+  const allChoices = [...bookChoices, ...giftChoices].slice(0, 40);
+
+  openModal('Bàn "Bày Mâm" (Flatlay Studio)', html, (body) => {
+    const wrap = body.querySelector("#flCanvasWrap");
+    const canvas = body.querySelector("#flCanvas");
+    const ctx = canvas.getContext("2d");
+    const selBar = body.querySelector("#flSelBar");
+    const selTitle = body.querySelector("#flSelTitle");
+    const rotRange = body.querySelector("#flRotRange");
+    const rotVal = body.querySelector("#flRotVal");
+    const scaleRange = body.querySelector("#flScaleRange");
+    const scaleVal = body.querySelector("#flScaleVal");
+
+    const draw = () => {
+      const cw = Math.max(180, Math.round(wrap.clientWidth || 300));
+      const ch = Math.max(180, Math.round(wrap.clientHeight || (flState.ratio === "square" ? cw : cw * (16 / 9))));
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (canvas.width !== Math.round(cw * dpr) || canvas.height !== Math.round(ch * dpr)) {
+        canvas.width = Math.round(cw * dpr);
+        canvas.height = Math.round(ch * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      renderFlatlayScene(ctx, cw, ch, flState, false);
+    };
+
+    const syncSelUI = () => {
+      const sel = flState.items.find((x) => x.id === flState.selectedId);
+      if (!sel) {
+        selBar.style.display = "none";
+        return;
+      }
+      selBar.style.display = "flex";
+      selTitle.textContent = sel.kind === "cat" ? "Bé mèo Capoo nằm ngủ" : sel.title;
+      rotRange.value = String(Math.round(sel.rot));
+      rotVal.textContent = Math.round(sel.rot) + "°";
+      scaleRange.value = String(sel.scale.toFixed(2));
+      scaleVal.textContent = sel.scale.toFixed(1) + "x";
+    };
+
+    const addItemToTable = async (choice, presetPos = null) => {
+      const imgEl = choice.src ? await loadFlImage(choice.src) : null;
+      const item = {
+        id: "fl_" + uid(),
+        kind: choice.kind,
+        title: choice.title,
+        src: choice.src,
+        accent: choice.accent,
+        imgEl,
+        x: presetPos ? presetPos.x : 0.28 + Math.random() * 0.44,
+        y: presetPos ? presetPos.y : 0.24 + Math.random() * 0.52,
+        rot: presetPos ? presetPos.rot : Math.round((Math.random() - 0.5) * 28),
+        scale: presetPos ? presetPos.scale : 1.0,
+      };
+      flState.items.push(item);
+      flState.selectedId = item.id;
+      syncSelUI();
+      draw();
+    };
+
+    const autoArrange = async () => {
+      flState.items = [];
+      const picks = [...bookChoices.filter((b) => b.src), ...bookChoices.filter((b) => !b.src)].slice(0, 5);
+      const giftPick = giftChoices.find((g) => g.src) || giftChoices[0];
+      if (giftPick) picks.push(giftPick);
+
+      const slots = [
+        { x: 0.30, y: 0.24, rot: -10, scale: 1.05 },
+        { x: 0.70, y: 0.26, rot: 9, scale: 1.02 },
+        { x: 0.48, y: 0.47, rot: -3, scale: 1.12 },
+        { x: 0.28, y: 0.70, rot: 12, scale: 0.98 },
+        { x: 0.72, y: 0.71, rot: -11, scale: 1.0 },
+        { x: 0.76, y: 0.49, rot: 15, scale: 0.9 },
+      ];
+      for (let i = 0; i < picks.length; i++) {
+        await addItemToTable(picks[i], slots[i % slots.length]);
+      }
+      // Thả luôn 1 bé mèo ngủ ở góc dưới cho xinh
+      flState.items.push({
+        id: "fl_cat_" + uid(),
+        kind: "cat",
+        title: "Mèo Capoo",
+        x: 0.5,
+        y: 0.85,
+        rot: -4,
+        scale: 1.15,
+      });
+      flState.selectedId = null;
+      syncSelUI();
+      draw();
+    };
+
+    // Controls
+    body.querySelector("#flRatioSeg").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-flr]");
+      if (!btn) return;
+      flState.ratio = btn.dataset.flr;
+      body.querySelectorAll("#flRatioSeg button").forEach((b) => b.classList.toggle("active", b === btn));
+      wrap.classList.toggle("is-square", flState.ratio === "square");
+      requestAnimationFrame(draw);
+    });
+
+    body.querySelector("#flSurfChips").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-fls]");
+      if (!btn) return;
+      flState.surface = btn.dataset.fls;
+      body.querySelectorAll("#flSurfChips .chip").forEach((c) => c.classList.toggle("active", c === btn));
+      draw();
+    });
+
+    body.querySelector("#flAutoBtn").addEventListener("click", () => {
+      SFX.pop();
+      autoArrange();
+    });
+
+    body.querySelector("#flAddCatBtn").addEventListener("click", () => {
+      SFX.catWake();
+      const catItem = {
+        id: "fl_cat_" + uid(),
+        kind: "cat",
+        title: "Mèo Capoo",
+        x: 0.5,
+        y: 0.52,
+        rot: 0,
+        scale: 1.15,
+      };
+      flState.items.push(catItem);
+      flState.selectedId = catItem.id;
+      syncSelUI();
+      draw();
+    });
+
+    body.querySelector("#flClearBtn").addEventListener("click", () => {
+      flState.items = [];
+      flState.selectedId = null;
+      syncSelUI();
+      draw();
+    });
+
+    body.querySelector("#flStampChk").addEventListener("change", (e) => {
+      flState.showStamp = e.target.checked;
+      draw();
+    });
+
+    body.querySelector("#flPickerStrip").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-flpick]");
+      if (!btn) return;
+      const choice = allChoices[Number(btn.dataset.flpick)];
+      if (choice) {
+        SFX.pop();
+        addItemToTable(choice);
+      }
+    });
+
+    rotRange.addEventListener("input", () => {
+      const sel = flState.items.find((x) => x.id === flState.selectedId);
+      if (!sel) return;
+      sel.rot = Number(rotRange.value) || 0;
+      rotVal.textContent = sel.rot + "°";
+      draw();
+    });
+
+    scaleRange.addEventListener("input", () => {
+      const sel = flState.items.find((x) => x.id === flState.selectedId);
+      if (!sel) return;
+      sel.scale = Number(scaleRange.value) || 1;
+      scaleVal.textContent = sel.scale.toFixed(1) + "x";
+      draw();
+    });
+
+    body.querySelector("#flFrontBtn").addEventListener("click", () => {
+      const idx = flState.items.findIndex((x) => x.id === flState.selectedId);
+      if (idx === -1) return;
+      const [it] = flState.items.splice(idx, 1);
+      flState.items.push(it);
+      draw();
+    });
+
+    body.querySelector("#flDelItemBtn").addEventListener("click", () => {
+      flState.items = flState.items.filter((x) => x.id !== flState.selectedId);
+      flState.selectedId = null;
+      syncSelUI();
+      draw();
+    });
+
+    // Kéo thả trên canvas
+    let dragItem = null;
+    let dragOffX = 0;
+    let dragOffY = 0;
+
+    const hitTest = (nx, ny, cw, ch) => {
+      const unit = cw / 310;
+      for (let i = flState.items.length - 1; i >= 0; i--) {
+        const it = flState.items[i];
+        const ix = it.x * cw;
+        const iy = it.y * ch;
+        const rad = (it.kind === "cat" ? 32 : it.kind === "gift" ? 40 : 50) * it.scale * unit;
+        if (Math.hypot(nx - ix, ny - iy) <= rad) return it;
+      }
+      return null;
+    };
+
+    canvas.addEventListener("pointerdown", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+      const hit = hitTest(cx, cy, rect.width, rect.height);
+      if (hit) {
+        dragItem = hit;
+        flState.selectedId = hit.id;
+        // Đưa item vừa chạm lên trên cùng
+        const idx = flState.items.indexOf(hit);
+        if (idx !== -1) {
+          flState.items.splice(idx, 1);
+          flState.items.push(hit);
+        }
+        dragOffX = cx - hit.x * rect.width;
+        dragOffY = cy - hit.y * rect.height;
+        canvas.setPointerCapture?.(e.pointerId);
+      } else {
+        flState.selectedId = null;
+      }
+      syncSelUI();
+      draw();
+    });
+
+    canvas.addEventListener("pointermove", (e) => {
+      if (!dragItem) return;
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+      dragItem.x = Math.max(0.06, Math.min(0.94, (cx - dragOffX) / rect.width));
+      dragItem.y = Math.max(0.06, Math.min(0.94, (cy - dragOffY) / rect.height));
+      draw();
+    });
+
+    const endDrag = () => { dragItem = null; };
+    canvas.addEventListener("pointerup", endDrag);
+    canvas.addEventListener("pointercancel", endDrag);
+
+    // Xuất ảnh PNG độ phân giải cao (1080x1920 hoặc 1080x1080)
+    body.querySelector("#flExportBtn").addEventListener("click", async () => {
+      SFX.shutter();
+      const outW = 1080;
+      const outH = flState.ratio === "square" ? 1080 : 1920;
+      const outCvs = document.createElement("canvas");
+      outCvs.width = outW;
+      outCvs.height = outH;
+      const octx = outCvs.getContext("2d");
+      renderFlatlayScene(octx, outW, outH, flState, true);
+      const dataUrl = outCvs.toDataURL("image/png");
+
+      // Thử dùng Share Sheet trên iPhone nếu có, hoặc mở bảng xem & lưu ảnh trực tiếp
+      const previewHtml = `
+        <div class="form-grid">
+          <div class="receipt-preview-box">
+            <img src="${dataUrl}" alt="Bày mâm Tủ Sách" />
+          </div>
+          <div class="small-muted" style="text-align:center;">
+            Trên iPhone: bấm <strong>Chia sẻ / Lưu ảnh</strong> hoặc nhấn giữ trực tiếp vào ảnh để lưu vào Thư viện ảnh.
+          </div>
+          <div class="modal-actions" style="justify-content:space-between;">
+            <button type="button" class="btn btn-sm" id="flBackEditBtn">← Sửa tiếp</button>
+            <div style="display:flex; gap:6px;">
+              <a class="btn btn-sm" href="${dataUrl}" download="tu-sach-bay-mam.png">Tải PNG</a>
+              <button type="button" class="btn btn-sm btn-primary" id="flNativeShareBtn">Chia sẻ / Lưu</button>
+            </div>
+          </div>
+        </div>`;
+
+      openModal("Ảnh Bày Mâm sẵn sàng!", previewHtml, (pBody) => {
+        pBody.querySelector("#flBackEditBtn").addEventListener("click", () => openFlatlayStudioModal());
+        pBody.querySelector("#flNativeShareBtn").addEventListener("click", async () => {
+          try {
+            const res = await fetch(dataUrl);
+            const blob = await res.blob();
+            const file = new File([blob], "tu-sach-bay-mam.png", { type: "image/png" });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({ files: [file], title: "Tủ Sách — Bày mâm" });
+              return;
+            }
+          } catch {}
+          showToast("Nhấn giữ vào ảnh ở trên -> Lưu vào Ảnh nhé!");
+        });
+      });
+    });
+
+    // Tự bày mâm mẫu ngay khi mở nếu có sách
+    requestAnimationFrame(() => {
+      if (bookChoices.length) autoArrange();
+      else draw();
+    });
+  });
+}
+
+/* ============================================================
+   2. TIME-LAPSE "HÀNH TRÌNH PHÌNH TỦ"
+   ============================================================ */
+function openTimelapseModal() {
+  const events = [];
+  state.series.forEach((s) => {
+    const pal = rgbToSpinePalette(pubFallbackRGB(s.publisher));
+    const accent = pal.accent || "#CE6E4E";
+    const baseRgb = pubFallbackRGB(s.publisher);
+    const spineColor = `rgb(${Math.max(40, Math.round(baseRgb[0] * 0.72))}, ${Math.max(40, Math.round(baseRgb[1] * 0.72))}, ${Math.max(40, Math.round(baseRgb[2] * 0.72))})`;
+    const cm = s.category === "Sách" ? 2.3 : s.category === "Light Novel" ? 2.0 : s.category === "Artbook" ? 1.8 : 1.5;
+
+    getAllSeriesVolumes(s).forEach((v) => {
+      const dtStr = (v.date && /^\d{4}-\d{2}-\d{2}/.test(v.date)) ? v.date.slice(0, 10) : (s.createdAt || todayISO());
+      events.push({
+        date: dtStr,
+        ym: dtStr.slice(0, 7),
+        title: s.title,
+        paid: Math.max(0, Number(v.paidPrice) || 0),
+        cm,
+        color: spineColor,
+        accent,
+        hFactor: 0.78 + ((hashStringFast(s.id).charCodeAt(0) % 7) * 0.03),
+      });
+    });
+  });
+
+  if (!events.length) {
+    showToast("Tủ sách chưa có tập nào để chạy Time-lapse!");
+    return;
+  }
+
+  events.sort((a, b) => a.date.localeCompare(b.date));
+
+  const html = `
+    <div class="form-grid" style="gap:9px;">
+      <div class="tl-hud">
+        <div class="tl-hud-box">
+          <div class="tl-hud-lbl">Số tập</div>
+          <div class="tl-hud-val mono" id="tlVolVal">0</div>
+        </div>
+        <div class="tl-hud-box">
+          <div class="tl-hud-lbl">Tổng chi</div>
+          <div class="tl-hud-val mono" id="tlMoneyVal">0đ</div>
+        </div>
+        <div class="tl-hud-box">
+          <div class="tl-hud-lbl">Dài kệ</div>
+          <div class="tl-hud-val mono" id="tlLenVal">0 cm</div>
+        </div>
+      </div>
+
+      <div class="tl-stage">
+        <canvas id="tlCanvas"></canvas>
+        <div class="tl-month-pill mono" id="tlMonthPill">Bắt đầu...</div>
+      </div>
+
+      <div class="tl-controls">
+        <button type="button" class="btn btn-sm btn-primary" id="tlPlayBtn">❚❚ Tạm dừng</button>
+        <input type="range" id="tlScrub" min="0" max="1000" value="0" />
+        <button type="button" class="btn btn-sm mono" id="tlSpeedBtn">1x</button>
+      </div>
+      <div class="small-muted" style="text-align:center;" id="tlCaption">
+        Tua nhanh hành trình từ ${esc(events[0].date)} đến ${esc(events[events.length - 1].date)} (${events.length} tập)
+      </div>
+    </div>`;
+
+  let rafId = null;
+  openModal('Time-lapse "Hành trình phình tủ"', html, (body) => {
+    const canvas = body.querySelector("#tlCanvas");
+    const ctx = canvas.getContext("2d");
+    const volEl = body.querySelector("#tlVolVal");
+    const moneyEl = body.querySelector("#tlMoneyVal");
+    const lenEl = body.querySelector("#tlLenVal");
+    const monthPill = body.querySelector("#tlMonthPill");
+    const playBtn = body.querySelector("#tlPlayBtn");
+    const scrub = body.querySelector("#tlScrub");
+    const speedBtn = body.querySelector("#tlSpeedBtn");
+
+    let progress = 0; // 0 -> 1
+    let playing = true;
+    let speedMul = 1;
+    let lastTs = performance.now();
+    let lastSoundIdx = -1;
+    let lastSoundAt = 0;
+    const durationSec = 5.5;
+
+    const drawShelfTimelapse = (prog) => {
+      const cw = Math.max(240, Math.round(canvas.clientWidth || 320));
+      const ch = 270;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (canvas.width !== Math.round(cw * dpr) || canvas.height !== Math.round(ch * dpr)) {
+        canvas.width = Math.round(cw * dpr);
+        canvas.height = Math.round(ch * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Nền tủ gỗ 4 tầng
+      ctx.fillStyle = "#181310";
+      ctx.fillRect(0, 0, cw, ch);
+
+      const tiers = 4;
+      const padX = 12;
+      const padTop = 34;
+      const plankH = 8;
+      const usableH = ch - padTop - 8;
+      const tierH = usableH / tiers;
+
+      for (let t = 0; t < tiers; t++) {
+        const yBot = padTop + (t + 1) * tierH;
+        // Hốc tối
+        const bgGrad = ctx.createLinearGradient(0, yBot - tierH, 0, yBot);
+        bgGrad.addColorStop(0, "#1D1713");
+        bgGrad.addColorStop(1, "#0E0B09");
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(padX, yBot - tierH + 2, cw - padX * 2, tierH - plankH);
+
+        // Ván gỗ ngang
+        const plGrad = ctx.createLinearGradient(0, yBot - plankH, 0, yBot);
+        plGrad.addColorStop(0, "#634E3E");
+        plGrad.addColorStop(0.35, "#423328");
+        plGrad.addColorStop(1, "#211914");
+        ctx.fillStyle = plGrad;
+        ctx.fillRect(padX - 4, yBot - plankH, cw - (padX - 4) * 2, plankH);
+      }
+
+      const shownFloat = prog * events.length;
+      const shownCount = Math.min(events.length, Math.floor(shownFloat));
+
+      // Tính kích thước gáy sách sao cho toàn bộ tủ vừa đẹp trên 4 tầng
+      const rowW = cw - padX * 2 - 8;
+      const maxPerTier = Math.max(18, Math.ceil(events.length / tiers));
+      const slotW = Math.min(14, Math.max(2.2, rowW / maxPerTier));
+      const bookGap = slotW > 5 ? 1.2 : 0.4;
+      const bookW = Math.max(1.8, slotW - bookGap);
+
+      let sumMoney = 0;
+      let sumCm = 0;
+
+      for (let i = 0; i < shownCount; i++) {
+        const ev = events[i];
+        sumMoney += ev.paid;
+        sumCm += ev.cm;
+
+        const tier = Math.min(tiers - 1, Math.floor(i / maxPerTier));
+        const col = i % maxPerTier;
+        const yFloor = padTop + (tier + 1) * tierH - plankH;
+        const bx = padX + 4 + col * slotW;
+
+        // Hiệu ứng mọc bật nhẹ cho những cuốn vừa xuất hiện
+        const age = shownFloat - i;
+        const popScale = age < 1 ? 0.35 + 0.65 * Math.min(1, age * 1.4) : 1;
+        const bh = (tierH - plankH - 8) * ev.hFactor * popScale;
+
+        ctx.fillStyle = ev.color;
+        ctx.fillRect(bx, yFloor - bh, bookW, bh);
+        // Đường nhấn đỉnh gáy
+        ctx.fillStyle = ev.accent;
+        ctx.fillRect(bx, yFloor - bh, bookW, Math.max(1.5, bh * 0.1));
+        // Bóng viền phải tạo độ nổi
+        ctx.fillStyle = "rgba(0,0,0,0.28)";
+        ctx.fillRect(bx + bookW - 0.8, yFloor - bh, 0.8, bh);
+      }
+
+      // Cập nhật HUD
+      volEl.textContent = `${shownCount} tập`;
+      moneyEl.textContent = fmtMoney(sumMoney);
+      lenEl.textContent = sumCm >= 100 ? `${(sumCm / 100).toFixed(2).replace(".", ",")} m` : `${Math.round(sumCm)} cm`;
+      if (shownCount > 0) {
+        const curEv = events[shownCount - 1];
+        monthPill.textContent = `Tháng ${curEv.ym.slice(5)}/${curEv.ym.slice(0, 4)} · ${curEv.title.slice(0, 22)}`;
+      } else {
+        monthPill.textContent = "Bắt đầu hành trình...";
+      }
+
+      // Tiếng lách cách nhẹ khi sách mọc lên (giới hạn tần suất để êm tai)
+      if (playing && shownCount > lastSoundIdx && performance.now() - lastSoundAt > 95) {
+        lastSoundIdx = shownCount;
+        lastSoundAt = performance.now();
+        SFX.catTap(false);
+      }
+    };
+
+    const tick = (now) => {
+      if (!canvas.isConnected) {
+        rafId = null;
+        return;
+      }
+      const dt = Math.min(0.05, Math.max(0.004, (now - lastTs) / 1000));
+      lastTs = now;
+      if (playing) {
+        progress += (dt * speedMul) / durationSec;
+        if (progress >= 1) {
+          progress = 1;
+          playing = false;
+          playBtn.textContent = "↻ Phát lại";
+          SFX.success();
+          spawnCelebration(undefined, undefined, 16);
+        }
+        scrub.value = String(Math.round(progress * 1000));
+      }
+      drawShelfTimelapse(progress);
+      rafId = requestAnimationFrame(tick);
+    };
+
+    playBtn.addEventListener("click", () => {
+      if (progress >= 1) {
+        progress = 0;
+        lastSoundIdx = -1;
+        playing = true;
+      } else {
+        playing = !playing;
+      }
+      playBtn.textContent = playing ? "❚❚ Tạm dừng" : "▶ Tiếp tục";
+      lastTs = performance.now();
+    });
+
+    speedBtn.addEventListener("click", () => {
+      speedMul = speedMul === 1 ? 2 : 1;
+      speedBtn.textContent = speedMul + "x";
+    });
+
+    scrub.addEventListener("input", () => {
+      progress = Math.max(0, Math.min(1, Number(scrub.value) / 1000));
+      playing = false;
+      playBtn.textContent = "▶ Tiếp tục";
+      drawShelfTimelapse(progress);
+    });
+
+    rafId = requestAnimationFrame(tick);
+  }, () => {
+    if (rafId !== null) cancelAnimationFrame(rafId);
+  });
+}
+
+/* ============================================================
+   3. LẬT BÌA 3D NHƯ CẦM SÁCH THẬT (3D INTERACTIVE BOOK COVER FLIP)
+   ============================================================ */
+function openVolumeBookFlip(seriesId, sectionId, volId) {
+  const s = state.series.find((x) => x.id === seriesId);
+  const sec = s ? (s.sections || []).find((x) => x.id === sectionId) : null;
+  if (!s || !sec) return;
+
+  const sortedVols = [...(sec.volumes || [])].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0));
+  const curIdx = sortedVols.findIndex((x) => x.id === volId);
+  const v = sortedVols[curIdx];
+  if (!v) return openSectionDetail(seriesId, sectionId);
+
+  const prevVol = curIdx > 0 ? sortedVols[curIdx - 1] : null;
+  const nextVol = curIdx < sortedVols.length - 1 ? sortedVols[curIdx + 1] : null;
+
+  const coverImg = resolveImg(v.image) || resolveImg(s.cover);
+  const holo = isSpecialSection(sec) || isSpecialSeries(s);
+  const cp = Number(v.coverPrice) || 0;
+  const pp = Number(v.paidPrice) || 0;
+  const discPct = cp > 0 && pp <= cp ? Math.round(((cp - pp) / cp) * 100) : 0;
+  const READ_STATES = ["Chưa đọc", "Đang đọc", "Đã đọc", "Nguyên seal"];
+
+  const frontHtml = coverImg
+    ? `<img src="${esc(coverImg)}" alt="Tập ${esc(v.number)}" />
+       ${holo ? `<span class="holo-pill mono">ĐB</span>` : ""}
+       <span class="cover-badge mono">Tập ${esc(v.number)}</span>`
+    : `<div class="typo-cover" style="border-left-color:${pubColorVar(s.publisher)}; height:100%;">
+         <div class="typo-pub mono">${esc(s.publisher)}</div>
+         <div class="typo-title" style="font-size:15px;">${esc(s.title)}<br/><span class="mono" style="font-size:13px; color:var(--accent);">Tập ${esc(v.number)}</span></div>
+         <div class="typo-cat mono">${esc(sec.name)}</div>
+       </div>`;
+
+  const html = `
+    <div class="crumb-bar">
+      <button type="button" class="btn btn-sm" id="flipBackSecBtn">← ${esc(sec.name.slice(0, 22))}</button>
+      <div style="display:flex; gap:5px;">
+        <button type="button" class="btn btn-sm" id="flipPrevBtn" ${prevVol ? "" : "disabled"}>‹ T.${prevVol ? esc(prevVol.number) : ""}</button>
+        <button type="button" class="btn btn-sm" id="flipNextBtn" ${nextVol ? "" : "disabled"}>T.${nextVol ? esc(nextVol.number) : ""} ›</button>
+      </div>
+    </div>
+
+    <div class="flip3d-stage">
+      <div class="flip3d-book" id="flip3dBook">
+        <div class="flip3d-page">
+          <div>
+            <div class="flip3d-colophon-head">
+              <div class="flip3d-colophon-pub mono">${esc(s.publisher)} · ${esc(sec.name)}</div>
+              <div class="flip3d-colophon-title">${esc(s.title)} — Tập ${esc(v.number)}</div>
+            </div>
+            <div class="flip3d-colophon-rows">
+              <div class="flip3d-row">
+                <span>Ngày mua</span>
+                <strong class="mono">${v.isLegacy ? "Mua từ trước" : esc(v.date || "—")}</strong>
+              </div>
+              <div class="flip3d-row">
+                <span>Giá bìa</span>
+                <strong class="mono">${fmtMoney(cp)}</strong>
+              </div>
+              <div class="flip3d-row">
+                <span>Thực chi</span>
+                <strong class="mono">${fmtMoney(pp)}${discPct > 0 ? ` (-${discPct}%)` : ""}</strong>
+              </div>
+              <div class="flip3d-row">
+                <span>Tình trạng</span>
+                <strong id="flipReadVal">${esc(v.readState || "Chưa đọc")}</strong>
+              </div>
+              ${
+                (v.lentTo || "").trim()
+                  ? `<div class="flip3d-row"><span>Cho mượn</span><strong style="color:#A83528;">${esc(v.lentTo)}</strong></div>`
+                  : ""
+              }
+            </div>
+            ${v.note ? `<div class="flip3d-note-box">${esc(v.note)}</div>` : ""}
+          </div>
+          <div class="flip3d-stamp mono">${esc((v.readState || "TỦ SÁCH").toUpperCase())}</div>
+        </div>
+
+        <div class="flip3d-cover">
+          <div class="flip3d-front ${holo ? "is-holo" : ""}">${frontHtml}</div>
+          <div class="flip3d-back">
+            <div class="mono" style="font-size:10px; letter-spacing:0.08em; text-transform:uppercase; opacity:0.7;">EX LIBRIS</div>
+            <div style="font-size:13px; font-weight:700; margin:6px 0;">Tủ Sách</div>
+            <div style="font-size:11px; opacity:0.85;">${esc(s.title)}</div>
+            <div class="mono" style="font-size:10.5px; margin-top:6px; opacity:0.75;">Tập ${esc(v.number)} · ${esc(s.publisher)}</div>
+          </div>
+        </div>
+      </div>
+      <div class="flip3d-hint" id="flip3dHint">Chạm vào bìa sách để lật mở 3D ↻</div>
+    </div>
+
+    <div class="modal-actions" style="justify-content:space-between; flex-wrap:wrap;">
+      <button type="button" class="btn btn-sm" id="flipCycleReadBtn">Đổi tình trạng đọc</button>
+      <div style="display:flex; gap:6px;">
+        <button type="button" class="btn btn-sm" id="flipToggleBtn">Lật mở bìa</button>
+        <button type="button" class="btn btn-sm btn-primary" id="flipEditBtn">Sửa tập</button>
+      </div>
+    </div>`;
+
+  openModal(`${s.title} — Tập ${v.number}`, html, (body) => {
+    const bookEl = body.querySelector("#flip3dBook");
+    const hintEl = body.querySelector("#flip3dHint");
+    const toggleBtn = body.querySelector("#flipToggleBtn");
+    const readValEl = body.querySelector("#flipReadVal");
+    const stampEl = body.querySelector(".flip3d-stamp");
+
+    // Ambient background glow theo bìa tập
+    const fbRgb = pubFallbackRGB(s.publisher);
+    body.classList.add("has-ambient");
+    body.style.setProperty("--amb-rgb", fbRgb.join(","));
+    if (coverImg) {
+      extractDominantColor(coverImg, s.publisher).then((rgb) => {
+        if (body.isConnected) body.style.setProperty("--amb-rgb", rgb.join(","));
+      });
+    }
+
+    const setFlipped = (open) => {
+      bookEl.classList.toggle("is-open", open);
+      toggleBtn.textContent = open ? "Gập bìa lại" : "Lật mở bìa";
+      hintEl.textContent = open ? "Chạm lần nữa để gập bìa lại ↺" : "Chạm vào bìa sách để lật mở 3D ↻";
+      if (open) SFX.shelfPull();
+      else SFX.close();
+    };
+
+    bookEl.addEventListener("click", () => setFlipped(!bookEl.classList.contains("is-open")));
+    toggleBtn.addEventListener("click", () => setFlipped(!bookEl.classList.contains("is-open")));
+
+    body.querySelector("#flipBackSecBtn").addEventListener("click", () => openSectionDetail(seriesId, sectionId));
+    if (prevVol) {
+      body.querySelector("#flipPrevBtn").addEventListener("click", () => openVolumeBookFlip(seriesId, sectionId, prevVol.id));
+    }
+    if (nextVol) {
+      body.querySelector("#flipNextBtn").addEventListener("click", () => openVolumeBookFlip(seriesId, sectionId, nextVol.id));
+    }
+    body.querySelector("#flipEditBtn").addEventListener("click", () => openVolumeForm(seriesId, sectionId, volId));
+
+    body.querySelector("#flipCycleReadBtn").addEventListener("click", () => {
+      const idx = (READ_STATES.indexOf(v.readState || "Chưa đọc") + 1) % READ_STATES.length;
+      v.readState = READ_STATES[idx];
+      readValEl.textContent = v.readState;
+      if (stampEl) stampEl.textContent = v.readState.toUpperCase();
+      SFX.status(idx);
+      saveState();
+      renderBooks();
+      if (!bookEl.classList.contains("is-open")) setFlipped(true);
+      showToast(`Tình trạng -> ${v.readState}`);
+    });
+  });
+}
+
+// Gắn nút mở Bàn Bày Mâm & Time-lapse
+document.getElementById("openFlatlayBtn")?.addEventListener("click", () => {
+  SFX.openBook();
+  openFlatlayStudioModal();
+});
+document.getElementById("openFlatlaySpendBtn")?.addEventListener("click", () => {
+  SFX.openBook();
+  openFlatlayStudioModal();
+});
+document.getElementById("openTimelapseBtn")?.addEventListener("click", () => {
+  SFX.openBook();
+  openTimelapseModal();
 });
   </script>
 
