@@ -1092,6 +1092,7 @@ a {
 }
 
 .modal {
+  position: relative;
   width: 100%;
   max-width: 540px;
   max-height: 90dvh;
@@ -1099,7 +1100,7 @@ a {
   border-top: 1px solid var(--line-strong);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.24);
   animation: modalSheetIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   transition: transform 0.2s ease, opacity 0.2s ease;
@@ -4014,6 +4015,22 @@ body {
   font-size: 11.5px;
   color: var(--muted);
 }
+
+/* Mèo ăn mừng ngồi ngay giữa mép trên modal Nhập kho nhanh */
+.modal-cat-canvas {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 44px;
+  pointer-events: none;
+  z-index: 10;
+  display: none;
+}
+.modal-cat-canvas.show {
+  display: block;
+}
 </style>
 </head>
 <body>
@@ -4255,6 +4272,7 @@ body {
   <!-- Reusable Modal -->
   <div class="modal-backdrop" id="modalBackdrop">
     <div class="modal" role="dialog" aria-modal="true">
+      <canvas id="modalCatCanvas" class="modal-cat-canvas" aria-hidden="true"></canvas>
       <div class="modal-head">
         <div class="modal-title" id="modalTitle">Chi tiết</div>
         <button class="btn btn-sm" id="modalCloseBtn">Đóng</button>
@@ -11622,6 +11640,7 @@ function openQuickImportFromNews(item) {
     </form>`;
 
   openModal("Đã mua → Nhập kho nhanh", html, (body) => {
+    if (typeof startModalCelebrateCat === "function") startModalCelebrateCat();
     const targetSel = body.querySelector("#qiTarget");
     const bookExtra = body.querySelector("#qiBookExtra");
     const giftNameWrap = body.querySelector("#qiGiftNameWrap");
@@ -11741,6 +11760,8 @@ function openQuickImportFromNews(item) {
       closeModal();
       SFX.success();
     });
+  }, () => {
+    if (typeof stopModalCelebrateCat === "function") stopModalCelebrateCat();
   });
 }
   </script>
@@ -14679,35 +14700,67 @@ function ensureBudgetCatLoop() {
           },
         });
 
-        // Cái hộp carton nhỏ đội/đè trên đầu bé mèo
+        // Chiếc ví da rỗng mở toang úp lên đầu bé mèo (đường chỉ khâu + khoá đồng + khe rỗng tối)
+        const { outlineCol: wInk } = getExactCapooPalette();
         ctx.save();
-        ctx.translate(cx, groundY - 20.5);
-        ctx.rotate(0.08);
-        ctx.fillStyle = "#C89B63";
-        ctx.strokeStyle = "#4A341C";
-        ctx.lineWidth = 1.5;
+        ctx.translate(cx, groundY - 22.5);
+        ctx.rotate(0.12);
+
+        // Nửa mặt sau ví mở vểnh lên
+        ctx.fillStyle = "#8C5430";
+        ctx.strokeStyle = wInk;
+        ctx.lineWidth = 1.8;
         ctx.beginPath();
-        ctx.rect(-10, -7, 20, 12);
+        if (ctx.roundRect) ctx.roundRect(-11, -10.5, 22, 10, 3);
+        else ctx.rect(-11, -10.5, 22, 10);
         ctx.fill();
         ctx.stroke();
-        // Nắp hộp hở nhẹ & băng keo giữa hộp
-        ctx.fillStyle = "#DDB682";
+
+        // Khe rỗng tối bên trong ví (trống trơn không còn đồng nào!)
+        ctx.fillStyle = "#2E1A0E";
         ctx.beginPath();
-        ctx.moveTo(-10, -7);
-        ctx.lineTo(-14, -10.5);
-        ctx.lineTo(-2, -10.5);
-        ctx.lineTo(0, -7);
-        ctx.closePath();
+        ctx.ellipse(0, -1.5, 9.5, 3.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Nửa mặt trước ví da nâu ấm có viền chỉ khâu
+        const wGrad = ctx.createLinearGradient(-10, -4, 10, 5);
+        wGrad.addColorStop(0, "#C47D48");
+        wGrad.addColorStop(1, "#9B5A2E");
+        ctx.fillStyle = wGrad;
+        ctx.strokeStyle = wInk;
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(-11.5, -3.5, 23, 9.5, 3.2);
+        else ctx.rect(-11.5, -3.5, 23, 9.5);
         ctx.fill();
         ctx.stroke();
+
+        // Đường chỉ khâu nét đứt tinh tế
+        ctx.strokeStyle = "rgba(255, 236, 200, 0.55)";
+        ctx.lineWidth = 0.85;
+        ctx.setLineDash([2, 1.8]);
         ctx.beginPath();
-        ctx.moveTo(10, -7);
-        ctx.lineTo(14, -10.5);
-        ctx.lineTo(2, -10.5);
-        ctx.lineTo(0, -7);
-        ctx.closePath();
+        ctx.moveTo(-9, -1.2);
+        ctx.lineTo(9, -1.2);
+        ctx.moveTo(-9, 3.8);
+        ctx.lineTo(9, 3.8);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Quai gài & nút bấm vàng đồng giữa ví
+        ctx.fillStyle = "#A96334";
+        ctx.strokeStyle = wInk;
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(-3.2, -4.5, 6.4, 5.5, 1.8);
+        else ctx.rect(-3.2, -4.5, 6.4, 5.5);
         ctx.fill();
         ctx.stroke();
+
+        ctx.fillStyle = "#FFD659";
+        ctx.beginPath();
+        ctx.arc(0, -1.6, 1.4, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
 
         // Con ruồi bay vòng vòng từ trong hộp ra ngoài
@@ -14935,6 +14988,118 @@ function ensureHunterCatLoop() {
     hunterCat.rafId = requestAnimationFrame(tick);
   };
   hunterCat.rafId = requestAnimationFrame(tick);
+}
+
+
+let modalCatRafId = null;
+
+function stopModalCelebrateCat() {
+  if (modalCatRafId !== null) {
+    cancelAnimationFrame(modalCatRafId);
+    modalCatRafId = null;
+  }
+  const cvs = document.getElementById("modalCatCanvas");
+  if (cvs) cvs.classList.remove("show");
+}
+
+function startModalCelebrateCat() {
+  stopModalCelebrateCat();
+  if (state.catEnabled === false) return;
+  const cvs = document.getElementById("modalCatCanvas");
+  if (!cvs) return;
+  cvs.classList.add("show");
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cvs.width = Math.round(120 * dpr);
+  cvs.height = Math.round(44 * dpr);
+  const ctx = cvs.getContext("2d");
+  let clock = 0;
+  let lastTs = performance.now();
+
+  const tick = (now) => {
+    if (!cvs.classList.contains("show") || state.catEnabled === false || document.hidden) {
+      modalCatRafId = null;
+      return;
+    }
+    const dt = Math.min(0.033, Math.max(0.004, (now - lastTs) / 1000));
+    lastTs = now;
+    clock += dt;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, 120, 44);
+
+    const hop = Math.abs(Math.sin(clock * 7.5)) * 4.5;
+    const groundY = 39.2;
+
+    drawExactCapooBase(ctx, {
+      x: 60,
+      y: groundY - hop,
+      faceDir: 0,
+      showShadow: false,
+      extraPass: (mode, pal, outlineCol, rx, ry) => {
+        const wave = Math.sin(clock * 15) * 0.28;
+        [-1, 1].forEach((side) => {
+          ctx.save();
+          ctx.translate(side * (rx * 0.88), -ry * 1.15);
+          ctx.rotate(side * (0.68 + wave));
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 2.3, 4.4, 0, 0, Math.PI * 2);
+          if (mode === "outline") {
+            ctx.fillStyle = outlineCol;
+            ctx.strokeStyle = outlineCol;
+            ctx.lineWidth = 4.2;
+            ctx.stroke();
+            ctx.fill();
+          } else {
+            ctx.fillStyle = pal.body;
+            ctx.fill();
+          }
+          ctx.restore();
+        });
+      },
+      faceDraw: (c, pal) => {
+        c.fillStyle = pal.cheek;
+        c.globalAlpha = 0.78;
+        c.beginPath();
+        c.ellipse(-8.4, 1.6, 2.2, 1.3, 0, 0, Math.PI * 2);
+        c.ellipse(8.4, 1.6, 2.2, 1.3, 0, 0, Math.PI * 2);
+        c.fill();
+        c.globalAlpha = 1;
+        // Mắt cười tít ăn mừng ^ ^
+        c.strokeStyle = pal.mouthLine;
+        c.lineWidth = 1.75;
+        c.beginPath();
+        c.arc(-5.6, 0.5, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
+        c.stroke();
+        c.beginPath();
+        c.arc(5.6, 0.5, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
+        c.stroke();
+        c.lineWidth = 1.55;
+        c.beginPath();
+        c.moveTo(-2.85, 0.8);
+        c.quadraticCurveTo(-1.425, 2.8, 0, 1.1);
+        c.quadraticCurveTo(1.425, 2.8, 2.85, 0.8);
+        c.stroke();
+      },
+    });
+
+    // Tia lấp lánh ✧ ăn mừng 2 bên đầu
+    const spA = 0.35 + 0.65 * Math.abs(Math.sin(clock * 6.5));
+    ctx.strokeStyle = `rgba(255, 215, 90, ${spA.toFixed(2)})`;
+    ctx.lineWidth = 1.4;
+    [[-24, -21], [24, -23]].forEach(([dx, dy]) => {
+      const sx = 60 + dx;
+      const sy = groundY + dy - hop;
+      ctx.beginPath();
+      ctx.moveTo(sx - 3.2, sy);
+      ctx.lineTo(sx + 3.2, sy);
+      ctx.moveTo(sx, sy - 3.2);
+      ctx.lineTo(sx, sy + 3.2);
+      ctx.stroke();
+    });
+
+    modalCatRafId = requestAnimationFrame(tick);
+  };
+  modalCatRafId = requestAnimationFrame(tick);
 }
 
 /* ============================================================
