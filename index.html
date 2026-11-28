@@ -3575,7 +3575,7 @@ body {
   position: relative;
   width: 100%;
   height: 48px;
-  margin-bottom: -3px;
+  margin-bottom: 0;
   pointer-events: none;
 }
 .budget-cat-canvas {
@@ -14069,100 +14069,86 @@ function ensureBudgetCatLoop() {
       const r = budgetCat.ratio;
       const pctClamped = Math.min(1, r);
       const barEdgeX = Math.max(26, Math.min(cw - 26, cw * pctClamped));
-      const groundY = 44.5;
+      const groundY = 42.8; // Khớp chuẩn từng pixel: đáy 4 chân (y + 5.2 = 48.0) chạm vừa khít mép trên thanh hạn mức!
 
       if (r < 0.5) {
-        // DƯỚI 50%: Nằm thư giãn trên đống tiền (tờ tiền xanh + chồng xu vàng lấp lánh)!
-        const cx = Math.max(36, Math.min(cw - 36, barEdgeX + 26));
-        const bob = Math.sin(budgetCat.clock * 2.8) * 0.55;
+        // DƯỚI 50%: Đứng 4 chân vui vẻ đội đồng xu vàng trên đầu!
+        const cx = Math.max(28, Math.min(cw - 28, barEdgeX + 20));
+        const bob = Math.abs(Math.sin(budgetCat.clock * 3.4)) * 1.4;
+        const catY = groundY - bob;
 
-        // Đống tiền bên dưới: tờ tiền giấy + các đồng xu vàng xếp chồng
-        ctx.save();
-        ctx.translate(cx, groundY);
-        // Tờ tiền giấy xòe 2 bên
-        [
-          { x: -16, y: -4.5, rot: -0.18 },
-          { x: 15, y: -4.5, rot: 0.2 },
-          { x: 0, y: -5.5, rot: 0.04 },
-        ].forEach((b) => {
-          ctx.save();
-          ctx.translate(b.x, b.y);
-          ctx.rotate(b.rot);
-          ctx.fillStyle = "#5EA675";
-          ctx.strokeStyle = "#295439";
-          ctx.lineWidth = 1.3;
-          ctx.beginPath();
-          ctx.rect(-11, -4, 22, 8);
-          ctx.fill();
-          ctx.stroke();
-          ctx.fillStyle = "#A9E0B8";
-          ctx.beginPath();
-          ctx.arc(0, 0, 2.2, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        });
-        // Các đồng xu vàng xếp thành gò tiền
-        [
-          { x: -18, y: -2.2 }, { x: -11, y: -2.6 }, { x: -4, y: -3.2 },
-          { x: 4, y: -3.2 }, { x: 11, y: -2.6 }, { x: 18, y: -2.2 },
-          { x: -14, y: -6.2 }, { x: -6, y: -6.8 }, { x: 6, y: -6.8 }, { x: 14, y: -6.2 },
-        ].forEach((co) => {
-          ctx.fillStyle = "#F5C64F";
-          ctx.strokeStyle = "#8C5E14";
-          ctx.lineWidth = 1.15;
-          ctx.beginPath();
-          ctx.ellipse(co.x, co.y, 4.4, 2.5, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-        });
-        ctx.restore();
-
-        // Bé mèo nằm êm ái trên đống tiền cười tít mắt
         drawExactCapooBase(ctx, {
           x: cx,
-          y: groundY - 7.5 - bob,
-          scaleX: 1.04,
-          scaleY: 0.94,
+          y: catY,
           faceDir: 0,
           showShadow: false,
           faceDraw: (c, pal) => {
             c.fillStyle = pal.cheek;
-            c.globalAlpha = 0.72;
+            c.globalAlpha = 0.78;
             c.beginPath();
             c.ellipse(-8.4, 1.6, 2.2, 1.3, 0, 0, Math.PI * 2);
             c.ellipse(8.4, 1.6, 2.2, 1.3, 0, 0, Math.PI * 2);
             c.fill();
             c.globalAlpha = 1;
-            // Mắt cười tít ^ ^
+            // Mắt cười tít vui vẻ ^ ^
             c.strokeStyle = pal.mouthLine;
-            c.lineWidth = 1.7;
+            c.lineWidth = 1.75;
             c.beginPath();
-            c.arc(-5.6, 0.6, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
+            c.arc(-5.6, 0.5, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
             c.stroke();
             c.beginPath();
-            c.arc(5.6, 0.6, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
+            c.arc(5.6, 0.5, 2.2, 1.15 * Math.PI, 1.85 * Math.PI);
             c.stroke();
+            // Miệng cười w
             c.lineWidth = 1.55;
             c.beginPath();
-            c.moveTo(-2.8, 0.9);
-            c.quadraticCurveTo(-1.4, 2.8, 0, 1.2);
-            c.quadraticCurveTo(1.4, 2.8, 2.8, 0.9);
+            c.moveTo(-2.85, 0.8);
+            c.quadraticCurveTo(-1.425, 2.8, 0, 1.1);
+            c.quadraticCurveTo(1.425, 2.8, 2.85, 0.8);
             c.stroke();
           },
         });
 
-        // Tia lấp lánh trên đống tiền
-        const spA = 0.35 + 0.65 * Math.abs(Math.sin(budgetCat.clock * 3.6));
-        ctx.strokeStyle = `rgba(255, 224, 110, ${spA.toFixed(2)})`;
-        ctx.lineWidth = 1.3;
-        const sx = cx + 22;
-        const sy = groundY - 12;
+        // Đồng xu vàng đội cân bằng ngay trên đỉnh đầu bé mèo
+        const coinY = catY - 25.5;
+        const coinTilt = Math.sin(budgetCat.clock * 3.4) * 0.12;
+        ctx.save();
+        ctx.translate(cx, coinY);
+        ctx.rotate(coinTilt);
+        ctx.fillStyle = "#F6C84C";
+        ctx.strokeStyle = "#8C5E14";
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(sx - 3.5, sy);
-        ctx.lineTo(sx + 3.5, sy);
-        ctx.moveTo(sx, sy - 3.5);
-        ctx.lineTo(sx, sy + 3.5);
+        ctx.arc(0, 0, 6.8, 0, Math.PI * 2);
+        ctx.fill();
         ctx.stroke();
+        // Vòng viền trong đồng xu
+        ctx.strokeStyle = "rgba(255, 248, 210, 0.75)";
+        ctx.lineWidth = 0.9;
+        ctx.beginPath();
+        ctx.arc(0, 0, 4.8, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = "#7D500E";
+        ctx.font = '700 8.5px "IBM Plex Mono", monospace';
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("₫", 0, 0.5);
+        ctx.restore();
+
+        // Tia sáng lấp lánh 2 bên đồng xu
+        const spA = 0.35 + 0.65 * Math.abs(Math.sin(budgetCat.clock * 4.2));
+        ctx.strokeStyle = `rgba(246, 200, 76, ${spA.toFixed(2)})`;
+        ctx.lineWidth = 1.3;
+        [[-11.5, -2.5], [11.5, -1.5]].forEach(([dx, dy]) => {
+          const sx = cx + dx;
+          const sy = coinY + dy;
+          ctx.beginPath();
+          ctx.moveTo(sx - 2.8, sy);
+          ctx.lineTo(sx + 2.8, sy);
+          ctx.moveTo(sx, sy - 2.8);
+          ctx.lineTo(sx, sy + 2.8);
+          ctx.stroke();
+        });
       } else if (r < 1.0) {
         // 50%–99%: Đổ mồ hôi hột, nghiêng người chống tay ĐẨY NGƯỢC đầu thanh tiến độ!
         const shake = Math.sin(budgetCat.clock * 38) * 0.9;
@@ -14171,6 +14157,7 @@ function ensureBudgetCatLoop() {
           x: cx + shake,
           y: groundY,
           earDroop: 0.35,
+          showShadow: false,
           gait: budgetCat.clock * 11,
           moveMix: 0.5,
           faceDir: -0.9,
@@ -14225,10 +14212,11 @@ function ensureBudgetCatLoop() {
         const cx = Math.max(30, cw - 28);
         drawExactCapooBase(ctx, {
           x: cx,
-          y: groundY + 1,
+          y: 43.6,
           earDroop: 0.72,
           scaleX: 1.08,
           scaleY: 0.84,
+          showShadow: false,
           faceDraw: (c, pal) => {
             c.strokeStyle = pal.mouthLine;
             c.lineWidth = 1.7;
