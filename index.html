@@ -2914,6 +2914,25 @@ body {
   padding: 2px;
 }
 
+.bai-dropzone {
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 6px;
+  padding: 14px 12px;
+  text-align: center;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.16s ease;
+}
+
+.bai-dropzone.is-dragover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+  transform: scale(1.01);
+}
+
 .bai-item {
   position: relative;
   border: 1px solid var(--line-strong);
@@ -2922,6 +2941,23 @@ body {
   background: var(--surface-2);
   display: flex;
   flex-direction: column;
+  cursor: grab;
+  transition: transform 0.14s ease, border-color 0.14s ease, opacity 0.14s ease;
+}
+
+.bai-item:active {
+  cursor: grabbing;
+}
+
+.bai-item.is-dragging {
+  opacity: 0.42;
+  transform: scale(0.95);
+}
+
+.bai-item.is-drag-target {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+  transform: scale(1.03);
 }
 
 .bai-thumb {
@@ -8453,6 +8489,7 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
 
   let pickedItems = []; // [{ file, url }]
   let isBusy = false;
+  let dragFromIdx = -1;
 
   const revokeAllUrls = () => {
     pickedItems.forEach((it) => {
@@ -8462,9 +8499,9 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
   };
 
   const html = `
-    <div class="form-grid">
+    <div class="form-grid" id="baiModalRoot">
       <div class="small-muted">
-        Chọn cùng lúc nhiều ảnh bìa trong thư viện → gắn lần lượt theo thứ tự vào mục <strong>${esc(sec.name)}</strong> (giữ 100% chất lượng gốc).
+        Kéo thả ảnh từ máy vào khung bên dưới hoặc chọn nhiều ảnh → gắn lần lượt đúng theo thứ tự bạn kéo vào mục <strong>${esc(sec.name)}</strong> (giữ 100% chất lượng gốc).
       </div>
 
       <div class="field">
@@ -8486,6 +8523,11 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
         <input type="checkbox" id="baiAutoCreateChk" checked />
         <span>Tự tạo thêm tập mới nếu số ảnh chọn nhiều hơn số tập hiện có</span>
       </label>
+
+      <div class="bai-dropzone" id="baiDropzone">
+        <div style="font-weight:600; color:var(--ink); margin-bottom:2px;">Kéo & thả ảnh vào đây</div>
+        <div style="font-size:11px;">Thả từng ảnh theo đúng thứ tự tập, hoặc thả nhiều ảnh rồi kéo đổi vị trí bên dưới</div>
+      </div>
 
       <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
         <label class="btn btn-sm btn-primary" style="margin:0;">
@@ -8509,6 +8551,8 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
     `${s.title} / ${sec.name} — Gắn nhiều ảnh`,
     html,
     (body) => {
+      const rootEl = body.querySelector("#baiModalRoot");
+      const dropzone = body.querySelector("#baiDropzone");
       const modeSel = body.querySelector("#baiModeSel");
       const fromWrap = body.querySelector("#baiFromWrap");
       const startNumIn = body.querySelector("#baiStartNumIn");
@@ -8519,6 +8563,17 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
       const summaryBox = body.querySelector("#baiSummaryBox");
       const gridEl = body.querySelector("#baiPreviewGrid");
       const applyBtn = body.querySelector("#baiApplyBtn");
+
+      const appendFiles = (fileList) => {
+        if (isBusy) return;
+        const files = [...(fileList || [])].filter((f) => f && (!f.type || f.type.startsWith("image/")));
+        if (!files.length) return;
+        files.forEach((f) => {
+          pickedItems.push({ file: f, url: URL.createObjectURL(f) });
+        });
+        SFX.pop();
+        renderPreview();
+      };
 
       const computePlan = () => {
         const mode = modeSel.value;
@@ -8555,7 +8610,7 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
         applyBtn.disabled = !has || isBusy;
 
         if (!has) {
-          summaryBox.textContent = "Chưa chọn ảnh nào. Bấm '+ Chọn nhiều ảnh' để chọn từ thư viện.";
+          summaryBox.textContent = "Chưa có ảnh nào. Kéo thả ảnh vào khung trên hoặc bấm '+ Chọn nhiều ảnh'.";
           gridEl.style.display = "none";
           gridEl.innerHTML = "";
           return;
@@ -8569,7 +8624,8 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
         summaryBox.textContent =
           `Đã chọn ${pickedItems.length} ảnh → Sẽ gắn ${assignCount} tập` +
           (newCount ? ` (tạo mới ${newCount} tập)` : "") +
-          (skipCount ? ` · Bỏ qua ${skipCount} ảnh dư` : "");
+          (skipCount ? ` · Bỏ qua ${skipCount} ảnh dư` : "") +
+          (pickedItems.length > 1 ? " · Kéo ảnh để đổi thứ tự" : "");
 
         gridEl.style.display = "grid";
         gridEl.innerHTML = pickedItems
@@ -8577,8 +8633,8 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
             const tgt = plan[idx];
             const lbl = tgt ? (tgt.isNew ? `+T.${tgt.number}` : `T.${tgt.number}`) : "Dư";
             return `
-              <div class="bai-item">
-                <img class="bai-thumb" src="${esc(it.url)}" alt="" />
+              <div class="bai-item" draggable="${!isBusy ? "true" : "false"}" data-bai-idx="${idx}" title="Kéo để đổi vị trí">
+                <img class="bai-thumb" src="${esc(it.url)}" alt="" draggable="false" />
                 ${!isBusy ? `<button type="button" class="bai-rm" data-bai-rm="${idx}" title="Bỏ ảnh này">×</button>` : ""}
                 <div class="bai-tag mono" style="${tgt ? (tgt.isNew ? "color:var(--accent);" : "") : "opacity:0.45;"}">${esc(lbl)}</div>
               </div>`;
@@ -8586,7 +8642,8 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
           .join("");
 
         gridEl.querySelectorAll("[data-bai-rm]").forEach((btn) => {
-          btn.addEventListener("click", () => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
             const idx = Number(btn.dataset.baiRm);
             const removed = pickedItems.splice(idx, 1);
             if (removed[0]) {
@@ -8595,7 +8652,90 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
             renderPreview();
           });
         });
+
+        // Kéo thả đổi thứ tự các ảnh đã chọn ngay trong lưới preview
+        gridEl.querySelectorAll(".bai-item").forEach((card) => {
+          card.addEventListener("dragstart", (e) => {
+            if (isBusy) return;
+            dragFromIdx = Number(card.dataset.baiIdx);
+            card.classList.add("is-dragging");
+            if (e.dataTransfer) {
+              e.dataTransfer.effectAllowed = "move";
+              e.dataTransfer.setData("text/plain", String(dragFromIdx));
+            }
+          });
+          card.addEventListener("dragend", () => {
+            dragFromIdx = -1;
+            gridEl.querySelectorAll(".bai-item").forEach((el) => {
+              el.classList.remove("is-dragging", "is-drag-target");
+            });
+          });
+          card.addEventListener("dragover", (e) => {
+            if (dragFromIdx === -1) return;
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+            const toIdx = Number(card.dataset.baiIdx);
+            if (toIdx !== dragFromIdx) card.classList.add("is-drag-target");
+          });
+          card.addEventListener("dragleave", () => {
+            card.classList.remove("is-drag-target");
+          });
+          card.addEventListener("drop", (e) => {
+            if (dragFromIdx === -1) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const toIdx = Number(card.dataset.baiIdx);
+            card.classList.remove("is-drag-target");
+            if (toIdx !== dragFromIdx && dragFromIdx >= 0 && toIdx >= 0) {
+              const [moved] = pickedItems.splice(dragFromIdx, 1);
+              pickedItems.splice(toIdx, 0, moved);
+              SFX.filter();
+              dragFromIdx = -1;
+              renderPreview();
+            }
+          });
+        });
       };
+
+      // Kéo thả file ảnh từ máy tính vào khung dropzone hoặc bất kỳ đâu trong modal
+      let dragDepth = 0;
+      const isFileDrag = (e) => {
+        if (dragFromIdx !== -1) return false;
+        const types = e.dataTransfer?.types;
+        return Boolean(types && [...types].includes("Files"));
+      };
+
+      dropzone.addEventListener("click", () => {
+        if (!isBusy) fileIn.click();
+      });
+
+      rootEl.addEventListener("dragenter", (e) => {
+        if (!isFileDrag(e)) return;
+        e.preventDefault();
+        dragDepth++;
+        dropzone.classList.add("is-dragover");
+      });
+      rootEl.addEventListener("dragover", (e) => {
+        if (!isFileDrag(e)) return;
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+        dropzone.classList.add("is-dragover");
+      });
+      rootEl.addEventListener("dragleave", (e) => {
+        if (!isFileDrag(e)) return;
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (dragDepth === 0) dropzone.classList.remove("is-dragover");
+      });
+      rootEl.addEventListener("drop", (e) => {
+        if (!isFileDrag(e)) return;
+        e.preventDefault();
+        dragDepth = 0;
+        dropzone.classList.remove("is-dragover");
+        if (e.dataTransfer?.files?.length) {
+          appendFiles(e.dataTransfer.files);
+        }
+      });
 
       modeSel.addEventListener("change", renderPreview);
       startNumIn.addEventListener("input", renderPreview);
@@ -8604,12 +8744,7 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
       fileIn.addEventListener("change", (e) => {
         const files = [...(e.target.files || [])];
         e.target.value = "";
-        if (!files.length) return;
-        files.forEach((f) => {
-          pickedItems.push({ file: f, url: URL.createObjectURL(f) });
-        });
-        SFX.pop();
-        renderPreview();
+        appendFiles(files);
       });
 
       revBtn.addEventListener("click", () => {
@@ -8665,7 +8800,7 @@ function openBatchAttachImagesModal(seriesId, sectionId) {
                 date: todayISO(),
                 isLegacy: false,
                 image: dataUrl,
-                readState: "Chưa đọc",
+                readState: "",
                 lentTo: "",
                 note: "",
                 groupId: "",
