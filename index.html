@@ -9727,20 +9727,20 @@ function initCabinetDust(canvasEl) {
   cabDust.motes = [];
   if (!canvasEl) return;
 
-  const count = 48;
+  const count = 64;
   for (let i = 0; i < count; i++) {
     cabDust.motes.push({
       beam: i % 2,
       t: Math.random(),
-      spread: (Math.random() * 2 - 1) * 0.94,
-      speed: 0.022 + Math.random() * 0.038,
+      spread: (Math.random() * 2 - 1) * 0.96,
+      speed: 0.014 + Math.random() * 0.026,
       swayPhase: Math.random() * Math.PI * 2,
-      swayFreq: 0.65 + Math.random() * 1.15,
-      swayAmp: 4 + Math.random() * 10,
+      swayFreq: 0.5 + Math.random() * 0.9,
+      swayAmp: 3 + Math.random() * 7,
       twinklePhase: Math.random() * Math.PI * 2,
-      twinkleFreq: 2.2 + Math.random() * 3.4,
-      r: 0.8 + Math.random() * 1.65,
-      isStar: i % 2 === 0,
+      twinkleFreq: 1.8 + Math.random() * 2.8,
+      r: 0.45 + Math.random() * 0.65,
+      isStar: i % 4 === 0,
       warmTint: Math.random(),
     });
   }
@@ -9769,8 +9769,8 @@ function updateAndDrawCabinetDust(dt) {
   if (typeof isRichFx === "function" && !isRichFx()) return;
   if (!syncCabinetDustSize()) return;
 
-  const speedMul = cabinetIsOpen ? 1.15 : 0.85;
-  const brightMul = cabinetIsOpen ? 1.2 : 0.95;
+  const speedMul = cabinetIsOpen ? 1.08 : 0.82;
+  const brightMul = cabinetIsOpen ? 0.95 : 0.72;
   cabDust.clock += dt * speedMul;
 
   ctx.setTransform(cabDust.dpr, 0, 0, cabDust.dpr, 0, 0);
@@ -9788,59 +9788,50 @@ function updateAndDrawCabinetDust(dt) {
     m.t += m.speed * speedMul * dt;
     if (m.t > 1) {
       m.t -= 1;
-      m.spread = (Math.random() * 2 - 1) * 0.94;
+      m.spread = (Math.random() * 2 - 1) * 0.96;
     }
 
     const topX = m.beam === 0 ? w * 0.34 : w * 0.66;
     const botX = m.beam === 0 ? w * 0.24 : w * 0.76;
-    const coneHalfW = w * (0.07 + m.t * 0.25);
+    const coneHalfW = w * (0.07 + m.t * 0.26);
     const sway = Math.sin(cabDust.clock * m.swayFreq + m.swayPhase) * m.swayAmp;
     const px = topX + (botX - topX) * m.t + m.spread * coneHalfW + sway;
     const py = 6 + m.t * (h * 0.78);
 
     const vFade = Math.sin(Math.min(1, m.t) * Math.PI);
-    const edgeFade = Math.max(0.22, 1 - Math.abs(m.spread) * 0.68);
+    const edgeFade = Math.max(0.2, 1 - Math.abs(m.spread) * 0.7);
     const rawPulse = 0.5 + 0.5 * Math.sin(cabDust.clock * m.twinkleFreq + m.twinklePhase);
-    // Nhấp nháy sắc nét kiểu ánh kim cương (tối dịu rồi lóe sáng trắng tinh)
-    const flash = Math.pow(rawPulse, 3);
-    const alpha = Math.min(1, vFade * edgeFade * (0.18 + 0.82 * flash) * brightMul);
-    if (alpha < 0.05) continue;
+    // Mờ dịu tự nhiên, thỉnh thoảng lóe sáng lấp lánh rất mảnh
+    const flash = Math.pow(rawPulse, 3.5);
+    const alpha = Math.min(0.62, vFade * edgeFade * (0.12 + 0.52 * flash) * brightMul);
+    if (alpha < 0.03) continue;
 
-    // Màu ánh sáng trong trẻo: trắng tinh pha chút ánh kim cương / xanh băng (tuyệt đối không ngả nâu!)
     const tintRgb = isMid
-      ? (m.warmTint > 0.5 ? "190, 238, 255" : "235, 248, 255")
-      : (m.warmTint > 0.55 ? "255, 250, 224" : "240, 248, 255");
+      ? "205, 240, 255"
+      : (m.warmTint > 0.5 ? "255, 250, 232" : "242, 248, 255");
 
-    // 1. Hào quang sáng trong trẻo (nhỏ gọn, không bị đục)
-    const haloR = m.r * (2.0 + flash * 1.4);
+    // 1. Hạt bụi mịn mờ ảo
+    const haloR = m.r * (1.8 + flash * 1.1);
     const grad = ctx.createRadialGradient(px, py, 0, px, py, haloR);
-    grad.addColorStop(0, `rgba(255, 255, 255, ${(alpha * 0.95).toFixed(3)})`);
-    grad.addColorStop(0.4, `rgba(${tintRgb}, ${(alpha * 0.45).toFixed(3)})`);
+    grad.addColorStop(0, `rgba(255, 255, 255, ${(alpha * 0.85).toFixed(3)})`);
+    grad.addColorStop(0.45, `rgba(${tintRgb}, ${(alpha * 0.32).toFixed(3)})`);
     grad.addColorStop(1, `rgba(${tintRgb}, 0)`);
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(px, py, haloR, 0, Math.PI * 2);
     ctx.fill();
 
-    // 2. Ngôi sao lấp lánh 4 cánh cong sắc nét (✦) kiểu anime/kim cương
-    if (m.isStar && flash > 0.22) {
-      const arm = m.r * (2.6 + flash * 5.0);
-      const waist = Math.max(0.65, arm * 0.16);
-      ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, alpha * 1.05).toFixed(3)})`;
+    // 2. Tia lấp lánh siêu mảnh cho 1/4 số hạt khi đạt đỉnh sáng
+    if (m.isStar && flash > 0.45) {
+      const arm = m.r * (2.2 + flash * 2.8);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${(alpha * 0.9).toFixed(3)})`;
+      ctx.lineWidth = 0.65;
       ctx.beginPath();
+      ctx.moveTo(px - arm, py);
+      ctx.lineTo(px + arm, py);
       ctx.moveTo(px, py - arm);
-      ctx.quadraticCurveTo(px + waist, py - waist, px + arm, py);
-      ctx.quadraticCurveTo(px + waist, py + waist, px, py + arm);
-      ctx.quadraticCurveTo(px - waist, py + waist, px - arm, py);
-      ctx.quadraticCurveTo(px - waist, py - waist, px, py - arm);
-      ctx.closePath();
-      ctx.fill();
-    } else {
-      // Hạt lấp lánh nhỏ trắng tinh
-      ctx.fillStyle = `rgba(255, 255, 255, ${alpha.toFixed(3)})`;
-      ctx.beginPath();
-      ctx.arc(px, py, Math.max(0.7, m.r * 0.65), 0, Math.PI * 2);
-      ctx.fill();
+      ctx.lineTo(px, py + arm);
+      ctx.stroke();
     }
   }
 
@@ -14675,82 +14666,117 @@ function ensureBudgetCatLoop() {
           },
         });
       } else {
-        // >= 100% (FULL HẠN MỨC): Nằm ngất mặt X X ở mép ngoài cùng bên phải + cái hộp trên đầu + con ruồi bay ra!
+        // >= 100% (FULL HẠN MỨC): Bé mèo mắt rưng rưng dốc ngược chiếc ví xu Gamaguchi rỗng tuếch!
         const cx = Math.max(30, cw - 28);
+        const sighY = Math.sin(budgetCat.clock * 3.0) * 0.6;
         drawExactCapooBase(ctx, {
           x: cx,
-          y: 43.6,
-          earDroop: 0.72,
-          scaleX: 1.08,
-          scaleY: 0.84,
+          y: groundY + sighY,
+          earDroop: 0.45,
           showShadow: false,
           faceDraw: (c, pal) => {
-            c.strokeStyle = pal.mouthLine;
-            c.lineWidth = 1.7;
-            // Mắt X X
-            [[-5.6, -0.2], [5.6, -0.2]].forEach(([ex, ey]) => {
-              c.beginPath();
-              c.moveTo(ex - 2.0, ey - 2.0);
-              c.lineTo(ex + 2.0, ey + 2.0);
-              c.moveTo(ex + 2.0, ey - 2.0);
-              c.lineTo(ex - 2.0, ey + 2.0);
-              c.stroke();
-            });
-            // Miệng ngoằn ngoèo xỉu
-            c.lineWidth = 1.45;
+            // Má hồng nhẹ
+            c.fillStyle = pal.cheek;
+            c.globalAlpha = 0.55;
             c.beginPath();
-            c.moveTo(-3.2, 2.2);
-            c.quadraticCurveTo(-1.5, 0.8, 0, 2.0);
-            c.quadraticCurveTo(1.5, 3.2, 3.2, 1.8);
+            c.ellipse(-8.4, 1.8, 2.0, 1.2, 0, 0, Math.PI * 2);
+            c.ellipse(8.4, 1.8, 2.0, 1.2, 0, 0, Math.PI * 2);
+            c.fill();
+            c.globalAlpha = 1;
+
+            // Mắt to rưng rưng long lanh (sống động, không bị xỉu chết)
+            [-5.6, 5.6].forEach((ex) => {
+              const ey = -0.3;
+              c.fillStyle = pal.isBlack ? "#FFFDF7" : pal.eye;
+              c.beginPath();
+              c.ellipse(ex, ey, 2.15, 2.35, 0, 0, Math.PI * 2);
+              c.fill();
+              // Ánh nước mắt long lanh dưới khóe mắt
+              c.fillStyle = "#8CE2FF";
+              c.beginPath();
+              c.arc(ex + (ex < 0 ? -0.6 : 0.6), ey + 1.4, 0.95, 0, Math.PI * 2);
+              c.fill();
+              c.fillStyle = "#FFFFFF";
+              c.beginPath();
+              c.arc(ex - 0.6, ey - 0.7, 0.75, 0, Math.PI * 2);
+              c.fill();
+            });
+
+            // Miệng mếu nhỏ xinh (n)
+            c.strokeStyle = pal.mouthLine;
+            c.lineWidth = 1.5;
+            c.beginPath();
+            c.arc(0, 3.0, 2.3, 1.15 * Math.PI, 1.85 * Math.PI);
             c.stroke();
           },
         });
 
-        // Hồn lìa khỏi xác (bé ma nhỏ xinh màu trắng phát sáng bay lên từ bé mèo khi cháy túi 100%!)
-        const soulPhase = (budgetCat.clock * 0.72) % 1; // 0 -> 1
-        const soulY = groundY - 19 - soulPhase * 16;
-        const soulX = cx + Math.sin(budgetCat.clock * 5.2) * 4.5;
-        const soulAlpha = Math.sin(soulPhase * Math.PI) * 0.92;
-        const { outlineCol: gInk } = getExactCapooPalette();
+        // Ví xu tròn Gamaguchi kiểu Nhật dốc ngược lắc lắc trên đầu (mở miệng rỗng tuếch!)
+        const shakeAng = Math.sin(budgetCat.clock * 8.5) * 0.16;
+        const { outlineCol: pInk } = getExactCapooPalette();
+        const px = cx;
+        const py = groundY - 28.5 + sighY;
 
         ctx.save();
-        ctx.globalAlpha = soulAlpha;
-        ctx.translate(soulX, soulY);
-        ctx.fillStyle = "#F4FAFF";
-        ctx.strokeStyle = gInk;
-        ctx.lineWidth = 1.4;
+        ctx.translate(px, py);
+        ctx.rotate(shakeAng);
+
+        // Thân ví tròn bầu bĩnh dốc ngược (màu đỏ rượu / cam đất nổi bật)
+        const pGrad = ctx.createLinearGradient(-8, -8, 8, 4);
+        pGrad.addColorStop(0, "#E06B58");
+        pGrad.addColorStop(1, "#B24336");
+        ctx.fillStyle = pGrad;
+        ctx.strokeStyle = pInk;
+        ctx.lineWidth = 1.7;
         ctx.beginPath();
-        ctx.arc(0, -3.5, 5.2, Math.PI, 0);
-        ctx.lineTo(5.2, 3.2);
-        ctx.quadraticCurveTo(3.4, 5.2, 1.7, 3.2);
-        ctx.quadraticCurveTo(0, 5.2, -1.7, 3.2);
-        ctx.quadraticCurveTo(-3.4, 5.2, -5.2, 3.2);
+        ctx.moveTo(-6.2, 2.5);
+        ctx.bezierCurveTo(-10.5, -2.5, -8.5, -9.5, 0, -9.5);
+        ctx.bezierCurveTo(8.5, -9.5, 10.5, -2.5, 6.2, 2.5);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
 
-        // Mặt bé ma nhỏ xinh (o_o)
-        ctx.fillStyle = gInk;
+        // Nếp gấp vải ví mềm mại
+        ctx.strokeStyle = "rgba(255, 232, 215, 0.35)";
+        ctx.lineWidth = 0.9;
         ctx.beginPath();
-        ctx.arc(-1.8, -3.2, 0.9, 0, Math.PI * 2);
-        ctx.arc(1.8, -3.2, 0.9, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(-2.5, -7.8);
+        ctx.quadraticCurveTo(-3.2, -3.0, -2.0, 1.2);
+        ctx.moveTo(2.5, -7.8);
+        ctx.quadraticCurveTo(3.2, -3.0, 2.0, 1.2);
+        ctx.stroke();
+
+        // Miệng ví mở toang tối bên dưới (trống rỗng!)
+        ctx.fillStyle = "#2E1714";
+        ctx.strokeStyle = "#E8C36A";
+        ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.ellipse(0, -0.8, 1.1, 1.4, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 3.0, 6.4, 2.4, 0, 0, Math.PI * 2);
         ctx.fill();
+        ctx.stroke();
+
+        // 2 nút gài tròn vàng đồng đặc trưng của ví Gamaguchi
+        ctx.fillStyle = "#FFD86B";
+        ctx.strokeStyle = pInk;
+        ctx.lineWidth = 1.2;
+        [-2.2, 2.2].forEach((kx) => {
+          ctx.beginPath();
+          ctx.arc(kx, 5.4, 1.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
         ctx.restore();
 
-        // 2 ngôi sao choáng váng quay nhẹ 2 bên đầu bé mèo
+        // Làn gió nhẹ bay ra từ miệng ví rỗng
+        const puffP = (budgetCat.clock * 1.1) % 1;
+        const puffA = Math.sin(puffP * Math.PI) * 0.65;
         ctx.save();
-        ctx.fillStyle = "#FFD659";
-        for (let k = 0; k < 2; k++) {
-          const ang = budgetCat.clock * 3.8 + k * Math.PI;
-          const sx = cx + Math.cos(ang) * 14.5;
-          const sy = groundY - 22.5 + Math.sin(ang) * 2.8;
-          ctx.beginPath();
-          ctx.arc(sx, sy, 1.7, 0, Math.PI * 2);
-          ctx.fill();
-        }
+        ctx.strokeStyle = `rgba(180, 195, 210, ${puffA.toFixed(2)})`;
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.moveTo(px - 10 - puffP * 5, py + 4 + puffP * 2);
+        ctx.quadraticCurveTo(px - 13 - puffP * 5, py + 2 + puffP * 2, px - 15 - puffP * 5, py + 5 + puffP * 2);
+        ctx.stroke();
         ctx.restore();
       }
     }
