@@ -9621,30 +9621,48 @@ function updateAndDrawCabinetCat(dt) {
       ctx.quadraticCurveTo(1.35, 3.3, 2.7, 1.8);
       ctx.stroke();
     } else {
-      // MẮT LẤP LÁNH TO RÕ NÉT
-      const rX = 2.25;
-      const rY = 2.45;
-      const shineCol = pal.eyeShine || "#FFFFFF";
+      // BÊ NGUYÊN MẮT & MIỆNG TỪ MÈO Ở TỦ SÁCH (đủ tròng đen cho mèo đen + 2 chấm lấp lánh!)
+      const rX = 2.15;
+      const rY = 2.4;
+      const fDir = isRunning ? cabCat.dir : isGrabbing ? 1 : 0;
       [-5.2, 5.2].forEach((ex) => {
         const ey = -0.7;
-        ctx.fillStyle = pal.eye;
-        ctx.beginPath();
-        ctx.ellipse(ex, ey, rX, rY, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = shineCol;
-        ctx.beginPath();
-        ctx.arc(ex - rX * 0.32, ey - rY * 0.34, 1.02, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(ex + rX * 0.3, ey + rY * 0.32, 0.54, 0, Math.PI * 2);
-        ctx.fill();
+        if (pal.isBlack) {
+          ctx.fillStyle = "#FFFDF7";
+          ctx.beginPath();
+          ctx.ellipse(ex, ey, rX * 1.05, rY * 1.05, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#1D1F28";
+          ctx.beginPath();
+          ctx.ellipse(ex + fDir * 0.35, ey, rX * 0.65, rY * 0.68, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#FFFFFF";
+          ctx.beginPath();
+          ctx.arc(ex - rX * 0.34, ey - rY * 0.34, 0.95, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(ex + rX * 0.28, ey + rY * 0.3, 0.48, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = pal.eye;
+          ctx.beginPath();
+          ctx.ellipse(ex, ey, rX, rY, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = pal.eyeShine || "#FFFFFF";
+          ctx.beginPath();
+          ctx.arc(ex - rX * 0.32, ey - rY * 0.34, 0.98, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(ex + rX * 0.3, ey + rY * 0.32, 0.52, 0, Math.PI * 2);
+          ctx.fill();
+        }
       });
       ctx.strokeStyle = pal.mouthLine;
-      ctx.lineWidth = 1.45;
+      ctx.lineWidth = 1.55;
       ctx.beginPath();
-      ctx.moveTo(-2.7, 1.8);
-      ctx.quadraticCurveTo(-1.35, 3.3, 0, 2.0);
-      ctx.quadraticCurveTo(1.35, 3.3, 2.7, 1.8);
+      ctx.moveTo(-2.9, 1.4);
+      ctx.quadraticCurveTo(-1.45, 3.5, 0, 1.8);
+      ctx.quadraticCurveTo(1.45, 3.5, 2.9, 1.4);
       ctx.stroke();
     }
     ctx.restore();
